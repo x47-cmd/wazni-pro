@@ -1,0 +1,48 @@
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f766e"><title>وزني Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#f4f7f6;--card:#fff;--txt:#111827;--muted:#667085;--pri:#0f766e;--line:#e5e7eb}body.dark{--bg:#071412;--card:#10201d;--txt:#f8fafc;--muted:#a7b5b1;--line:#1f3833}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.app{max-width:1050px;margin:auto;padding:16px 16px 90px}.top{display:flex;justify-content:space-between;align-items:center}.logo{display:flex;gap:10px;align-items:center}.ico{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#0f766e,#14b8a6);display:grid;place-items:center;color:#fff;font-size:25px}.btn{border:0;border-radius:14px;padding:12px 14px;font-weight:800;background:var(--pri);color:white}.btn2{background:var(--card);color:var(--txt);border:1px solid var(--line)}.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(4,1fr);margin-top:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 10px 24px #0001}.muted{color:var(--muted);font-size:13px}.num{font-size:28px;font-weight:900;margin-top:6px}.hero{grid-template-columns:1fr 1fr;margin-top:12px}.form{grid-template-columns:repeat(2,1fr)}input{width:100%;padding:13px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:16px}label{display:block;color:var(--muted);font-size:12px;margin:8px 0 5px}.bar{height:14px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:14px}.fill{height:100%;width:0;background:linear-gradient(90deg,#0f766e,#14b8a6)}.tabs{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));background:var(--card);border:1px solid var(--line);border-radius:22px;padding:7px;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.tab{border:0;background:transparent;color:var(--muted);padding:10px;border-radius:16px;font-weight:800}.tab.on{background:var(--pri);color:#fff}.page{display:none}.page.on{display:block}table{width:100%;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid var(--line);text-align:start}.ins{background:#0f766e18;border:1px solid #0f766e30;border-radius:16px;padding:12px;line-height:1.7;margin:8px 0}@media(max-width:800px){.kpis,.hero{grid-template-columns:1fr}.form{grid-template-columns:1fr 1fr}}
+</style></head><body><div class="app">
+<div class="top"><div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div><div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div></div>
+
+<div id="home" class="page on">
+<div class="grid kpis">
+<div class="card"><div class="muted" data-k="start">وزن البداية</div><div class="num"><span id="sV">93</span> kg</div></div>
+<div class="card"><div class="muted" data-k="current">الحالي</div><div class="num"><span id="cV">--</span> kg</div></div>
+<div class="card"><div class="muted" data-k="goal">الهدف</div><div class="num"><span id="gV">75</span> kg</div></div>
+<div class="card"><div class="muted" data-k="remain">المتبقي</div><div class="num"><span id="rV">--</span> kg</div></div>
+</div>
+<div class="grid hero">
+<div class="card"><h3 data-k="add">تسجيل اليوم</h3>
+<div class="grid form"><div><label data-k="date">التاريخ</label><input id="date" type="date"></div><div><label data-k="weight">الوزن</label><input id="weight" type="number" step=".1"></div><div><label data-k="steps">الخطوات</label><input id="steps" type="number"></div><div><label data-k="cal">السعرات</label><input id="cal" type="number"></div></div>
+<br><button class="btn" onclick="save()" data-k="save">حفظ</button>
+<div class="bar"><div id="fill" class="fill"></div></div><p class="muted"><span id="pct">0%</span> إنجاز</p></div>
+<div class="card"><h3 data-k="coach">التحليل الذكي</h3><div id="coach"></div></div>
+</div></div>
+
+<div id="dash" class="page"><h3 data-k="dash">الداشبورد</h3><div class="card"><canvas id="chart"></canvas></div><br><div class="card"><canvas id="weekChart"></canvas></div></div>
+<div id="reports" class="page"><h3 data-k="reports">التقارير</h3><div class="card"><button class="btn btn2" onclick="csv()">تصدير CSV</button><table><thead><tr><th>التاريخ</th><th>الوزن</th><th>التغير</th><th>الخطوات</th><th>السعرات</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
+<div id="settings" class="page"><h3 data-k="settings">الإعدادات</h3><div class="card grid form"><div><label>Start</label><input id="start" type="number" step=".1"></div><div><label>Goal</label><input id="goal" type="number" step=".1"></div><div><label>Height</label><input id="height" type="number"></div><div><label>Name</label><input id="name"></div><button class="btn" onclick="set()">حفظ الإعدادات</button><button class="btn btn2" onclick="clearAll()">مسح البيانات</button></div></div>
+</div>
+
+<div class="tabs"><button class="tab on" onclick="pg('home',this)">الرئيسية</button><button class="tab" onclick="pg('dash',this)">التحليل</button><button class="tab" onclick="pg('reports',this)">التقارير</button><button class="tab" onclick="pg('settings',this)">الإعدادات</button></div>
+
+<script>
+let D=JSON.parse(localStorage.wazni||'[]'),S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar"}'),C,W;
+date.value=new Date().toISOString().slice(0,10);start.value=S.start;goal.value=S.goal;height.value=S.height;name.value=S.name;
+const T={ar:{start:"وزن البداية",current:"الحالي",goal:"الهدف",remain:"المتبقي",add:"تسجيل اليوم",date:"التاريخ",weight:"الوزن",steps:"الخطوات",cal:"السعرات",save:"حفظ",coach:"التحليل الذكي",dash:"الداشبورد",reports:"التقارير",settings:"الإعدادات"},en:{start:"Start",current:"Current",goal:"Goal",remain:"Remaining",add:"Today Entry",date:"Date",weight:"Weight",steps:"Steps",cal:"Calories",save:"Save",coach:"Smart Coach",dash:"Dashboard",reports:"Reports",settings:"Settings"}};
+function tr(){document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=="ar"?"rtl":"ltr";document.querySelectorAll("[data-k]").forEach(e=>e.textContent=T[S.lang][e.dataset.k]);title.textContent=S.lang=="ar"?"وزني Pro":"Wazni Pro";sub.textContent=S.lang=="ar"?"متابعة ذكية للوزن":"Smart weight tracker"}
+function lang(){S.lang=S.lang=="ar"?"en":"ar";localStorage.wazniS=JSON.stringify(S);tr()}
+function dark(){document.body.classList.toggle("dark")}
+function pg(id,b){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.getElementById(id).classList.add("on");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");draw()}
+function save(){if(!weight.value)return alert("اكتب الوزن");let x={d:date.value,w:+weight.value,st:+steps.value||0,cal:+cal.value||0};D=D.filter(a=>a.d!=x.d);D.push(x);D.sort((a,b)=>a.d.localeCompare(b.d));localStorage.wazni=JSON.stringify(D);weight.value=steps.value=cal.value="";render()}
+function set(){S={start:+start.value,goal:+goal.value,height:+height.value,name:name.value,lang:S.lang};localStorage.wazniS=JSON.stringify(S);render()}
+function clearAll(){if(confirm("مسح كل البيانات؟")){D=[];localStorage.wazni="[]";render()}}
+function render(){tr();let cur=D.length?D[D.length-1].w:S.start,loss=S.start-cur,total=S.start-S.goal,rem=cur-S.goal,p=Math.max(0,Math.min(100,loss/total*100));sV.textContent=S.start;gV.textContent=S.goal;cV.textContent=cur;rV.textContent=rem.toFixed(1);pct.textContent=p.toFixed(0)+"%";fill.style.width=p+"%";tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i? (x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");coach.innerHTML=insights(cur,loss,rem);draw()}
+function insights(cur,loss,rem){if(D.length<2)return '<div class="ins">ابدأ بتسجيل وزنك يوميًا وسيظهر التحليل.</div>';let diff=D[D.length-1].w-D[D.length-2].w,rate=loss/Math.max(1,D.length/7),weeks=rate>0?rem/rate:null;return `<div class="ins">نزلت من البداية ${loss.toFixed(1)} كجم.</div><div class="ins">آخر تغير: ${diff.toFixed(1)} كجم.</div><div class="ins">${weeks?`إذا استمريت، قد تصل للهدف خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.`:"نحتاج بيانات أكثر للتوقع."}</div>`}
+function draw(){let labels=D.map(x=>x.d),data=D.map(x=>x.w);if(C)C.destroy();if(W)W.destroy();let c=document.getElementById("chart");if(c)C=new Chart(c,{type:"line",data:{labels,datasets:[{label:"Weight",data,tension:.35}]}});let weeks=[];for(let i=1;i<D.length;i+=7)weeks.push((D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));let w=document.getElementById("weekChart");if(w)W=new Chart(w,{type:"bar",data:{labels:weeks.map((_,i)=>"W"+(i+1)),datasets:[{label:"Weekly loss",data:weeks}]}})}
+function csv(){let s="date,weight,steps,calories\n"+D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([s]));a.download="wazni.csv";a.click()}
+render();
+</script></body></html>
