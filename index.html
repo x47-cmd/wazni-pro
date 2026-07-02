@@ -396,6 +396,12 @@ function save(){
   D=D.filter(a=>a.d!=x.d);
   D.push(x);
   D.sort((a,b)=>a.d.localeCompare(b.d));
+  if(x.st>0){
+  SD=SD.filter(a=>a.d!==x.d);
+  SD.push({d:x.d,steps:x.st});
+  SD.sort((a,b)=>a.d.localeCompare(b.d));
+  localStorage.wazniSteps=JSON.stringify(SD);
+}}
   localStorage.wazni=JSON.stringify(D);
 selectedDay=x.d;
 weight.value=steps.value=cal.value="";
