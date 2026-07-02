@@ -226,6 +226,26 @@ letter-spacing:-1px;
     color:var(--muted);
     font-weight:600;
 }
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  margin-top:15px;
+}
+.day{
+  aspect-ratio:1;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:700;
+  background:var(--card);
+  border:1px solid var(--line);
+}
+.day.loss{background:#dff7e8;color:#118a43}
+.day.gain{background:#ffe4e4;color:#c62828}
+.day.today{border:2px solid var(--primary)}
 </style></head><body><div class="app">
 <div class="top"><div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div><div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div></div>
 
@@ -334,6 +354,7 @@ function render(){
 
   coach.innerHTML=insights(cur,loss,rem);
   dashboardStats(cur,loss,rem);
+  renderCalendar();
   draw();
 }
 
@@ -406,7 +427,52 @@ function insights(cur,loss,rem){
     </div>
   `;
 }
+function renderCalendar(){
 
+const cal=document.getElementById("cal");
+if(!cal)return;
+
+cal.innerHTML="";
+
+const map={};
+D.forEach(x=>map[x.d]=x.w);
+
+const now=new Date();
+const y=now.getFullYear();
+const m=now.getMonth();
+
+const last=new Date(y,m+1,0).getDate();
+
+for(let i=1;i<=last;i++){
+
+let d=String(i).padStart(2,"0")+"-"+now.toLocaleString("en-GB",{month:"short"})+"-"+y;
+
+let c="day";
+
+if(map[d]!==undefined){
+
+if(i>1){
+
+let prev=String(i-1).padStart(2,"0")+"-"+now.toLocaleString("en-GB",{month:"short"})+"-"+y;
+
+if(map[prev]!==undefined){
+
+if(map[d]<map[prev]) c+=" loss";
+else if(map[d]>map[prev]) c+=" gain";
+
+}
+
+}
+
+}
+
+if(i===now.getDate()) c+=" today";
+
+cal.innerHTML+=`<div class="${c}">${i}</div>`;
+
+}
+
+}
 function draw(){
   let labels=D.map(x=>x.d),data=D.map(x=>x.w);
   if(C)C.destroy();
