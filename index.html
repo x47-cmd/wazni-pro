@@ -15,7 +15,16 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Bl
 .btn2{background:var(--card);color:var(--txt);border:1px solid var(--line)}
 .grid{display:grid;gap:14px}
 .kpis{grid-template-columns:repeat(4,1fr);margin-top:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 10px 24px #0001}
+.card{
+background:var(--card);
+border:1px solid var(--line);
+border-radius:24px;
+padding:18px;
+box-shadow:0 10px 24px #0001;
+opacity:0;
+transform:translateY(25px);
+animation:fadeCard .45s ease forwards;
+}
 .muted{color:var(--muted);font-size:13px}
 .num{font-size:28px;font-weight:900;margin-top:6px}
 .hero{grid-template-columns:1fr 1fr;margin-top:14px}
@@ -109,6 +118,22 @@ body.dark .coachBox{
 body.dark .coachItem{
   background:#10201d;
 }
+body.dark .coachItem{
+    background:#10201d;
+}
+
+@keyframes fadeCard{
+from{
+opacity:0;
+transform:translateY(25px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+@media(max-width:800px){
 @media(max-width:800px){
   .app{padding:14px 12px 95px}
   .kpis{grid-template-columns:repeat(2,1fr)}
