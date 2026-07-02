@@ -3,7 +3,50 @@
 <meta name="theme-color" content="#0f766e"><title>وزني Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root{--bg:#f4f7f6;--card:#fff;--txt:#111827;--muted:#667085;--pri:#0f766e;--line:#e5e7eb}body.dark{--bg:#071412;--card:#10201d;--txt:#f8fafc;--muted:#a7b5b1;--line:#1f3833}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.app{max-width:1050px;margin:auto;padding:16px 16px 90px}.top{display:flex;justify-content:space-between;align-items:center}.logo{display:flex;gap:10px;align-items:center}.ico{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#0f766e,#14b8a6);display:grid;place-items:center;color:#fff;font-size:25px}.btn{border:0;border-radius:14px;padding:12px 14px;font-weight:800;background:var(--pri);color:white}.btn2{background:var(--card);color:var(--txt);border:1px solid var(--line)}.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(4,1fr);margin-top:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 10px 24px #0001}.muted{color:var(--muted);font-size:13px}.num{font-size:28px;font-weight:900;margin-top:6px}.hero{grid-template-columns:1fr 1fr;margin-top:12px}.form{grid-template-columns:repeat(2,1fr)}input{width:100%;padding:13px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:16px}label{display:block;color:var(--muted);font-size:12px;margin:8px 0 5px}.bar{height:14px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:14px}.fill{height:100%;width:0;background:linear-gradient(90deg,#0f766e,#14b8a6)}.tabs{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));background:var(--card);border:1px solid var(--line);border-radius:22px;padding:7px;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.tab{border:0;background:transparent;color:var(--muted);padding:10px;border-radius:16px;font-weight:800}.tab.on{background:var(--pri);color:#fff}.page{display:none}.page.on{display:block}table{width:100%;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid var(--line);text-align:start}.ins{background:#0f766e18;border:1px solid #0f766e30;border-radius:16px;padding:12px;line-height:1.7;margin:8px 0}@media(max-width:800px){.kpis,.hero{grid-template-columns:1fr}.form{grid-template-columns:1fr 1fr}}
+:root{--bg:#f4f7f6;--card:#fff;--txt:#111827;--muted:#667085;--pri:#0f766e;--line:#e5e7eb}
+body.dark{--bg:#071412;--card:#10201d;--txt:#f8fafc;--muted:#a7b5b1;--line:#1f3833}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.app{max-width:1050px;margin:auto;padding:16px 16px 95px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;gap:10px;align-items:center}
+.ico{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#0f766e,#14b8a6);display:grid;place-items:center;color:#fff;font-size:25px}
+.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;background:var(--pri);color:white;font-size:15px}
+.btn2{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(4,1fr);margin-top:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 10px 24px #0001}
+.muted{color:var(--muted);font-size:13px}
+.num{font-size:28px;font-weight:900;margin-top:6px}
+.hero{grid-template-columns:1fr 1fr;margin-top:14px}
+.form{grid-template-columns:1fr 1fr;gap:16px}
+.field{min-width:0}
+input{width:100%;height:56px;padding:13px 15px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:18px;outline:none}
+input:focus{border-color:var(--pri);box-shadow:0 0 0 3px #0f766e18}
+label{display:block;color:var(--muted);font-size:13px;margin:8px 0 7px}
+.saveBtn{width:100%;margin-top:14px;height:54px}
+.bar{height:14px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:18px}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#0f766e,#14b8a6)}
+.tabs{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));background:var(--card);border:1px solid var(--line);border-radius:22px;padding:7px;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;z-index:10}
+.tab{border:0;background:transparent;color:var(--muted);padding:12px 8px;border-radius:16px;font-weight:800;font-size:14px}
+.tab.on{background:var(--pri);color:#fff}
+.page{display:none}
+.page.on{display:block}
+table{width:100%;border-collapse:collapse}
+td,th{padding:10px;border-bottom:1px solid var(--line);text-align:start}
+.ins{background:#0f766e18;border:1px solid #0f766e30;border-radius:18px;padding:14px;line-height:1.8;margin:10px 0;font-size:16px}
+@media(max-width:800px){
+  .app{padding:14px 12px 95px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .hero{grid-template-columns:1fr}
+  .form{grid-template-columns:1fr}
+  .card{border-radius:24px;padding:18px}
+  .num{font-size:25px}
+}
+@media(max-width:390px){
+  .kpis{grid-template-columns:1fr}
+  .tab{font-size:13px;padding:10px 5px}
+}
 </style></head><body><div class="app">
 <div class="top"><div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div><div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div></div>
 
@@ -14,10 +57,16 @@
 <div class="card"><div class="muted" data-k="goal">الهدف</div><div class="num"><span id="gV">75</span> kg</div></div>
 <div class="card"><div class="muted" data-k="remain">المتبقي</div><div class="num"><span id="rV">--</span> kg</div></div>
 </div>
+
 <div class="grid hero">
 <div class="card"><h3 data-k="add">تسجيل اليوم</h3>
-<div class="grid form"><div><label data-k="date">التاريخ</label><input id="date" type="date"></div><div><label data-k="weight">الوزن</label><input id="weight" type="number" step=".1"></div><div><label data-k="steps">الخطوات</label><input id="steps" type="number"></div><div><label data-k="cal">السعرات</label><input id="cal" type="number"></div></div>
-<br><button class="btn" onclick="save()" data-k="save">حفظ</button>
+<div class="grid form">
+<div class="field"><label data-k="date">التاريخ</label><input id="date" type="date"></div>
+<div class="field"><label data-k="weight">الوزن</label><input id="weight" type="number" step=".1" placeholder="مثال 89.5"></div>
+<div class="field"><label data-k="steps">الخطوات</label><input id="steps" type="number" placeholder="مثال 8000"></div>
+<div class="field"><label data-k="cal">السعرات</label><input id="cal" type="number" placeholder="مثال 1800"></div>
+</div>
+<button class="btn saveBtn" onclick="save()" data-k="save">حفظ</button>
 <div class="bar"><div id="fill" class="fill"></div></div><p class="muted"><span id="pct">0%</span> إنجاز</p></div>
 <div class="card"><h3 data-k="coach">التحليل الذكي</h3><div id="coach"></div></div>
 </div></div>
