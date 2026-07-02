@@ -392,21 +392,25 @@ function pg(id,b){
 
 function save(){
   if(!weight.value)return alert("اكتب الوزن");
+
   let x={d:date.value,w:+weight.value,st:+steps.value||0,cal:+cal.value||0};
-  D=D.filter(a=>a.d!=x.d);
+
+  D=D.filter(a=>a.d!==x.d);
   D.push(x);
   D.sort((a,b)=>a.d.localeCompare(b.d));
+
   if(x.st>0){
-  SD=SD.filter(a=>a.d!==x.d);
-  SD.push({d:x.d,steps:x.st});
-  SD.sort((a,b)=>a.d.localeCompare(b.d));
-  localStorage.wazniSteps=JSON.stringify(SD);
-}}
+    SD=SD.filter(a=>a.d!==x.d);
+    SD.push({d:x.d,steps:x.st});
+    SD.sort((a,b)=>a.d.localeCompare(b.d));
+    localStorage.wazniSteps=JSON.stringify(SD);
+  }
+
   localStorage.wazni=JSON.stringify(D);
-selectedDay=x.d;
-weight.value=steps.value=cal.value="";
-render();
-pickDay(x.d);
+  selectedDay=x.d;
+  weight.value=steps.value=cal.value="";
+  render();
+  pickDay(x.d);
 }
 
 function set(){
@@ -418,7 +422,9 @@ function set(){
 function clearAll(){
   if(confirm("مسح كل البيانات؟")){
     D=[];
+    SD=[];
     localStorage.wazni="[]";
+    localStorage.wazniSteps="[]";
     render();
   }
 }
@@ -455,16 +461,15 @@ function render(){
   tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i?(x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");
 
   coach.innerHTML=insights(cur,loss,rem);
-dashboardStats(cur,loss,rem);
-renderCalendar();
+  dashboardStats(cur,loss,rem);
+  renderCalendar();
+  renderSteps();
 
-renderSteps();
-
-if(D.length && !selectedDay){
+  if(D.length && !selectedDay){
     pickDay(D[D.length-1].d);
-}
+  }
 
-draw();
+  draw();
 }
 
 function dashboardStats(cur,loss,rem){
