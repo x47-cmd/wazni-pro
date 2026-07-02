@@ -257,6 +257,7 @@ let D=JSON.parse(localStorage.wazni||'[]');
 let S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar"}');
 let SD=JSON.parse(localStorage.wazniSteps||'[]');
 let C,W,P,stepsChartObj;
+let stepsRange="7";
 let range="all";
 let selectedDay="";
 let calDate=new Date();
@@ -579,6 +580,15 @@ let w=document.getElementById("weekChart");
 if(w && typeof Chart!=="undefined"){
 W=new Chart(w,{type:"bar",data:{labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),datasets:[{label:"Weekly loss",data:weeks}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
 }
+}
+
+let stepsRange="7";
+
+function setStepsRange(r,b){
+  stepsRange=r;
+  document.querySelectorAll("#stepsPage .filterBtns .miniBtn").forEach(x=>x.classList.remove("on"));
+  if(b)b.classList.add("on");
+  renderSteps();
 }
 
 function currentSteps(){
