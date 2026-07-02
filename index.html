@@ -691,8 +691,11 @@ function drawStepsChart(valid){
     stepsRange="7";
   }
 
-  if(stepsRange==="7") dataSource=dataSource.slice(-7);
-  if(stepsRange==="30") dataSource=dataSource.slice(-30);
+  if(stepsRange==="7"){
+    dataSource=dataSource.slice(-7);
+  }else if(stepsRange==="30"){
+    dataSource=dataSource.slice(-30);
+  }
 
   let labels=dataSource.map(x=>x.d.slice(5));
   let data=dataSource.map(x=>+x.steps||0);
@@ -719,7 +722,9 @@ function drawStepsChart(valid){
       responsive:true,
       maintainAspectRatio:false,
       plugins:{
-        legend:{display:false}
+        legend:{
+          display:false
+        }
       },
       scales:{
         y:{
