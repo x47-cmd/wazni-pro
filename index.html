@@ -297,7 +297,7 @@ letter-spacing:-1px;
 
 <div class="card">
   <h3>تقويم الوزن</h3>
-  <div id="cal" class="calendar"></div>
+  <div id="calendarBox" class="calendar"></div>
 </div>
   <br>
 
@@ -428,7 +428,7 @@ function insights(cur,loss,rem){
   `;
 }
 function renderCalendar(){
-  const cal=document.getElementById("cal");
+  const cal=document.getElementById("calendarBox");
   if(!cal)return;
 
   cal.innerHTML="";
@@ -520,7 +520,7 @@ function csv(){
 
 setTimeout(()=>{
   render();
-  const cal=document.getElementById("cal");
+  const cal=document.getElementById("calendarBox");
   if(cal){
     cal.innerHTML="";
     for(let i=1;i<=31;i++){
