@@ -604,17 +604,35 @@ localStorage.wazni=JSON.stringify(D);
 }
 
 function saveSteps(){
-let today=isoDate();
-let val=+stepsManual.value||0;
+  let today=isoDate();
+  let val=+stepsManual.value||0;
 
-SD=SD.filter(x=>x.d!==today);
-if(val>0)SD.push({d:today,steps:val});
-SD.sort((a,b)=>a.d.localeCompare(b.d));
-localStorage.wazniSteps=JSON.stringify(SD);
+  SD=SD.filter(x=>x.d!==today);
+  if(val>0)SD.push({d:today,steps:val});
+  SD.sort((a,b)=>a.d.localeCompare(b.d));
+  localStorage.wazniSteps=JSON.stringify(SD);
 
-syncStepsToWeight(today,val);
-stepsManual.value="";
-render();
+  syncStepsToWeight(today,val);
+  stepsManual.value="";
+  render();
+}
+
+function getAllStepsData(){
+  let map={};
+
+  D.forEach(x=>{
+    if((+x.st||0)>0){
+      map[x.d]={d:x.d,steps:+x.st||0};
+    }
+  });
+
+  SD.forEach(x=>{
+    if((+x.steps||0)>0){
+      map[x.d]={d:x.d,steps:+x.steps||0};
+    }
+  });
+
+  return Object.values(map).sort((a,b)=>a.d.localeCompare(b.d));
 }
 
 function renderSteps(){
@@ -626,20 +644,18 @@ function renderSteps(){
   let pct=Math.round(steps/goal*100);
   let summary="";
 
-if(steps>=goal){
-summary=`🔥 <b>ممتاز!</b><br>
-حققت هدفك اليومي وتجاوزته بـ <b>${steps-goal}</b> خطوة.`;
-}else if(steps>=goal*0.8){
-summary=`💪 أداء ممتاز<br>
-باقي <b>${goal-steps}</b> خطوة فقط لتحقيق الهدف.`;
-}else if(steps>0){
-summary=`🚶 استمر بالمشي<br>
-أنجزت <b>${pct}%</b> من هدفك اليومي.`;
-}else{
-summary=`👣 لم يتم تسجيل خطوات اليوم بعد.`;
-}
+  if(steps>=goal){
+    summary=`🔥 <b>ممتاز!</b><br>حققت هدفك اليومي وتجاوزته بـ <b>${steps-goal}</b> خطوة.`;
+  }else if(steps>=goal*0.8){
+    summary=`💪 أداء ممتاز<br>باقي <b>${goal-steps}</b> خطوة فقط لتحقيق الهدف.`;
+  }else if(steps>0){
+    summary=`🚶 استمر بالمشي<br>أنجزت <b>${pct}%</b> من هدفك اليومي.`;
+  }else{
+    summary=`👣 لم يتم تسجيل خطوات اليوم بعد.`;
+  }
 
-  let valid=SD.filter(x=>(+x.steps||0)>0);
+  let valid=getAllStepsData();
+
   let avg=valid.length?Math.round(valid.reduce((a,b)=>a+(+b.steps||0),0)/valid.length):0;
   let best=valid.length?Math.max(...valid.map(x=>+x.steps||0)):0;
   let low=valid.length?Math.min(...valid.map(x=>+x.steps||0)):0;
@@ -668,9 +684,9 @@ summary=`👣 لم يتم تسجيل خطوات اليوم بعد.`;
       <div class="statCard"><div class="statLabel">إجمالي المسافة 🚶</div><div class="statValue">${totalKm} كم</div></div>
     `:`<div class="muted">ابدأ بتسجيل خطواتك اليوم.</div>`;
   }
-if(document.getElementById("stepsSummary")){
-stepsSummary.innerHTML=summary;
-}
+
+  if(document.getElementById("stepsSummary"))stepsSummary.innerHTML=summary;
+
   if(document.getElementById("stepsCoach")){
     stepsCoach.innerHTML=steps>=goal
       ? "🔥 ممتاز! حققت هدف خطوات اليوم."
@@ -682,28 +698,17 @@ stepsSummary.innerHTML=summary;
 
 function drawStepsChart(valid){
   let canvas=document.getElementById("stepsChart");
-  if(!canvas || typeof Chart==="undefined") return;
+  if(!canvas || typeof Chart==="undefined")return;
 
   let dataSource=valid || [];
 
-  if(typeof stepsRange==="undefined"){
-    stepsRange="7";
-  }
+  if(stepsRange==="7")dataSource=dataSource.slice(-7);
+  if(stepsRange==="30")dataSource=dataSource.slice(-30);
 
-  if(stepsRange==="7"){
-    dataSource=dataSource.slice(-7);
-  }else if(stepsRange==="30"){
-    dataSource=dataSource.slice(-30);
-  }
-console.log("SD =", SD);
-console.log("dataSource =", dataSource);
-console.log("stepsRange =", stepsRange);
   let labels=dataSource.map(x=>x.d.slice(5));
   let data=dataSource.map(x=>+x.steps||0);
 
-  if(window.stepsChartObj){
-    window.stepsChartObj.destroy();
-  }
+  if(window.stepsChartObj)window.stepsChartObj.destroy();
 
   window.stepsChartObj=new Chart(canvas.getContext("2d"),{
     type:"line",
@@ -722,11 +727,7 @@ console.log("stepsRange =", stepsRange);
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        legend:{
-          display:false
-        }
-      },
+      plugins:{legend:{display:false}},
       scales:{
         y:{
           beginAtZero:true,
