@@ -212,7 +212,9 @@ body.dark .coachItem{background:#10201d}
   </div>
 </div>
 
-<canvas id="stepsChart" height="180"></canvas>
+<div style="height:260px;">
+    <canvas id="stepsChart"></canvas>
+</div>
 <div id="stepsCoach" class="coachBox" style="margin-top:16px"></div>
 </div>
 </div>
@@ -695,15 +697,14 @@ let last7=dataSource;
       }]
     },
     options:{
-      responsive:true,
-      options:{
-  responsive:true,
-  plugins:{
-    legend:{display:false}
-  },
-  scales:{
-    y:{beginAtZero:true}
-  }
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+        legend:{display:false}
+    },
+    scales:{
+        y:{beginAtZero:true}
+    }
 }
       plugins:{legend:{display:false}},
       scales:{y:{beginAtZero:true}}
