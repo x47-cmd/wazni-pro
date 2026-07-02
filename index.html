@@ -171,6 +171,9 @@ transition:.25s;
 .kpis{grid-template-columns:1fr}
 .tab{font-size:13px;padding:10px 5px}
 }
+#stepsStats{
+  margin-bottom:20px;
+}
 </style>
 </head>
 
@@ -780,17 +783,17 @@ function renderSteps(){
   if(document.getElementById("stepsFill"))stepsFill.style.width=Math.min(100,pct)+"%";
 
   if(document.getElementById("stepsStats")){
-    stepsStats.innerHTML=`
-      <div class="statCard"><div class="statLabel">متوسط الخطوات 👣</div><div class="statValue">${avg}</div></div>
-      <div class="statCard"><div class="statLabel">أفضل يوم 🏆</div><div class="statValue">${best}</div></div>
-      <div class="statCard"><div class="statLabel">أقل يوم 📉</div><div class="statValue">${low}</div></div>
-      <div class="statCard"><div class="statLabel">أيام تحقيق الهدف 🔥</div><div class="statValue">${goalDays}</div></div>
-      <div class="statCard"><div class="statLabel">آخر 7 أيام 📅</div><div class="statValue">${weekTotal}</div></div>
-      <div class="statCard"><div class="statLabel">هذا الشهر 🗓️</div><div class="statValue">${monthTotal}</div></div>
-      <div class="statCard"><div class="statLabel">متوسط الحرق ⚡</div><div class="statValue">${avgBurn}</div></div>
-      <div class="statCard"><div class="statLabel">نسبة الالتزام 🎯</div><div class="statValue">${commit}%</div></div>
-    `;
-  }
+  stepsStats.innerHTML=`
+    <div class="statCard"><div class="statLabel">متوسط الخطوات 👣</div><div class="statValue">${avg}</div></div>
+    <div class="statCard"><div class="statLabel">أفضل يوم 🏆</div><div class="statValue">${best}</div></div>
+    <div class="statCard"><div class="statLabel">أقل يوم 📉</div><div class="statValue">${low}</div></div>
+    <div class="statCard"><div class="statLabel">أيام تحقيق الهدف 🔥</div><div class="statValue">${goalDays}</div></div>
+    <div class="statCard"><div class="statLabel">آخر 7 أيام 📅</div><div class="statValue">${weekTotal}</div></div>
+    <div class="statCard"><div class="statLabel">هذا الشهر 🗓️</div><div class="statValue">${monthTotal}</div></div>
+    <div class="statCard"><div class="statLabel">متوسط الحرق ⚡</div><div class="statValue">${avgBurn}</div></div>
+    <div class="statCard"><div class="statLabel">نسبة الالتزام 🎯</div><div class="statValue">${commit}%</div></div>
+  `;
+}
 
   if(document.getElementById("stepsCoach")){
     stepsCoach.innerHTML=steps>=goal
