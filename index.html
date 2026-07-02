@@ -738,32 +738,43 @@ function currentSteps(){
   return SD.find(x=>x.d===today)||{d:today,steps:0};
 }
 
+function syncStepsToWeight(dateValue,stepsValue){
+  let i=D.findIndex(x=>x.d===dateValue);
+  if(i>=0){
+    D[i].st=stepsValue;
+    localStorage.wazni=JSON.stringify(D);
+  }
+}
+
 function saveSteps(){
   let today=isoDate();
   let val=+stepsManual.value||0;
 
   SD=SD.filter(x=>x.d!==today);
-  SD.push({d:today,steps:val});
+  if(val>0)SD.push({d:today,steps:val});
   SD.sort((a,b)=>a.d.localeCompare(b.d));
   localStorage.wazniSteps=JSON.stringify(SD);
 
+  syncStepsToWeight(today,val);
+
   stepsManual.value="";
-  renderSteps();
+  render();
 }
 
 function renderSteps(){
   let x=currentSteps();
-  let steps=x.steps||0;
+  let steps=+x.steps||0;
   let goal=8000;
   let km=(steps*0.00075).toFixed(1);
   let burn=Math.round(steps*0.04);
   let pct=Math.round(steps/goal*100);
 
-  let avg=SD.length?Math.round(SD.reduce((a,b)=>a+(+b.steps||0),0)/SD.length):0;
-  let best=SD.length?Math.max(...SD.map(x=>+x.steps||0)):0;
-  let low=SD.length?Math.min(...SD.map(x=>+x.steps||0)):0;
-  let goalDays=SD.filter(x=>(+x.steps||0)>=goal).length;
-  let commit=SD.length?Math.round(goalDays/SD.length*100):0;
+  let valid=SD.filter(x=>(+x.steps||0)>0);
+  let avg=valid.length?Math.round(valid.reduce((a,b)=>a+(+b.steps||0),0)/valid.length):0;
+  let best=valid.length?Math.max(...valid.map(x=>+x.steps||0)):0;
+  let low=valid.length?Math.min(...valid.map(x=>+x.steps||0)):0;
+  let goalDays=valid.filter(x=>(+x.steps||0)>=goal).length;
+  let commit=valid.length?Math.round(goalDays/valid.length*100):0;
   let walkTime=Math.round(steps/100);
 
   if(document.getElementById("stepsToday"))stepsToday.textContent=steps;
