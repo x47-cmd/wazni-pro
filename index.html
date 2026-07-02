@@ -202,13 +202,20 @@ body.dark .coachItem{background:#10201d}
 </div>
 
 <div class="card" style="margin-top:16px">
-<h3>تحليل الخطوات</h3>
+  <div class="chartHeader">
+    <h3>تحليل الخطوات</h3>
+    <div class="filterBtns">
+      <button class="miniBtn on" onclick="setStepsRange('7',this)">7 أيام</button>
+      <button class="miniBtn" onclick="setStepsRange('30',this)">30 يوم</button>
+      <button class="miniBtn" onclick="setStepsRange('all',this)">الكل</button>
+    </div>
+  </div>
 
-<div class="stepsChartBox" style="position:relative;height:260px;width:100%;">
-  <canvas id="stepsChart" style="width:100% !important;height:100% !important;"></canvas>
-</div>
+  <div class="stepsChartBox" style="position:relative;height:260px;width:100%;margin-top:12px;">
+    <canvas id="stepsChart" style="width:100% !important;height:100% !important;"></canvas>
+  </div>
 
-<div id="stepsCoach" class="coachBox" style="margin-top:16px"></div>
+  <div id="stepsCoach" class="coachBox" style="margin-top:16px"></div>
 </div>
 </div>
 
