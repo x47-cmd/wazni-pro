@@ -189,6 +189,35 @@ letter-spacing:-1px;
   .kpis{grid-template-columns:1fr}
   .tab{font-size:13px;padding:10px 5px}
 }
+/* ===== Dashboard Advanced Stats ===== */
+
+.statsGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin-bottom:16px;
+}
+
+.statCard{
+    background:#fff;
+    border-radius:18px;
+    padding:16px;
+    border:1px solid rgba(0,0,0,.06);
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+    text-align:center;
+}
+
+.statValue{
+    font-size:24px;
+    font-weight:800;
+    color:var(--primary);
+    margin-top:6px;
+}
+
+.statLabel{
+    font-size:13px;
+    color:var(--muted);
+}
 </style></head><body><div class="app">
 <div class="top"><div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div><div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div></div>
 
@@ -213,7 +242,15 @@ letter-spacing:-1px;
 <div class="card"><h3 data-k="coach">التحليل الذكي</h3><div id="coach"></div></div>
 </div></div>
 
-<div id="dash" class="page"><h3 data-k="dash">الداشبورد</h3><div class="card"><canvas id="chart"></canvas></div><br><div class="card"><canvas id="weekChart"></canvas></div></div>
+<div id="dash" class="page">
+  <h3 data-k="dash">الداشبورد</h3>
+
+  <div id="advancedStats" class="statsGrid"></div>
+
+  <div class="card"><canvas id="chart"></canvas></div>
+  <br>
+  <div class="card"><canvas id="weekChart"></canvas></div>
+</div>
 <div id="reports" class="page"><h3 data-k="reports">التقارير</h3><div class="card"><button class="btn btn2" onclick="csv()">تصدير CSV</button><table><thead><tr><th>التاريخ</th><th>الوزن</th><th>التغير</th><th>الخطوات</th><th>السعرات</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
 <div id="settings" class="page"><h3 data-k="settings">الإعدادات</h3><div class="card grid form"><div><label>Start</label><input id="start" type="number" step=".1"></div><div><label>Goal</label><input id="goal" type="number" step=".1"></div><div><label>Height</label><input id="height" type="number"></div><div><label>Name</label><input id="name"></div><button class="btn" onclick="set()">حفظ الإعدادات</button><button class="btn btn2" onclick="clearAll()">مسح البيانات</button></div></div>
 </div>
