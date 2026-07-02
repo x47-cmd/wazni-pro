@@ -246,6 +246,43 @@ letter-spacing:-1px;
 .day.loss{background:#dff7e8;color:#118a43}
 .day.gain{background:#ffe4e4;color:#c62828}
 .day.today{border:2px solid var(--primary)}
+.legend{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  margin-top:16px;
+  flex-wrap:wrap;
+  font-size:13px;
+  color:var(--muted);
+}
+
+.legend span{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  display:inline-block;
+}
+
+.dot.loss{
+  background:#dff7e8;
+  border:1px solid #118a43;
+}
+
+.dot.gain{
+  background:#ffe4e4;
+  border:1px solid #c62828;
+}
+
+.dot.normal{
+  background:#ffffff;
+  border:1px solid #d9d9d9;
+}
 </style></head><body><div class="app">
 <div class="top"><div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div><div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div></div>
 
@@ -298,6 +335,11 @@ letter-spacing:-1px;
 <div class="card">
   <h3>تقويم الوزن</h3>
   <div id="calendarBox" class="calendar"></div>
+  <div class="legend">
+  <span><i class="dot loss"></i> نزول الوزن</span>
+  <span><i class="dot gain"></i> ارتفاع الوزن</span>
+  <span><i class="dot normal"></i> لا يوجد تسجيل</span>
+</div>
 </div>
   <br>
 
