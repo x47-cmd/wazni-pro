@@ -390,7 +390,12 @@ function render(){
   coach.innerHTML=insights(cur,loss,rem);
   dashboardStats(cur,loss,rem);
   renderCalendar();
-  draw();
+
+if(D.length && !selectedDay){
+  pickDay(D[D.length-1].d);
+}
+
+draw();
 }
 
 function dashboardStats(cur,loss,rem){
