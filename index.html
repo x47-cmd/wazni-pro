@@ -103,6 +103,8 @@ body.dark .coachItem{background:#10201d}
   font-weight:800;
   line-height:1.7;
   box-shadow:0 8px 22px rgba(0,0,0,.06);
+  animation:popInfo .25s ease;
+transition:.25s;
 }
 
 .dayInfo.emptyInfo{
@@ -143,7 +145,16 @@ body.dark .coachItem{background:#10201d}
 .dot.loss{background:#dff7e8;border:1px solid #118a43}
 .dot.gain{background:#ffe4e4;border:1px solid #c62828}
 .dot.normal{background:#fff;border:1px solid #d9d9d9}
-
+@keyframes popInfo{
+  from{
+    opacity:0;
+    transform:translateY(10px) scale(.98);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
 @keyframes fadeCard{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:800px){
 .app{padding:14px 12px 95px}
