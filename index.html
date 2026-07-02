@@ -682,14 +682,19 @@ stepsSummary.innerHTML=summary;
 }
 
 function drawStepsChart(valid){
+
   let canvas=document.getElementById("stepsChart");
-  if(!canvas || typeof Chart==="undefined")return;
+  if(!canvas || typeof Chart==="undefined") return;
 
-  let last7=valid.slice(-7);
-  let labels=last7.map(x=>x.d.slice(5));
-  let data=last7.map(x=>+x.steps||0);
+  let dataSource=valid;
 
-  if(window.stepsChartObj)window.stepsChartObj.destroy();
+  if(stepsRange==="7") dataSource=valid.slice(-7);
+  if(stepsRange==="30") dataSource=valid.slice(-30);
+
+  let labels=dataSource.map(x=>x.d.slice(5));
+  let data=dataSource.map(x=>+x.steps||0);
+
+  if(window.stepsChartObj) window.stepsChartObj.destroy();
 
   window.stepsChartObj=new Chart(canvas,{
     type:"line",
@@ -699,17 +704,27 @@ function drawStepsChart(valid){
         label:"الخطوات",
         data:data,
         tension:.35,
-        pointRadius:4,
-        fill:true
+        pointRadius:5,
+        pointHoverRadius:7,
+        fill:false,
+        borderWidth:3
       }]
     },
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true}}
+      plugins:{
+        legend:{display:false}
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          suggestedMax:10000
+        }
+      }
     }
   });
+
 }
 
 function csv(){
