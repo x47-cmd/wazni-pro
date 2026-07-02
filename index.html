@@ -269,13 +269,60 @@ function insights(cur,loss,rem){
         <div class="coachItem">📅 عدد أيام التسجيل ${D.length} يوم.</div>
         <div class="coachItem">👣 متوسط الخطوات ${avgSteps || 0} خطوة.</div>
         <div class="coachItem">🍽️ متوسط السعرات ${avgCal || 0} سعرة.</div>
-        <div class="coachItem">🎯 ${weeks?`قد تصل لهدفك خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.`:"سجل أكثر عشان نحسب توقع الوصول."}</div>
+        <div class="coachItem">🎯 ${weeks ? `قد تصل لهدفك خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.` : "سجل أكثر عشان نحسب توقع الوصول."}</div>
       </div>
     </div>
   `;
 }
+
+function draw(){
+  let labels=D.map(x=>x.d),data=D.map(x=>x.w);
+  if(C)C.destroy();
+  if(W)W.destroy();
+
+  let c=document.getElementById("chart");
+  if(c)
+    C=new Chart(c,{
+      type:"line",
+      data:{
+        labels,
+        datasets:[{
+          label:"Weight",
+          data,
+          tension:.35
+        }]
+      }
+    });
+
+  let weeks=[];
+  for(let i=1;i<D.length;i+=7)
+    weeks.push((D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));
+
+  let w=document.getElementById("weekChart");
+  if(w)
+    W=new Chart(w,{
+      type:"bar",
+      data:{
+        labels:weeks.map((_,i)=>"W"+(i+1)),
+        datasets:[{
+          label:"Weekly loss",
+          data:weeks
+        }]
+      }
+    });
 }
-function draw(){let labels=D.map(x=>x.d),data=D.map(x=>x.w);if(C)C.destroy();if(W)W.destroy();let c=document.getElementById("chart");if(c)C=new Chart(c,{type:"line",data:{labels,datasets:[{label:"Weight",data,tension:.35}]}});let weeks=[];for(let i=1;i<D.length;i+=7)weeks.push((D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));let w=document.getElementById("weekChart");if(w)W=new Chart(w,{type:"bar",data:{labels:weeks.map((_,i)=>"W"+(i+1)),datasets:[{label:"Weekly loss",data:weeks}]}})}
-function csv(){let s="date,weight,steps,calories\n"+D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([s]));a.download="wazni.csv";a.click()}
+
+function csv(){
+  let s="date,weight,steps,calories\n"+
+    D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n"),
+    a=document.createElement("a");
+
+  a.href=URL.createObjectURL(new Blob([s]));
+  a.download="wazni.csv";
+  a.click();
+}
+
 render();
-</script></body></html>
+</script>
+</body>
+</html>
