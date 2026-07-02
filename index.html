@@ -696,7 +696,15 @@ let last7=dataSource;
     },
     options:{
       responsive:true,
-      maintainAspectRatio:false,
+      options:{
+  responsive:true,
+  plugins:{
+    legend:{display:false}
+  },
+  scales:{
+    y:{beginAtZero:true}
+  }
+}
       plugins:{legend:{display:false}},
       scales:{y:{beginAtZero:true}}
     }
