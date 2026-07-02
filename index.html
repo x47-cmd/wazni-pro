@@ -61,7 +61,7 @@ td,th{padding:10px;border-bottom:1px solid var(--line);text-align:start}
 <div class="grid hero">
 <div class="card"><h3 data-k="add">تسجيل اليوم</h3>
 <div class="grid form">
-<div class="field"><label data-k="date">التاريخ</label><input id="date" type="date"></div>
+<div class="field"><label data-k="date">التاريخ</label><<input id="date" type="text" readonly placeholder="02 Jul 2026"></div>
 <div class="field"><label data-k="weight">الوزن</label><input id="weight" type="number" step=".1" placeholder="مثال 89.5"></div>
 <div class="field"><label data-k="steps">الخطوات</label><input id="steps" type="number" placeholder="مثال 8000"></div>
 <div class="field"><label data-k="cal">السعرات</label><input id="cal" type="number" placeholder="مثال 1800"></div>
@@ -80,7 +80,13 @@ td,th{padding:10px;border-bottom:1px solid var(--line);text-align:start}
 
 <script>
 let D=JSON.parse(localStorage.wazni||'[]'),S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar"}'),C,W;
-date.value=new Date().toISOString().slice(0,10);start.value=S.start;goal.value=S.goal;height.value=S.height;name.value=S.name;
+const today = new Date();
+
+date.value = today.toLocaleDateString("en-GB",{
+day:"2-digit",
+month:"short",
+year:"numeric"
+});start.value=S.start;goal.value=S.goal;height.value=S.height;name.value=S.name;
 const T={ar:{start:"وزن البداية",current:"الحالي",goal:"الهدف",remain:"المتبقي",add:"تسجيل اليوم",date:"التاريخ",weight:"الوزن",steps:"الخطوات",cal:"السعرات",save:"حفظ",coach:"التحليل الذكي",dash:"الداشبورد",reports:"التقارير",settings:"الإعدادات"},en:{start:"Start",current:"Current",goal:"Goal",remain:"Remaining",add:"Today Entry",date:"Date",weight:"Weight",steps:"Steps",cal:"Calories",save:"Save",coach:"Smart Coach",dash:"Dashboard",reports:"Reports",settings:"Settings"}};
 function tr(){document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=="ar"?"rtl":"ltr";document.querySelectorAll("[data-k]").forEach(e=>e.textContent=T[S.lang][e.dataset.k]);title.textContent=S.lang=="ar"?"وزني Pro":"Wazni Pro";sub.textContent=S.lang=="ar"?"متابعة ذكية للوزن":"Smart weight tracker"}
 function lang(){S.lang=S.lang=="ar"?"en":"ar";localStorage.wazniS=JSON.stringify(S);tr()}
