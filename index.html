@@ -67,6 +67,23 @@ body.dark .coachItem{background:#10201d}
 .weekDays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px;text-align:center;font-weight:800;color:var(--muted);font-size:13px}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:10px}
 .day{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:var(--card);border:1px solid var(--line);cursor:pointer}
+.day{
+  flex-direction:column;
+  gap:3px;
+}
+
+.dayNum{
+  font-size:14px;
+  font-weight:900;
+  line-height:1;
+}
+
+.dayWeight{
+  font-size:10px;
+  font-weight:900;
+  opacity:.85;
+  line-height:1;
+}
 .day.empty{opacity:0;border:0;pointer-events:none}
 .day.loss{background:#dff7e8;color:#118a43}
 .day.gain{background:#ffe4e4;color:#c62828}
@@ -450,7 +467,16 @@ function renderCalendar(){
       cls+=" today";
     }
 
-    cal.innerHTML+=`<div class="${cls}" onclick="pickDay('${d}')">${i}</div>`;
+    let dayContent = `${i}`;
+
+if(map[d]){
+  dayContent = `
+    <div class="dayNum">${i}</div>
+    <div class="dayWeight">${map[d].w}</div>
+  `;
+}
+
+cal.innerHTML+=`<div class="${cls}" onclick="pickDay('${d}')">${dayContent}</div>`;
   }
 }
 
