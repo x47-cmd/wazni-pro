@@ -505,7 +505,7 @@ if(w){
   });
 }
 
-renderCalendar();
+
 }
 
 function csv(){
@@ -518,8 +518,16 @@ function csv(){
   a.click();
 }
 
-render();
-renderCalendar();
+setTimeout(()=>{
+  render();
+  const cal=document.getElementById("cal");
+  if(cal){
+    cal.innerHTML="";
+    for(let i=1;i<=31;i++){
+      cal.innerHTML+=`<div class="day">${i}</div>`;
+    }
+  }
+},500);
 </script>
 </body>
 </html>
