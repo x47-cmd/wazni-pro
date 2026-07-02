@@ -695,7 +695,9 @@ function drawStepsChart(valid){
   }else if(stepsRange==="30"){
     dataSource=dataSource.slice(-30);
   }
-
+console.log("SD =", SD);
+console.log("dataSource =", dataSource);
+console.log("stepsRange =", stepsRange);
   let labels=dataSource.map(x=>x.d.slice(5));
   let data=dataSource.map(x=>+x.steps||0);
 
