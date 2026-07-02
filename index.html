@@ -757,7 +757,7 @@ function renderSteps(){
   let goal=8000;
   let km=(steps*0.00075).toFixed(1);
   let burn=Math.round(steps*0.04);
-  let pct=Math.min(100,Math.round(steps/goal*100));
+  let pct=Math.round(steps/goal*100);
 
   let avg=SD.length?Math.round(SD.reduce((a,b)=>a+(+b.steps||0),0)/SD.length):0;
   let best=SD.length?Math.max(...SD.map(x=>+x.steps||0)):0;
@@ -771,7 +771,7 @@ function renderSteps(){
   if(document.getElementById("stepsKm"))stepsKm.textContent=km;
   if(document.getElementById("stepsBurn"))stepsBurn.textContent=burn;
   if(document.getElementById("stepsPct"))stepsPct.textContent=pct+"%";
-  if(document.getElementById("stepsFill"))stepsFill.style.width=pct+"%";
+  if(document.getElementById("stepsFill"))stepsFill.style.width=Math.min(100,pct)+"%";
 
   if(document.getElementById("stepsAvg"))stepsAvg.textContent=avg;
   if(document.getElementById("stepsBest"))stepsBest.textContent=best;
