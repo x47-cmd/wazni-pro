@@ -252,10 +252,34 @@ letter-spacing:-1px;
 
 <div id="dash" class="page">
   <h3 data-k="dash">الداشبورد</h3>
+
   <div id="advancedStats" class="statsGrid"></div>
-  <div class="card"><canvas id="chart"></canvas></div>
+
+  <div class="card">
+    <div class="chartHeader">
+      <h3>تطور الوزن</h3>
+      <div class="filterBtns">
+        <button class="miniBtn on" onclick="setRange('7',this)">7 أيام</button>
+        <button class="miniBtn" onclick="setRange('30',this)">30 يوم</button>
+        <button class="miniBtn" onclick="setRange('all',this)">الكل</button>
+      </div>
+    </div>
+    <canvas id="chart"></canvas>
+  </div>
+
   <br>
-  <div class="card"><canvas id="weekChart"></canvas></div>
+
+  <div class="card">
+    <h3>المفقود والمتبقي</h3>
+    <canvas id="progressChart"></canvas>
+  </div>
+
+  <br>
+
+  <div class="card">
+    <h3>المقارنة الأسبوعية</h3>
+    <canvas id="weekChart"></canvas>
+  </div>
 </div>
 
 <div id="reports" class="page"><h3 data-k="reports">التقارير</h3><div class="card"><button class="btn btn2" onclick="csv()">تصدير CSV</button><table><thead><tr><th>التاريخ</th><th>الوزن</th><th>التغير</th><th>الخطوات</th><th>السعرات</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
