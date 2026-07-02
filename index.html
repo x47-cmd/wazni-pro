@@ -437,11 +437,13 @@ function render(){
   tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i?(x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");
 
   coach.innerHTML=insights(cur,loss,rem);
-  dashboardStats(cur,loss,rem);
-  renderCalendar();
+dashboardStats(cur,loss,rem);
+renderCalendar();
+
+renderSteps();
 
 if(D.length && !selectedDay){
-  pickDay(D[D.length-1].d);
+    pickDay(D[D.length-1].d);
 }
 
 draw();
@@ -708,7 +710,45 @@ function draw(){
     });
   }
 }
+function currentSteps(){
+  let today=isoDate();
+  return SD.find(x=>x.d===today)||{d:today,steps:0};
+}
 
+function saveSteps(){
+  let today=isoDate();
+  let val=+stepsManual.value||0;
+
+  SD=SD.filter(x=>x.d!==today);
+  SD.push({d:today,steps:val});
+  SD.sort((a,b)=>a.d.localeCompare(b.d));
+  localStorage.wazniSteps=JSON.stringify(SD);
+
+  stepsManual.value="";
+  renderSteps();
+}
+
+function renderSteps(){
+  let x=currentSteps();
+  let steps=x.steps||0;
+  let goal=8000;
+  let km=(steps*0.00075).toFixed(1);
+  let burn=Math.round(steps*0.04);
+  let pct=Math.min(100,Math.round(steps/goal*100));
+
+  if(document.getElementById("stepsToday"))stepsToday.textContent=steps;
+  if(document.getElementById("stepsGoal"))stepsGoal.textContent=goal;
+  if(document.getElementById("stepsKm"))stepsKm.textContent=km;
+  if(document.getElementById("stepsBurn"))stepsBurn.textContent=burn;
+  if(document.getElementById("stepsPct"))stepsPct.textContent=pct+"%";
+  if(document.getElementById("stepsFill"))stepsFill.style.width=pct+"%";
+
+  if(document.getElementById("stepsCoach")){
+    stepsCoach.innerHTML=steps>=goal
+      ? "🔥 ممتاز! حققت هدف خطوات اليوم."
+      : `باقي لك ${goal-steps} خطوة للوصول لهدف اليوم.`;
+  }
+}
 function csv(){
   let s="date,weight,steps,calories\n"+D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n");
   let a=document.createElement("a");
