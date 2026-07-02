@@ -88,6 +88,11 @@ body.dark .coachItem{background:#10201d}
 .day.loss{background:#dff7e8;color:#118a43}
 .day.gain{background:#ffe4e4;color:#c62828}
 .day.today{border:2px solid var(--pri)}
+.day.selected{
+  border:3px solid var(--pri);
+  box-shadow:0 8px 18px rgba(15,118,110,.25);
+  transform:scale(1.06);
+}
 .dayInfo{margin-top:14px;padding:12px;border-radius:12px;background:var(--bg);text-align:center;font-size:14px;color:var(--muted);font-weight:700;line-height:1.7}
 .legend{display:flex;justify-content:center;gap:14px;margin-top:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:6px}
@@ -235,6 +240,7 @@ let D=JSON.parse(localStorage.wazni||'[]');
 let S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar"}');
 let C,W,P;
 let range="all";
+let selectedDay="";
 let calDate=new Date();
 
 function isoDate(d=new Date()){
@@ -411,6 +417,9 @@ function changeMonth(n){
 }
 
 function pickDay(d){
+  selectedDay=d;
+  renderCalendar();
+
   let info=document.getElementById("dayInfo");
   if(!info)return;
 
@@ -466,7 +475,9 @@ function renderCalendar(){
     if(i===today.getDate() && m===today.getMonth() && y===today.getFullYear()){
       cls+=" today";
     }
-
+if(d===selectedDay){
+  cls+=" selected";
+}
     let dayContent = `${i}`;
 
 if(map[d]){
