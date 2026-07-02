@@ -748,12 +748,26 @@ function renderSteps(){
   let burn=Math.round(steps*0.04);
   let pct=Math.min(100,Math.round(steps/goal*100));
 
+  let avg=SD.length?Math.round(SD.reduce((a,b)=>a+(+b.steps||0),0)/SD.length):0;
+  let best=SD.length?Math.max(...SD.map(x=>+x.steps||0)):0;
+  let low=SD.length?Math.min(...SD.map(x=>+x.steps||0)):0;
+  let goalDays=SD.filter(x=>(+x.steps||0)>=goal).length;
+  let commit=SD.length?Math.round(goalDays/SD.length*100):0;
+  let walkTime=Math.round(steps/100);
+
   if(document.getElementById("stepsToday"))stepsToday.textContent=steps;
   if(document.getElementById("stepsGoal"))stepsGoal.textContent=goal;
   if(document.getElementById("stepsKm"))stepsKm.textContent=km;
   if(document.getElementById("stepsBurn"))stepsBurn.textContent=burn;
   if(document.getElementById("stepsPct"))stepsPct.textContent=pct+"%";
   if(document.getElementById("stepsFill"))stepsFill.style.width=pct+"%";
+
+  if(document.getElementById("stepsAvg"))stepsAvg.textContent=avg;
+  if(document.getElementById("stepsBest"))stepsBest.textContent=best;
+  if(document.getElementById("stepsLow"))stepsLow.textContent=low;
+  if(document.getElementById("stepsGoalDays"))stepsGoalDays.textContent=goalDays;
+  if(document.getElementById("stepsCommit"))stepsCommit.textContent=commit+"%";
+  if(document.getElementById("stepsTime"))stepsTime.textContent=walkTime+" د";
 
   if(document.getElementById("stepsCoach")){
     stepsCoach.innerHTML=steps>=goal
