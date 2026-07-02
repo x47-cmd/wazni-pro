@@ -500,26 +500,30 @@ function draw(){
     });
 
   let weeks=[];
-  for(let i=1;i<D.length;i+=7)
-    weeks.push(+(D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));
+for(let i=1;i<D.length;i+=7){
+  weeks.push(+(D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));
+}
 
-  let w=document.getElementById("weekChart");
-  if(w)
-    W=new Chart(w,{
-      type:"bar",
-      data:{
-        labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),
-        datasets:[{
-          label:"Weekly loss",
-          data:weeks
-        }]
-      },
-      options:{
-        responsive:true,
-        plugins:{legend:{display:false}},
-        scales:{y:{beginAtZero:true}}
-      }
-    });
+let w=document.getElementById("weekChart");
+if(w){
+  W=new Chart(w,{
+    type:"bar",
+    data:{
+      labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),
+      datasets:[{
+        label:"Weekly loss",
+        data:weeks
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true}}
+    }
+  });
+}
+
+renderCalendar();
 }
 
 function csv(){
@@ -533,6 +537,7 @@ function csv(){
 }
 
 render();
+renderCalendar();
 </script>
 </body>
 </html>
