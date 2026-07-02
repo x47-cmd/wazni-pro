@@ -204,6 +204,7 @@ body.dark .coachItem{background:#10201d}
 <div class="card" style="margin-top:16px">
   <div class="chartHeader">
     <h3>تحليل الخطوات</h3>
+    <div id="stepsSummary" class="coachBox" style="margin:14px 0;"></div>
     <div class="filterBtns">
       <button class="miniBtn on" onclick="setStepsRange('7',this)">7 أيام</button>
       <button class="miniBtn" onclick="setStepsRange('30',this)">30 يوم</button>
@@ -614,6 +615,20 @@ function renderSteps(){
   let km=(steps*0.00075).toFixed(1);
   let burn=Math.round(steps*0.04);
   let pct=Math.round(steps/goal*100);
+  let summary="";
+
+if(steps>=goal){
+summary=`🔥 <b>ممتاز!</b><br>
+حققت هدفك اليومي وتجاوزته بـ <b>${steps-goal}</b> خطوة.`;
+}else if(steps>=goal*0.8){
+summary=`💪 أداء ممتاز<br>
+باقي <b>${goal-steps}</b> خطوة فقط لتحقيق الهدف.`;
+}else if(steps>0){
+summary=`🚶 استمر بالمشي<br>
+أنجزت <b>${pct}%</b> من هدفك اليومي.`;
+}else{
+summary=`👣 لم يتم تسجيل خطوات اليوم بعد.`;
+}
 
   let valid=SD.filter(x=>(+x.steps||0)>0);
   let avg=valid.length?Math.round(valid.reduce((a,b)=>a+(+b.steps||0),0)/valid.length):0;
@@ -644,7 +659,9 @@ function renderSteps(){
       <div class="statCard"><div class="statLabel">إجمالي المسافة 🚶</div><div class="statValue">${totalKm} كم</div></div>
     `:`<div class="muted">ابدأ بتسجيل خطواتك اليوم.</div>`;
   }
-
+if(document.getElementById("stepsSummary")){
+stepsSummary.innerHTML=summary;
+}
   if(document.getElementById("stepsCoach")){
     stepsCoach.innerHTML=steps>=goal
       ? "🔥 ممتاز! حققت هدف خطوات اليوم."
