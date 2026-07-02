@@ -242,7 +242,9 @@ transition:.25s;
 <div class="weekDays">
 <span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span><span>س</span>
 </div>
-
+<div id="monthStats" class="dayInfo emptyInfo">
+اضغط على يوم لعرض إحصائيات الشهر
+</div>
 <div id="calendarBox" class="calendar"></div>
 <div id="dayInfo" class="dayInfo">اضغط على يوم لعرض التفاصيل</div>
 
@@ -547,7 +549,52 @@ function renderCalendar(){
 
   const map={};
   D.forEach(x=>map[x.d]=x);
+const monthStats=document.getElementById("monthStats");
 
+if(monthStats){
+  const monthData=D.filter(x=>{
+    const dt=new Date(x.d);
+    return dt.getFullYear()===y && dt.getMonth()===m;
+  });
+
+  if(monthData.length){
+    const avg=(monthData.reduce((a,b)=>a+b.w,0)/monthData.length).toFixed(1);
+    const best=Math.min(...monthData.map(x=>x.w)).toFixed(1);
+    const change=(monthData[monthData.length-1].w-monthData[0].w).toFixed(1);
+
+    monthStats.className="dayInfo";
+    monthStats.innerHTML=`
+      <div class="dayInfoTitle">📅 إحصائيات الشهر</div>
+
+      <div class="dayInfoGrid">
+
+        <div class="dayInfoItem">
+          <div>📝 أيام التسجيل</div>
+          <div class="dayInfoValue">${monthData.length}</div>
+        </div>
+
+        <div class="dayInfoItem">
+          <div>⚖️ متوسط الوزن</div>
+          <div class="dayInfoValue">${avg} كجم</div>
+        </div>
+
+        <div class="dayInfoItem">
+          <div>🏆 أفضل وزن</div>
+          <div class="dayInfoValue">${best} كجم</div>
+        </div>
+
+        <div class="dayInfoItem">
+          <div>📉 التغير</div>
+          <div class="dayInfoValue">${change} كجم</div>
+        </div>
+
+      </div>
+    `;
+  }else{
+    monthStats.className="dayInfo emptyInfo";
+    monthStats.textContent="لا توجد بيانات لهذا الشهر";
+  }
+}
   for(let b=0;b<first;b++){
     cal.innerHTML+=`<div class="day empty"></div>`;
   }
