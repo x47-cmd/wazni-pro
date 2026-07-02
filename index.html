@@ -428,50 +428,32 @@ function insights(cur,loss,rem){
   `;
 }
 function renderCalendar(){
+  const cal=document.getElementById("cal");
+  if(!cal)return;
 
-const cal=document.getElementById("cal");
-if(!cal)return;
+  cal.innerHTML="";
 
-cal.innerHTML="";
+  const now=new Date();
+  const y=now.getFullYear();
+  const m=now.getMonth()+1;
+  const last=new Date(y,m,0).getDate();
 
-const map={};
-D.forEach(x=>map[x.d]=x.w);
+  const map={};
+  D.forEach(x=>map[x.d]=x.w);
 
-const now=new Date();
-const y=now.getFullYear();
-const m=now.getMonth();
+  for(let i=1;i<=last;i++){
+    const d=y+"-"+String(m).padStart(2,"0")+"-"+String(i).padStart(2,"0");
+    let cls="day";
 
-const last=new Date(y,m+1,0).getDate();
+    if(map[d]!==undefined){
+      const prev=d;
+      cls+=" loss";
+    }
 
-for(let i=1;i<=last;i++){
+    if(i===now.getDate()) cls+=" today";
 
-let d=y+"-"+String(m+1).padStart(2,"0")+"-"+String(i).padStart(2,"0");
-
-let c="day";
-
-if(map[d]!==undefined){
-
-if(i>1){
-
-let prev=y+"-"+String(m+1).padStart(2,"0")+"-"+String(i-1).padStart(2,"0");
-
-if(map[prev]!==undefined){
-
-if(map[d]<map[prev]) c+=" loss";
-else if(map[d]>map[prev]) c+=" gain";
-
-}
-
-}
-
-}
-
-if(i===now.getDate()) c+=" today";
-
-cal.innerHTML+=`<div class="${c}">${i}</div>`;
-
-}
-
+    cal.innerHTML+=`<div class="${cls}">${i}</div>`;
+  }
 }
 function draw(){
   let labels=D.map(x=>x.d),data=D.map(x=>x.w);
