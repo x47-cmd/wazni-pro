@@ -67,7 +67,48 @@ label{display:block;color:var(--muted);font-size:13px;margin:8px 0 7px}
 .page.on{display:block}
 table{width:100%;border-collapse:collapse}
 td,th{padding:10px;border-bottom:1px solid var(--line);text-align:start}
-.ins{background:#0f766e18;border:1px solid #0f766e30;border-radius:18px;padding:14px;line-height:1.8;margin:10px 0;font-size:16px}
+.coachBox{
+  background:linear-gradient(135deg,#eefaf7,#ffffff);
+  border:1px solid #bfe4dd;
+  border-radius:22px;
+  padding:18px;
+  line-height:1.9;
+}
+
+body.dark .coachBox{
+  background:linear-gradient(135deg,#0b1b18,#10201d);
+}
+
+.coachTitle{
+  font-size:20px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.coachText{
+  color:var(--muted);
+  font-size:16px;
+  font-weight:600;
+}
+
+.coachList{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+}
+
+.coachItem{
+  background:#ffffffcc;
+  border:1px solid #d8eee9;
+  border-radius:16px;
+  padding:12px;
+  font-size:15px;
+  font-weight:700;
+}
+
+body.dark .coachItem{
+  background:#10201d;
+}
 @media(max-width:800px){
   .app{padding:14px 12px 95px}
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -129,7 +170,31 @@ function save(){if(!weight.value)return alert("اكتب الوزن");let x={d:da
 function set(){S={start:+start.value,goal:+goal.value,height:+height.value,name:name.value,lang:S.lang};localStorage.wazniS=JSON.stringify(S);render()}
 function clearAll(){if(confirm("مسح كل البيانات؟")){D=[];localStorage.wazni="[]";render()}}
 function render(){tr();let cur=D.length?D[D.length-1].w:S.start,loss=S.start-cur,total=S.start-S.goal,rem=cur-S.goal,p=Math.max(0,Math.min(100,loss/total*100));sV.textContent=S.start;gV.textContent=S.goal;cV.textContent=cur;rV.textContent=rem.toFixed(1);pct.textContent=p.toFixed(0)+"%";fill.style.width=p+"%";tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i? (x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");coach.innerHTML=insights(cur,loss,rem);draw()}
-function insights(cur,loss,rem){if(D.length<2)return '<div class="ins">ابدأ بتسجيل وزنك يوميًا وسيظهر التحليل.</div>';let diff=D[D.length-1].w-D[D.length-2].w,rate=loss/Math.max(1,D.length/7),weeks=rate>0?rem/rate:null;return `<div class="ins">نزلت من البداية ${loss.toFixed(1)} كجم.</div><div class="ins">آخر تغير: ${diff.toFixed(1)} كجم.</div><div class="ins">${weeks?`إذا استمريت، قد تصل للهدف خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.`:"نحتاج بيانات أكثر للتوقع."}</div>`}
+function insights(cur,loss,rem){
+if(D.length<2){
+return `<div class="coachBox">
+<div class="coachTitle">👋 ابدأ رحلتك</div>
+<div class="coachText">سجل وزنك يومياً وسيظهر التحليل الذكي بعد أول تسجيلات.</div>
+</div>`;
+}
+
+let diff=D[D.length-1].w-D[D.length-2].w;
+let rate=loss/Math.max(1,D.length/7);
+let weeks=rate>0?rem/rate:null;
+let status=diff<0?"🟢 ممتاز":"🟡 انتبه";
+
+return `<div class="coachBox">
+<div class="coachTitle">${status}</div>
+<div class="coachText">ملخص تقدمك الحالي</div>
+
+<div class="coachList">
+<div class="coachItem">📉 نزلت ${loss.toFixed(1)} كجم من البداية.</div>
+<div class="coachItem">⚖️ آخر تغير ${diff.toFixed(1)} كجم.</div>
+<div class="coachItem">🎯 ${weeks?`قد تصل لهدفك خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.`:"استمر بالتسجيل حتى أقدر أتوقع موعد الوصول."}</div>
+</div>
+
+</div>`;
+}
 function draw(){let labels=D.map(x=>x.d),data=D.map(x=>x.w);if(C)C.destroy();if(W)W.destroy();let c=document.getElementById("chart");if(c)C=new Chart(c,{type:"line",data:{labels,datasets:[{label:"Weight",data,tension:.35}]}});let weeks=[];for(let i=1;i<D.length;i+=7)weeks.push((D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));let w=document.getElementById("weekChart");if(w)W=new Chart(w,{type:"bar",data:{labels:weeks.map((_,i)=>"W"+(i+1)),datasets:[{label:"Weekly loss",data:weeks}]}})}
 function csv(){let s="date,weight,steps,calories\n"+D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([s]));a.download="wazni.csv";a.click()}
 render();
