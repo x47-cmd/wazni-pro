@@ -296,8 +296,11 @@ transition:.25s;
 </div>
 
 <div class="card" style="margin-top:16px">
-  <h3>تحليل الخطوات</h3>
-  <div id="stepsCoach" class="coachBox">ابدأ بتسجيل خطواتك اليوم.</div>
+<h3>تحليل الخطوات</h3>
+
+<canvas id="stepsChart" height="180"></canvas>
+
+<div id="stepsCoach" class="coachBox" style="margin-top:16px"></div>
 </div>
 </div>
 <div id="reports" class="page">
@@ -801,6 +804,45 @@ function renderSteps(){
       ? "🔥 ممتاز! حققت هدف خطوات اليوم."
       : `باقي لك ${goal-steps} خطوة للوصول لهدف اليوم.`;
   }
+}
+if(document.getElementById("stepsChart")){
+
+  let last7 = valid.slice(-7);
+
+  let labels = last7.map(x=>x.d.slice(5));
+  let data = last7.map(x=>+x.steps||0);
+
+  if(window.stepsChartObj){
+    window.stepsChartObj.destroy();
+  }
+
+  window.stepsChartObj = new Chart(
+    document.getElementById("stepsChart"),
+    {
+      type:"line",
+      data:{
+        labels:labels,
+        datasets:[{
+          label:"الخطوات",
+          data:data,
+          borderColor:"#0f766e",
+          backgroundColor:"rgba(15,118,110,.15)",
+          fill:true,
+          tension:.35
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{display:false}
+        },
+        scales:{
+          y:{beginAtZero:true}
+        }
+      }
+    }
+  );
+
 }
 function csv(){
   let s="date,weight,steps,calories\n"+D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n");
