@@ -262,7 +262,36 @@ transition:.25s;
 <canvas id="weekChart"></canvas>
 </div>
 </div>
+<div id="stepsPage" class="page">
+<h3>خطواتي 👣</h3>
 
+<div class="grid kpis">
+  <div class="card"><div class="muted">خطوات اليوم</div><div class="num"><span id="stepsToday">0</span></div></div>
+  <div class="card"><div class="muted">هدف اليوم</div><div class="num"><span id="stepsGoal">8000</span></div></div>
+  <div class="card"><div class="muted">المسافة</div><div class="num"><span id="stepsKm">0.0</span> km</div></div>
+  <div class="card"><div class="muted">السعرات</div><div class="num"><span id="stepsBurn">0</span></div></div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3>تقدم خطوات اليوم</h3>
+  <div class="bar"><div id="stepsFill" class="fill"></div></div>
+  <p class="muted"><span id="stepsPct">0%</span> من هدفك اليومي</p>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3>تسجيل سريع للخطوات</h3>
+  <div class="field">
+    <label>خطوات اليوم</label>
+    <input id="stepsManual" type="number" placeholder="مثال 8000">
+  </div>
+  <button class="btn saveBtn" onclick="saveSteps()">حفظ الخطوات</button>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3>تحليل الخطوات</h3>
+  <div id="stepsCoach" class="coachBox">ابدأ بتسجيل خطواتك اليوم.</div>
+</div>
+</div>
 <div id="reports" class="page">
 <h3 data-k="reports">التقارير</h3>
 <div class="card">
