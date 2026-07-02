@@ -280,7 +280,7 @@ transition:.25s;
     <div class="statCard"><div class="statLabel">أقل يوم</div><div class="statValue" id="stepsLow">0</div></div>
     <div class="statCard"><div class="statLabel">أيام تحقيق الهدف</div><div class="statValue" id="stepsGoalDays">0</div></div>
     <div class="statCard"><div class="statLabel">نسبة الالتزام</div><div class="statValue" id="stepsCommit">0%</div></div>
-    <div class="statCard"><div class="statLabel">وقت المشي</div><div class="statValue" id="stepsTime">0 د</div></div>
+    
   </div>
 </div>
 
@@ -789,7 +789,7 @@ function renderSteps(){
   if(document.getElementById("stepsLow"))stepsLow.textContent=low;
   if(document.getElementById("stepsGoalDays"))stepsGoalDays.textContent=goalDays;
   if(document.getElementById("stepsCommit"))stepsCommit.textContent=commit+"%";
-  if(document.getElementById("stepsTime"))stepsTime.textContent=walkTime+" د";
+  if(document.getElementById("stepsTime"))stepsTime.innerHTML='<bdi>'+walkTime+'</bdi> د';
 
   if(document.getElementById("stepsCoach")){
     stepsCoach.innerHTML=steps>=goal
