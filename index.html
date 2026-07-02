@@ -445,7 +445,7 @@ const last=new Date(y,m+1,0).getDate();
 
 for(let i=1;i<=last;i++){
 
-let d=String(i).padStart(2,"0")+"-"+now.toLocaleString("en-GB",{month:"short"})+"-"+y;
+let d=y+"-"+String(m+1).padStart(2,"0")+"-"+String(i).padStart(2,"0");
 
 let c="day";
 
@@ -453,7 +453,7 @@ if(map[d]!==undefined){
 
 if(i>1){
 
-let prev=String(i-1).padStart(2,"0")+"-"+now.toLocaleString("en-GB",{month:"short"})+"-"+y;
+let prev=y+"-"+String(m+1).padStart(2,"0")+"-"+String(i-1).padStart(2,"0");
 
 if(map[prev]!==undefined){
 
