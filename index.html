@@ -338,8 +338,10 @@ function save(){
   D.push(x);
   D.sort((a,b)=>a.d.localeCompare(b.d));
   localStorage.wazni=JSON.stringify(D);
-  weight.value=steps.value=cal.value="";
-  render();
+selectedDay=x.d;
+weight.value=steps.value=cal.value="";
+render();
+pickDay(x.d);
 }
 
 function set(){
