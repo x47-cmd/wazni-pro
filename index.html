@@ -1,7 +1,12 @@
-<!doctype html><html lang="ar" dir="rtl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0f766e"><title>وزني Pro</title>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>وزني Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 :root{--bg:#f4f7f6;--card:#fff;--txt:#111827;--muted:#667085;--pri:#0f766e;--line:#e5e7eb}
 body.dark{--bg:#071412;--card:#10201d;--txt:#f8fafc;--muted:#a7b5b1;--line:#1f3833}
@@ -15,276 +20,87 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Bl
 .btn2{background:var(--card);color:var(--txt);border:1px solid var(--line)}
 .grid{display:grid;gap:14px}
 .kpis{grid-template-columns:repeat(4,1fr);margin-top:16px}
-.card{
-background:var(--card);
-border:1px solid var(--line);
-border-radius:24px;
-padding:18px;
-box-shadow:0 10px 24px #0001;
-opacity:0;
-transform:translateY(25px);
-animation:fadeCard .45s ease forwards;
-}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 10px 24px #0001;opacity:0;transform:translateY(25px);animation:fadeCard .45s ease forwards}
 .muted{color:var(--muted);font-size:13px}
-.num{font-size:28px;font-weight:900;...}
+.num{font-size:28px;font-weight:900}
 .hero{grid-template-columns:1fr 1fr;margin-top:14px}
 .form{grid-template-columns:1fr 1fr;gap:16px}
-.entryForm{
-  margin-top:18px;
-}
-
-.entryForm .field{
-  background:#f8faf9;
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:10px 12px;
-  min-height:92px;
-}
-
-body.dark .entryForm .field{
-  background:#0b1b18;
-}
-
-.entryForm label{
-  margin:0 0 8px;
-  font-size:14px;
-  font-weight:800;
-}
-
-.entryForm input{
-  border:0;
-  background:transparent;
-  height:36px;
-  padding:0;
-  font-size:20px;
-  font-weight:800;
-}
-
-.entryForm input:focus{
-  box-shadow:none;
-}
+.entryForm{margin-top:18px}
+.entryForm .field{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:10px 12px;min-height:92px}
+body.dark .entryForm .field{background:#0b1b18}
+.entryForm label{margin:0 0 8px;font-size:14px;font-weight:800}
+.entryForm input{border:0;background:transparent;height:36px;padding:0;font-size:20px;font-weight:800}
+.entryForm input:focus{box-shadow:none}
 .field{min-width:0}
 input{width:100%;height:64px;padding:20px 18px 10px;border-radius:20px;border:1px solid #d9e2e8;background:#fafbfc;color:var(--txt);font-size:20px;font-weight:700;outline:none;transition:.25s}
-input:focus{border-color:#0f766e;background:#ffffff;box-shadow:0 0 0 4px rgba(15,118,110,.15)}
+input:focus{border-color:#0f766e;background:#fff;box-shadow:0 0 0 4px rgba(15,118,110,.15)}
 label{display:block;margin-bottom:8px;font-size:15px;font-weight:800;color:#667085}
-.saveBtn{
-width:100%;
-margin-top:14px;
-height:58px;
-border:0;
-border-radius:18px;
-background:linear-gradient(135deg,#0f766e,#0d9488);
-color:#fff;
-font-size:24px;
-font-weight:900;
-cursor:pointer;
-transition:.25s;
-box-shadow:0 10px 25px rgba(15,118,110,.25);
-}
-.saveBtn:active{
-transform:scale(.97);
-box-shadow:0 4px 12px rgba(15,118,110,.25);
-}
+.saveBtn{width:100%;margin-top:14px;height:58px;border:0;border-radius:18px;background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;font-size:24px;font-weight:900;cursor:pointer;transition:.25s;box-shadow:0 10px 25px rgba(15,118,110,.25)}
+.saveBtn:active{transform:scale(.97);box-shadow:0 4px 12px rgba(15,118,110,.25)}
 .bar{height:18px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:22px;box-shadow:inset 0 2px 5px #0001}
 .fill{height:100%;width:0;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px;transition:width .7s ease}
-.bar+p{
-font-size:16px;
-font-weight:800;
-margin-top:12px;
-}
+.bar+p{font-size:16px;font-weight:800;margin-top:12px}
 .tabs{position:fixed!important;bottom:16px!important;left:50%!important;transform:translateX(-50%)!important;width:min(520px,calc(100% - 24px));background:var(--card);border:1px solid var(--line);border-radius:22px;padding:7px;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;z-index:9999;box-shadow:0 8px 25px #0002}
 .tab{border:0;background:transparent;color:var(--muted);padding:12px 8px;border-radius:16px;font-weight:800;font-size:14px}
 .tab.on{background:var(--pri);color:#fff}
 .page{display:none}
 .page.on{display:block}
-
 table{width:100%;border-collapse:collapse}
 td,th{padding:10px;border-bottom:1px solid var(--line);text-align:start}
-.coachBox{
-    background:linear-gradient(135deg,#eefaf7,#ffffff);
-    border:1px solid rgba(0,0,0,.06);
-    border-radius:18px;
-    padding:14px;
-    margin-top:12px;
-    line-height:1.7;
-    box-shadow:0 8px 22px rgba(0,0,0,.06);
-}
-
-body.dark .coachBox{
-  background:linear-gradient(135deg,#0b1b18,#10201d);
-}
-
-.coachTitle{
-    font-size:15px;
-    font-weight:800;
-    margin-bottom:6px;
-}
-
-.coachText{
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.6;
-    font-weight:500;
-}
-
-.coachList{
-  display:grid;
-  gap:10px;
-  margin-top:14px;
-}
-
-.coachItem{
-  background:#ffffffcc;
-  border:1px solid #d8eee9;
-  border-radius:16px;
-  padding:10px;
-  font-size:14px;
-  font-weight:700;
-}
-
-body.dark .coachItem{
-  background:#10201d;
-}
-body.dark .coachItem{
-    background:#10201d;
-}
-
-@keyframes fadeCard{
-from{
-opacity:0;
-transform:translateY(25px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-.pulseUpdate{
-animation:pulseUpdate .45s ease;
-}
-
-@keyframes pulseUpdate{
-0%{
-transform:scale(1);
-}
-50%{
-transform:scale(1.035);
-}
-100%{
-transform:scale(1);
-}
-}
-@media(max-width:800px){
-  .app{padding:14px 12px 95px}
-  .kpis{grid-template-columns:repeat(2,1fr)}
-  .hero{grid-template-columns:1fr}
-  .form{grid-template-columns:1fr}
-  .card{border-radius:24px;padding:18px}
-  .num{
-font-size:28px;
-font-weight:950;
-letter-spacing:-1px;
-}
-@media(max-width:390px){
-  .kpis{grid-template-columns:1fr}
-  .tab{font-size:13px;padding:10px 5px}
-}
-/* ===== Dashboard Advanced Stats ===== */
-
-.statsGrid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:12px;
-    margin-bottom:16px;
-}
-
-.statsGrid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:12px;
-    margin-bottom:16px;
-}
-
-.statCard{
-    background:#fff;
-    border-radius:18px;
-    padding:15px;
-    border:1px solid rgba(0,0,0,.06);
-    box-shadow:0 8px 20px rgba(0,0,0,.05);
-    text-align:center;
-}
-
-.statValue{
-    font-size:22px;
-    font-weight:900;
-    color:var(--primary);
-    margin-top:6px;
-}
-
-.statLabel{
-    font-size:12px;
-    color:var(--muted);
-    font-weight:600;
-}
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:8px;
-  margin-top:15px;
-}
-.day{
-  aspect-ratio:1;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:13px;
-  font-weight:700;
-  background:var(--card);
-  border:1px solid var(--line);
-}
+.coachBox{background:linear-gradient(135deg,#eefaf7,#fff);border:1px solid rgba(0,0,0,.06);border-radius:18px;padding:14px;margin-top:12px;line-height:1.7;box-shadow:0 8px 22px rgba(0,0,0,.06)}
+body.dark .coachBox{background:linear-gradient(135deg,#0b1b18,#10201d)}
+.coachTitle{font-size:15px;font-weight:800;margin-bottom:6px}
+.coachText{color:var(--muted);font-size:13px;line-height:1.6;font-weight:500}
+.coachList{display:grid;gap:10px;margin-top:14px}
+.coachItem{background:#ffffffcc;border:1px solid #d8eee9;border-radius:16px;padding:10px;font-size:14px;font-weight:700}
+body.dark .coachItem{background:#10201d}
+.statsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+.statCard{background:var(--card);border-radius:18px;padding:15px;border:1px solid var(--line);box-shadow:0 8px 20px rgba(0,0,0,.05);text-align:center}
+.statValue{font-size:22px;font-weight:900;color:var(--pri);margin-top:6px}
+.statLabel{font-size:12px;color:var(--muted);font-weight:600}
+.chartHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.filterBtns{display:flex;gap:6px}
+.miniBtn{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:12px;padding:8px 12px;font-weight:800}
+.miniBtn.on{background:var(--pri);color:#fff}
+.calHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calHead h3{margin:0;flex:1;text-align:center}
+.weekDays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px;text-align:center;font-weight:800;color:var(--muted);font-size:13px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:10px}
+.day{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:var(--card);border:1px solid var(--line);cursor:pointer}
+.day.empty{opacity:0;border:0;pointer-events:none}
 .day.loss{background:#dff7e8;color:#118a43}
 .day.gain{background:#ffe4e4;color:#c62828}
-.day.today{border:2px solid var(--primary)}
-.legend{
-  display:flex;
-  justify-content:center;
-  gap:14px;
-  margin-top:16px;
-  flex-wrap:wrap;
-  font-size:13px;
-  color:var(--muted);
-}
+.day.today{border:2px solid var(--pri)}
+.dayInfo{margin-top:14px;padding:12px;border-radius:12px;background:var(--bg);text-align:center;font-size:14px;color:var(--muted);font-weight:700;line-height:1.7}
+.legend{display:flex;justify-content:center;gap:14px;margin-top:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.dot.loss{background:#dff7e8;border:1px solid #118a43}
+.dot.gain{background:#ffe4e4;border:1px solid #c62828}
+.dot.normal{background:#fff;border:1px solid #d9d9d9}
 
-.legend span{
-  display:flex;
-  align-items:center;
-  gap:6px;
+@keyframes fadeCard{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:800px){
+.app{padding:14px 12px 95px}
+.kpis{grid-template-columns:repeat(2,1fr)}
+.hero{grid-template-columns:1fr}
+.form{grid-template-columns:1fr}
+.card{border-radius:24px;padding:18px}
+.num{font-size:28px;font-weight:950;letter-spacing:-1px}
 }
+@media(max-width:390px){
+.kpis{grid-template-columns:1fr}
+.tab{font-size:13px;padding:10px 5px}
+}
+</style>
+</head>
 
-.dot{
-  width:12px;
-  height:12px;
-  border-radius:50%;
-  display:inline-block;
-}
-
-.dot.loss{
-  background:#dff7e8;
-  border:1px solid #118a43;
-}
-
-.dot.gain{
-  background:#ffe4e4;
-  border:1px solid #c62828;
-}
-
-.dot.normal{
-  background:#ffffff;
-  border:1px solid #d9d9d9;
-}
-</style></head><body><div class="app">
-<div class="top"><div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div><div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div></div>
+<body>
+<div class="app">
+<div class="top">
+<div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div>
+<div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div>
+</div>
 
 <div id="home" class="page on">
 <div class="grid kpis">
@@ -295,95 +111,206 @@ letter-spacing:-1px;
 </div>
 
 <div class="grid hero">
-<div class="card"><h3 data-k="add">تسجيل اليوم</h3>
+<div class="card">
+<h3 data-k="add">تسجيل اليوم</h3>
 <div class="grid form entryForm">
-<div class="field"><label data-k="date">التاريخ</label><input id="date" type="text" readonly placeholder="02 Jul 2026"></div>
+<div class="field"><label data-k="date">التاريخ</label><input id="date" type="text" readonly></div>
 <div class="field"><label data-k="weight">الوزن</label><input id="weight" type="number" step=".1" placeholder="مثال 89.5"></div>
 <div class="field"><label data-k="steps">الخطوات</label><input id="steps" type="number" placeholder="مثال 8000"></div>
 <div class="field"><label data-k="cal">السعرات</label><input id="cal" type="number" placeholder="مثال 1800"></div>
 </div>
 <button class="btn saveBtn" onclick="save()" data-k="save">حفظ</button>
-<div class="bar"><div id="fill" class="fill"></div></div><p class="muted"><span id="pct">0%</span> إنجاز</p></div>
+<div class="bar"><div id="fill" class="fill"></div></div>
+<p class="muted"><span id="pct">0%</span> إنجاز</p>
+</div>
+
 <div class="card"><h3 data-k="coach">التحليل الذكي</h3><div id="coach"></div></div>
-</div></div>
+</div>
+</div>
 
 <div id="dash" class="page">
-  <h3 data-k="dash">الداشبورد</h3>
+<h3 data-k="dash">الداشبورد</h3>
+<div id="advancedStats" class="statsGrid"></div>
 
-  <div id="advancedStats" class="statsGrid"></div>
+<div class="card">
+<div class="chartHeader">
+<h3>تطور الوزن</h3>
+<div class="filterBtns">
+<button class="miniBtn on" onclick="setRange('7',this)">7 أيام</button>
+<button class="miniBtn" onclick="setRange('30',this)">30 يوم</button>
+<button class="miniBtn" onclick="setRange('all',this)">الكل</button>
+</div>
+</div>
+<canvas id="chart"></canvas>
+</div>
 
-  <div class="card">
-    <div class="chartHeader">
-      <h3>تطور الوزن</h3>
-      <div class="filterBtns">
-        <button class="miniBtn on" onclick="setRange('7',this)">7 أيام</button>
-        <button class="miniBtn" onclick="setRange('30',this)">30 يوم</button>
-        <button class="miniBtn" onclick="setRange('all',this)">الكل</button>
-      </div>
-    </div>
-    <canvas id="chart"></canvas>
-  </div>
-
-  <br>
-
-  <div class="card">
-    <h3>المفقود والمتبقي</h3>
-    <canvas id="progressChart"></canvas>
-  </div>
 <br>
 
 <div class="card">
-  <h3>تقويم الوزن</h3>
-  <div id="calendarBox" class="calendar"></div>
-  <div class="legend">
-  <span><i class="dot loss"></i> نزول الوزن</span>
-  <span><i class="dot gain"></i> ارتفاع الوزن</span>
-  <span><i class="dot normal"></i> لا يوجد تسجيل</span>
-</div>
-</div>
-  <br>
-
-  <div class="card">
-    <h3>المقارنة الأسبوعية</h3>
-    <canvas id="weekChart"></canvas>
-  </div>
+<h3>المفقود والمتبقي</h3>
+<canvas id="progressChart"></canvas>
 </div>
 
-<div id="reports" class="page"><h3 data-k="reports">التقارير</h3><div class="card"><button class="btn btn2" onclick="csv()">تصدير CSV</button><table><thead><tr><th>التاريخ</th><th>الوزن</th><th>التغير</th><th>الخطوات</th><th>السعرات</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
-<div id="settings" class="page"><h3 data-k="settings">الإعدادات</h3><div class="card grid form"><div><label>Start</label><input id="start" type="number" step=".1"></div><div><label>Goal</label><input id="goal" type="number" step=".1"></div><div><label>Height</label><input id="height" type="number"></div><div><label>Name</label><input id="name"></div><button class="btn" onclick="set()">حفظ الإعدادات</button><button class="btn btn2" onclick="clearAll()">مسح البيانات</button></div></div>
+<br>
+
+<div class="card">
+<div class="calHead">
+<button class="miniBtn" onclick="changeMonth(-1)">‹</button>
+<h3 id="calTitle">تقويم الوزن</h3>
+<button class="miniBtn" onclick="changeMonth(1)">›</button>
 </div>
 
-<div class="tabs"><button class="tab on" onclick="pg('home',this)">الرئيسية</button><button class="tab" onclick="pg('dash',this)">التحليل</button><button class="tab" onclick="pg('reports',this)">التقارير</button><button class="tab" onclick="pg('settings',this)">الإعدادات</button></div>
+<div class="weekDays">
+<span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span><span>س</span>
+</div>
+
+<div id="calendarBox" class="calendar"></div>
+<div id="dayInfo" class="dayInfo">اضغط على يوم لعرض التفاصيل</div>
+
+<div class="legend">
+<span><i class="dot loss"></i> نزول الوزن</span>
+<span><i class="dot gain"></i> ارتفاع الوزن</span>
+<span><i class="dot normal"></i> لا يوجد تسجيل</span>
+</div>
+</div>
+
+<br>
+
+<div class="card">
+<h3>المقارنة الأسبوعية</h3>
+<canvas id="weekChart"></canvas>
+</div>
+</div>
+
+<div id="reports" class="page">
+<h3 data-k="reports">التقارير</h3>
+<div class="card">
+<button class="btn btn2" onclick="csv()">تصدير CSV</button>
+<table>
+<thead><tr><th>التاريخ</th><th>الوزن</th><th>التغير</th><th>الخطوات</th><th>السعرات</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
+<div id="settings" class="page">
+<h3 data-k="settings">الإعدادات</h3>
+<div class="card grid form">
+<div><label>Start</label><input id="start" type="number" step=".1"></div>
+<div><label>Goal</label><input id="goal" type="number" step=".1"></div>
+<div><label>Height</label><input id="height" type="number"></div>
+<div><label>Name</label><input id="name"></div>
+<button class="btn" onclick="set()">حفظ الإعدادات</button>
+<button class="btn btn2" onclick="clearAll()">مسح البيانات</button>
+</div>
+</div>
+</div>
+
+<div class="tabs">
+<button class="tab on" onclick="pg('home',this)">الرئيسية</button>
+<button class="tab" onclick="pg('dash',this)">التحليل</button>
+<button class="tab" onclick="pg('reports',this)">التقارير</button>
+<button class="tab" onclick="pg('settings',this)">الإعدادات</button>
+</div>
 
 <script>
-let D=JSON.parse(localStorage.wazni||'[]'),S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar"}'),C,W;
-const today = new Date();
+let D=JSON.parse(localStorage.wazni||'[]');
+let S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar"}');
+let C,W,P;
+let range="all";
+let calDate=new Date();
 
-date.value = today.toLocaleDateString("en-GB",{
-day:"2-digit",
-month:"short",
-year:"numeric"
-});
+function isoDate(d=new Date()){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
 
-start.value=S.start;goal.value=S.goal;height.value=S.height;name.value=S.name;
+function normDate(v){
+  if(!v)return "";
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
+  let p=Date.parse(v);
+  if(!isNaN(p))return isoDate(new Date(p));
+  return v;
+}
 
-const T={ar:{start:"وزن البداية",current:"الحالي",goal:"الهدف",remain:"المتبقي",add:"تسجيل اليوم",date:"التاريخ",weight:"الوزن",steps:"الخطوات",cal:"السعرات",save:"حفظ",coach:"التحليل الذكي",dash:"الداشبورد",reports:"التقارير",settings:"الإعدادات"},en:{start:"Start",current:"Current",goal:"Goal",remain:"Remaining",add:"Today Entry",date:"Date",weight:"Weight",steps:"Steps",cal:"Calories",save:"Save",coach:"Smart Coach",dash:"Dashboard",reports:"Reports",settings:"Settings"}};
+date.value=isoDate();
+start.value=S.start;
+goal.value=S.goal;
+height.value=S.height;
+name.value=S.name;
 
-function tr(){document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=="ar"?"rtl":"ltr";document.querySelectorAll("[data-k]").forEach(e=>e.textContent=T[S.lang][e.dataset.k]);title.textContent=S.lang=="ar"?"وزني Pro":"Wazni Pro";sub.textContent=S.lang=="ar"?"متابعة ذكية للوزن":"Smart weight tracker"}
+D=D.map(x=>({...x,d:normDate(x.d)}));
+localStorage.wazni=JSON.stringify(D);
+
+const T={
+ar:{start:"وزن البداية",current:"الحالي",goal:"الهدف",remain:"المتبقي",add:"تسجيل اليوم",date:"التاريخ",weight:"الوزن",steps:"الخطوات",cal:"السعرات",save:"حفظ",coach:"التحليل الذكي",dash:"الداشبورد",reports:"التقارير",settings:"الإعدادات"},
+en:{start:"Start",current:"Current",goal:"Goal",remain:"Remaining",add:"Today Entry",date:"Date",weight:"Weight",steps:"Steps",cal:"Calories",save:"Save",coach:"Smart Coach",dash:"Dashboard",reports:"Reports",settings:"Settings"}
+};
+
+function tr(){
+  document.documentElement.lang=S.lang;
+  document.documentElement.dir=S.lang=="ar"?"rtl":"ltr";
+  document.querySelectorAll("[data-k]").forEach(e=>e.textContent=T[S.lang][e.dataset.k]);
+  title.textContent=S.lang=="ar"?"وزني Pro":"Wazni Pro";
+  sub.textContent=S.lang=="ar"?"متابعة ذكية للوزن":"Smart weight tracker";
+}
+
 function lang(){S.lang=S.lang=="ar"?"en":"ar";localStorage.wazniS=JSON.stringify(S);tr()}
 function dark(){document.body.classList.toggle("dark")}
-function pg(id,b){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.getElementById(id).classList.add("on");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");draw()}
-function save(){if(!weight.value)return alert("اكتب الوزن");let x={d:date.value,w:+weight.value,st:+steps.value||0,cal:+cal.value||0};D=D.filter(a=>a.d!=x.d);D.push(x);D.sort((a,b)=>a.d.localeCompare(b.d));localStorage.wazni=JSON.stringify(D);weight.value=steps.value=cal.value="";render()}
-function set(){S={start:+start.value,goal:+goal.value,height:+height.value,name:name.value,lang:S.lang};localStorage.wazniS=JSON.stringify(S);render()}
-function clearAll(){if(confirm("مسح كل البيانات؟")){D=[];localStorage.wazni="[]";render()}}
+
+function pg(id,b){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
+  document.getElementById(id).classList.add("on");
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  draw();
+}
+
+function save(){
+  if(!weight.value)return alert("اكتب الوزن");
+  let x={d:date.value,w:+weight.value,st:+steps.value||0,cal:+cal.value||0};
+  D=D.filter(a=>a.d!=x.d);
+  D.push(x);
+  D.sort((a,b)=>a.d.localeCompare(b.d));
+  localStorage.wazni=JSON.stringify(D);
+  weight.value=steps.value=cal.value="";
+  render();
+}
+
+function set(){
+  S={start:+start.value,goal:+goal.value,height:+height.value,name:name.value,lang:S.lang};
+  localStorage.wazniS=JSON.stringify(S);
+  render();
+}
+
+function clearAll(){
+  if(confirm("مسح كل البيانات؟")){
+    D=[];
+    localStorage.wazni="[]";
+    render();
+  }
+}
+
+function setRange(r,b){
+  range=r;
+  document.querySelectorAll(".filterBtns .miniBtn").forEach(x=>x.classList.remove("on"));
+  if(b)b.classList.add("on");
+  draw();
+}
+
+function dataRange(){
+  if(range==="7")return D.slice(-7);
+  if(range==="30")return D.slice(-30);
+  return D;
+}
 
 function render(){
   tr();
-  let cur=D.length?D[D.length-1].w:S.start,
-      loss=S.start-cur,
-      total=S.start-S.goal,
-      rem=cur-S.goal,
-      p=Math.max(0,Math.min(100,loss/total*100));
+
+  let cur=D.length?D[D.length-1].w:S.start;
+  let loss=S.start-cur;
+  let total=S.start-S.goal;
+  let rem=cur-S.goal;
+  let p=total?Math.max(0,Math.min(100,loss/total*100)):0;
 
   sV.textContent=S.start;
   gV.textContent=S.goal;
@@ -392,7 +319,7 @@ function render(){
   pct.textContent=p.toFixed(0)+"%";
   fill.style.width=p+"%";
 
-  tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i? (x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");
+  tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i?(x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");
 
   coach.innerHTML=insights(cur,loss,rem);
   dashboardStats(cur,loss,rem);
@@ -406,9 +333,8 @@ function dashboardStats(cur,loss,rem){
 
   if(!D.length){
     box.innerHTML=`
-      <div class="statCard"><div class="statLabel">الحالة</div><div class="statValue">ابدأ</div></div>
-      <div class="statCard"><div class="statLabel">الهدف</div><div class="statValue">${S.goal}</div></div>
-    `;
+    <div class="statCard"><div class="statLabel">الحالة</div><div class="statValue">ابدأ</div></div>
+    <div class="statCard"><div class="statLabel">الهدف</div><div class="statValue">${S.goal}</div></div>`;
     return;
   }
 
@@ -420,27 +346,21 @@ function dashboardStats(cur,loss,rem){
   let weeks=rate>0?rem/rate:null;
 
   box.innerHTML=`
-    <div class="statCard"><div class="statLabel">الوزن الحالي</div><div class="statValue">${cur.toFixed(1)}</div></div>
-    <div class="statCard"><div class="statLabel">أقل وزن</div><div class="statValue">${best.toFixed(1)}</div></div>
-    <div class="statCard"><div class="statLabel">أعلى وزن</div><div class="statValue">${high.toFixed(1)}</div></div>
-    <div class="statCard"><div class="statLabel">المفقود</div><div class="statValue">${loss.toFixed(1)}</div></div>
-    <div class="statCard"><div class="statLabel">المتبقي</div><div class="statValue">${rem.toFixed(1)}</div></div>
-    <div class="statCard"><div class="statLabel">عدد السجلات</div><div class="statValue">${D.length}</div></div>
-    <div class="statCard"><div class="statLabel">متوسط الخطوات</div><div class="statValue">${avgSteps}</div></div>
-    <div class="statCard"><div class="statLabel">متوسط السعرات</div><div class="statValue">${avgCal}</div></div>
-    <div class="statCard"><div class="statLabel">النزول الأسبوعي</div><div class="statValue">${rate.toFixed(1)}</div></div>
-    <div class="statCard"><div class="statLabel">توقع الوصول</div><div class="statValue">${weeks?weeks.toFixed(1)+" أسبوع":"--"}</div></div>
-  `;
+  <div class="statCard"><div class="statLabel">الوزن الحالي</div><div class="statValue">${cur.toFixed(1)}</div></div>
+  <div class="statCard"><div class="statLabel">أقل وزن</div><div class="statValue">${best.toFixed(1)}</div></div>
+  <div class="statCard"><div class="statLabel">أعلى وزن</div><div class="statValue">${high.toFixed(1)}</div></div>
+  <div class="statCard"><div class="statLabel">المفقود</div><div class="statValue">${loss.toFixed(1)}</div></div>
+  <div class="statCard"><div class="statLabel">المتبقي</div><div class="statValue">${rem.toFixed(1)}</div></div>
+  <div class="statCard"><div class="statLabel">عدد السجلات</div><div class="statValue">${D.length}</div></div>
+  <div class="statCard"><div class="statLabel">متوسط الخطوات</div><div class="statValue">${avgSteps}</div></div>
+  <div class="statCard"><div class="statLabel">متوسط السعرات</div><div class="statValue">${avgCal}</div></div>
+  <div class="statCard"><div class="statLabel">النزول الأسبوعي</div><div class="statValue">${rate.toFixed(1)}</div></div>
+  <div class="statCard"><div class="statLabel">توقع الوصول</div><div class="statValue">${weeks?weeks.toFixed(1)+" أسبوع":"--"}</div></div>`;
 }
 
 function insights(cur,loss,rem){
   if(D.length<2){
-    return `
-      <div class="coachBox">
-        <div class="coachTitle">👋 ابدأ رحلتك</div>
-        <div class="coachText">التحليل الذكي يبدأ بعد أول تسجيلين.</div>
-      </div>
-    `;
+    return `<div class="coachBox"><div class="coachTitle">👋 ابدأ رحلتك</div><div class="coachText">التحليل الذكي يبدأ بعد أول تسجيلين.</div></div>`;
   }
 
   let diff=D[D.length-1].w-D[D.length-2].w;
@@ -452,137 +372,136 @@ function insights(cur,loss,rem){
   let status=diff<0?"🟢 ممتاز":diff==0?"🟡 ثابت":"🔴 انتبه";
 
   return `
-    <div class="coachBox">
-      <div class="coachTitle">${status}</div>
-      <div class="coachText">ملخص تقدمك الحالي</div>
-
-      <div class="coachList">
-        <div class="coachItem">📉 نزلت ${loss.toFixed(1)} كجم من البداية.</div>
-        <div class="coachItem">⚖️ آخر تغيير ${diff.toFixed(1)} كجم.</div>
-        <div class="coachItem">🔥 معدل النزول الأسبوعي ${rate.toFixed(1)} كجم.</div>
-        <div class="coachItem">🏆 أفضل وزن وصلت له ${best.toFixed(1)} كجم.</div>
-        <div class="coachItem">📅 عدد أيام التسجيل ${D.length} يوم.</div>
-        <div class="coachItem">👣 متوسط الخطوات ${avgSteps || 0} خطوة.</div>
-        <div class="coachItem">🍽️ متوسط السعرات ${avgCal || 0} سعرة.</div>
-        <div class="coachItem">🎯 ${weeks ? `قد تصل لهدفك خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.` : "سجل أكثر عشان نحسب توقع الوصول."}</div>
-      </div>
-    </div>
-  `;
+  <div class="coachBox">
+  <div class="coachTitle">${status}</div>
+  <div class="coachText">ملخص تقدمك الحالي</div>
+  <div class="coachList">
+  <div class="coachItem">📉 نزلت ${loss.toFixed(1)} كجم من البداية.</div>
+  <div class="coachItem">⚖️ آخر تغيير ${diff.toFixed(1)} كجم.</div>
+  <div class="coachItem">🔥 معدل النزول الأسبوعي ${rate.toFixed(1)} كجم.</div>
+  <div class="coachItem">🏆 أفضل وزن وصلت له ${best.toFixed(1)} كجم.</div>
+  <div class="coachItem">📅 عدد أيام التسجيل ${D.length} يوم.</div>
+  <div class="coachItem">👣 متوسط الخطوات ${avgSteps||0} خطوة.</div>
+  <div class="coachItem">🍽️ متوسط السعرات ${avgCal||0} سعرة.</div>
+  <div class="coachItem">🎯 ${weeks?`قد تصل لهدفك خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.`:"سجل أكثر عشان نحسب توقع الوصول."}</div>
+  </div>
+  </div>`;
 }
+
+function changeMonth(n){
+  calDate.setMonth(calDate.getMonth()+n);
+  renderCalendar();
+}
+
+function pickDay(d){
+  let info=document.getElementById("dayInfo");
+  if(!info)return;
+
+  let x=D.find(a=>a.d===d);
+  if(!x){
+    info.textContent="لا توجد بيانات لهذا اليوم";
+    return;
+  }
+
+  let i=D.findIndex(a=>a.d===d);
+  let diff=i>0?(x.w-D[i-1].w).toFixed(1):"--";
+  info.textContent=`${d} | الوزن: ${x.w} كجم | التغير: ${diff} | الخطوات: ${x.st||0} | السعرات: ${x.cal||0}`;
+}
+
 function renderCalendar(){
   const cal=document.getElementById("calendarBox");
+  const title=document.getElementById("calTitle");
   if(!cal)return;
 
   cal.innerHTML="";
 
-  const now=new Date();
-  const y=now.getFullYear();
-  const m=now.getMonth()+1;
-  const last=new Date(y,m,0).getDate();
+  const y=calDate.getFullYear();
+  const m=calDate.getMonth();
+  const monthName=calDate.toLocaleString("ar",{month:"long",year:"numeric"});
+  if(title)title.textContent=monthName;
+
+  const first=new Date(y,m,1).getDay();
+  const last=new Date(y,m+1,0).getDate();
+  const today=new Date();
 
   const map={};
-  D.forEach(x=>map[x.d]=x.w);
+  D.forEach(x=>map[x.d]=x);
+
+  for(let b=0;b<first;b++){
+    cal.innerHTML+=`<div class="day empty"></div>`;
+  }
 
   for(let i=1;i<=last;i++){
-    const d=y+"-"+String(m).padStart(2,"0")+"-"+String(i).padStart(2,"0");
-    const prev=y+"-"+String(m).padStart(2,"0")+"-"+String(i-1).padStart(2,"0");
+    const d=y+"-"+String(m+1).padStart(2,"0")+"-"+String(i).padStart(2,"0");
+    const prev=y+"-"+String(m+1).padStart(2,"0")+"-"+String(i-1).padStart(2,"0");
 
     let cls="day";
 
-    if(map[d]!==undefined){
-      if(map[prev]!==undefined){
-        if(map[d]<map[prev]) cls+=" loss";
-        else if(map[d]>map[prev]) cls+=" gain";
+    if(map[d]){
+      if(map[prev]){
+        if(map[d].w<map[prev].w)cls+=" loss";
+        else if(map[d].w>map[prev].w)cls+=" gain";
       }else{
         cls+=" loss";
       }
     }
 
-    if(i===now.getDate()) cls+=" today";
+    if(i===today.getDate() && m===today.getMonth() && y===today.getFullYear()){
+      cls+=" today";
+    }
 
-    cal.innerHTML+=`<div class="${cls}">${i}</div>`;
+    cal.innerHTML+=`<div class="${cls}" onclick="pickDay('${d}')">${i}</div>`;
   }
 }
 
 function draw(){
-  let labels=D.map(x=>x.d);
-  let data=D.map(x=>x.w);
+  let R=dataRange();
+  let labels=R.map(x=>x.d);
+  let data=R.map(x=>x.w);
 
   if(C)C.destroy();
   if(W)W.destroy();
+  if(P)P.destroy();
 
   let c=document.getElementById("chart");
-
   if(c){
     C=new Chart(c,{
       type:"line",
-      data:{
-        labels:labels,
-        datasets:[{
-          label:"Weight",
-          data:data,
-          tension:.35,
-          pointRadius:4,
-          pointHoverRadius:6
-        }]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          legend:{
-            display:false
-          }
-        },
-        scales:{
-          y:{
-            beginAtZero:false
-          }
-        }
-      }
+      data:{labels,datasets:[{label:"Weight",data,tension:.35,pointRadius:4,pointHoverRadius:6}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}
+    });
+  }
+
+  let p=document.getElementById("progressChart");
+  if(p){
+    let cur=D.length?D[D.length-1].w:S.start;
+    let loss=Math.max(0,S.start-cur);
+    let rem=Math.max(0,cur-S.goal);
+    P=new Chart(p,{
+      type:"doughnut",
+      data:{labels:["المفقود","المتبقي"],datasets:[{data:[loss,rem]}]},
+      options:{responsive:true,plugins:{legend:{position:"bottom"}}}
     });
   }
 
   let weeks=[];
-
   for(let i=1;i<D.length;i+=7){
-    weeks.push(
-      +(D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1)
-    );
+    weeks.push(+(D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));
   }
 
   let w=document.getElementById("weekChart");
-
   if(w){
     W=new Chart(w,{
       type:"bar",
-      data:{
-        labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),
-        datasets:[{
-          label:"Weekly loss",
-          data:weeks
-        }]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          legend:{
-            display:false
-          }
-        },
-        scales:{
-          y:{
-            beginAtZero:true
-          }
-        }
-      }
+      data:{labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),datasets:[{label:"Weekly loss",data:weeks}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
     });
   }
 }
-function csv(){
-  let s="date,weight,steps,calories\n"+
-    D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n"),
-    a=document.createElement("a");
 
+function csv(){
+  let s="date,weight,steps,calories\n"+D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n");
+  let a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([s]));
   a.download="wazni.csv";
   a.click();
