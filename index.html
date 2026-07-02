@@ -774,6 +774,7 @@ function renderSteps(){
   let weekTotal=valid.slice(-7).reduce((a,b)=>a+(+b.steps||0),0);
   let monthTotal=valid.filter(x=>x.d.slice(0,7)===isoDate().slice(0,7)).reduce((a,b)=>a+(+b.steps||0),0);
   let avgBurn=valid.length?Math.round(valid.reduce((a,b)=>a+((+b.steps||0)*0.04),0)/valid.length):0;
+  let totalKm=(valid.reduce((a,b)=>a+(+b.steps||0),0)*0.00075).toFixed(1);
 
   if(document.getElementById("stepsToday"))stepsToday.textContent=steps;
   if(document.getElementById("stepsGoal"))stepsGoal.textContent=goal;
@@ -783,17 +784,17 @@ function renderSteps(){
   if(document.getElementById("stepsFill"))stepsFill.style.width=Math.min(100,pct)+"%";
 
   if(document.getElementById("stepsStats")){
-  stepsStats.innerHTML=`
-    <div class="statCard"><div class="statLabel">متوسط الخطوات 👣</div><div class="statValue">${avg}</div></div>
-    <div class="statCard"><div class="statLabel">أفضل يوم 🏆</div><div class="statValue">${best}</div></div>
-    <div class="statCard"><div class="statLabel">أقل يوم 📉</div><div class="statValue">${low}</div></div>
-    <div class="statCard"><div class="statLabel">أيام تحقيق الهدف 🔥</div><div class="statValue">${goalDays}</div></div>
-    <div class="statCard"><div class="statLabel">آخر 7 أيام 📅</div><div class="statValue">${weekTotal}</div></div>
-    <div class="statCard"><div class="statLabel">هذا الشهر 🗓️</div><div class="statValue">${monthTotal}</div></div>
-    <div class="statCard"><div class="statLabel">متوسط الحرق ⚡</div><div class="statValue">${avgBurn}</div></div>
-    <div class="statCard"><div class="statLabel">نسبة الالتزام 🎯</div><div class="statValue">${commit}%</div></div>
-  `;
-}
+    stepsStats.innerHTML=`
+      <div class="statCard"><div class="statLabel">متوسط الخطوات 👣</div><div class="statValue">${avg}</div></div>
+      <div class="statCard"><div class="statLabel">أفضل يوم 🏆</div><div class="statValue">${best}</div></div>
+      <div class="statCard"><div class="statLabel">أقل يوم 📉</div><div class="statValue">${low}</div></div>
+      <div class="statCard"><div class="statLabel">أيام تحقيق الهدف 🔥</div><div class="statValue">${goalDays}</div></div>
+      <div class="statCard"><div class="statLabel">آخر 7 أيام 📅</div><div class="statValue">${weekTotal}</div></div>
+      <div class="statCard"><div class="statLabel">هذا الشهر 🗓️</div><div class="statValue">${monthTotal}</div></div>
+      <div class="statCard"><div class="statLabel">متوسط الحرق ⚡</div><div class="statValue">${avgBurn}</div></div>
+      <div class="statCard"><div class="statLabel">إجمالي المسافة 🚶</div><div class="statValue">${totalKm} كم</div></div>
+    `;
+  }
 
   if(document.getElementById("stepsCoach")){
     stepsCoach.innerHTML=steps>=goal
