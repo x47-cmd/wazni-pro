@@ -202,19 +202,8 @@ body.dark .coachItem{background:#10201d}
 </div>
 
 <div class="card" style="margin-top:16px">
-<div class="chartHeader">
-  <h3>تحليل الخطوات</h3>
-
-  <div class="filterBtns">
-    <button class="miniBtn on" onclick="setStepsRange('7',this)">7 أيام</button>
-    <button class="miniBtn" onclick="setStepsRange('30',this)">30 يوم</button>
-    <button class="miniBtn" onclick="setStepsRange('all',this)">الكل</button>
-  </div>
-</div>
-
-<div style="height:260px;">
-    <canvas id="stepsChart"></canvas>
-</div>
+<h3>تحليل الخطوات</h3>
+<canvas id="stepsChart" height="180"></canvas>
 <div id="stepsCoach" class="coachBox" style="margin-top:16px"></div>
 </div>
 </div>
@@ -579,18 +568,7 @@ if(w && typeof Chart!=="undefined"){
 W=new Chart(w,{type:"bar",data:{labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),datasets:[{label:"Weekly loss",data:weeks}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
 }
 }
-let stepsRange="7";
 
-function setStepsRange(r,b){
-  stepsRange=r;
-
-  document.querySelectorAll("#stepsPage .filterBtns .miniBtn")
-    .forEach(x=>x.classList.remove("on"));
-
-  if(b)b.classList.add("on");
-
-  renderSteps();
-}
 function currentSteps(){
 let today=isoDate();
 return SD.find(x=>x.d===today)||{d:today,steps:0};
@@ -669,16 +647,7 @@ function drawStepsChart(valid){
   let canvas=document.getElementById("stepsChart");
   if(!canvas || typeof Chart==="undefined")return;
 
-  let dataSource=valid;
-
-if(stepsRange==="7"){
-  dataSource=valid.slice(-7);
-}
-else if(stepsRange==="30"){
-  dataSource=valid.slice(-30);
-}
-
-let last7=dataSource;
+  let last7=valid.slice(-7);
   let labels=last7.map(x=>x.d.slice(5));
   let data=last7.map(x=>+x.steps||0);
 
@@ -697,15 +666,8 @@ let last7=dataSource;
       }]
     },
     options:{
-    responsive:true,
-    maintainAspectRatio:false,
-    plugins:{
-        legend:{display:false}
-    },
-    scales:{
-        y:{beginAtZero:true}
-    }
-}
+      responsive:true,
+      maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{y:{beginAtZero:true}}
     }
