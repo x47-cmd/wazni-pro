@@ -198,25 +198,33 @@ letter-spacing:-1px;
     margin-bottom:16px;
 }
 
+.statsGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;
+    margin-bottom:16px;
+}
+
 .statCard{
     background:#fff;
     border-radius:18px;
-    padding:16px;
+    padding:15px;
     border:1px solid rgba(0,0,0,.06);
     box-shadow:0 8px 20px rgba(0,0,0,.05);
     text-align:center;
 }
 
 .statValue{
-    font-size:24px;
-    font-weight:800;
+    font-size:22px;
+    font-weight:900;
     color:var(--primary);
     margin-top:6px;
 }
 
 .statLabel{
-    font-size:13px;
+    font-size:12px;
     color:var(--muted);
+    font-weight:600;
 }
 </style></head><body><div class="app">
 <div class="top"><div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div><div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div></div>
@@ -244,13 +252,12 @@ letter-spacing:-1px;
 
 <div id="dash" class="page">
   <h3 data-k="dash">الداشبورد</h3>
-
   <div id="advancedStats" class="statsGrid"></div>
-
   <div class="card"><canvas id="chart"></canvas></div>
   <br>
   <div class="card"><canvas id="weekChart"></canvas></div>
 </div>
+
 <div id="reports" class="page"><h3 data-k="reports">التقارير</h3><div class="card"><button class="btn btn2" onclick="csv()">تصدير CSV</button><table><thead><tr><th>التاريخ</th><th>الوزن</th><th>التغير</th><th>الخطوات</th><th>السعرات</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
 <div id="settings" class="page"><h3 data-k="settings">الإعدادات</h3><div class="card grid form"><div><label>Start</label><input id="start" type="number" step=".1"></div><div><label>Goal</label><input id="goal" type="number" step=".1"></div><div><label>Height</label><input id="height" type="number"></div><div><label>Name</label><input id="name"></div><button class="btn" onclick="set()">حفظ الإعدادات</button><button class="btn btn2" onclick="clearAll()">مسح البيانات</button></div></div>
 </div>
@@ -265,8 +272,12 @@ date.value = today.toLocaleDateString("en-GB",{
 day:"2-digit",
 month:"short",
 year:"numeric"
-});start.value=S.start;goal.value=S.goal;height.value=S.height;name.value=S.name;
+});
+
+start.value=S.start;goal.value=S.goal;height.value=S.height;name.value=S.name;
+
 const T={ar:{start:"وزن البداية",current:"الحالي",goal:"الهدف",remain:"المتبقي",add:"تسجيل اليوم",date:"التاريخ",weight:"الوزن",steps:"الخطوات",cal:"السعرات",save:"حفظ",coach:"التحليل الذكي",dash:"الداشبورد",reports:"التقارير",settings:"الإعدادات"},en:{start:"Start",current:"Current",goal:"Goal",remain:"Remaining",add:"Today Entry",date:"Date",weight:"Weight",steps:"Steps",cal:"Calories",save:"Save",coach:"Smart Coach",dash:"Dashboard",reports:"Reports",settings:"Settings"}};
+
 function tr(){document.documentElement.lang=S.lang;document.documentElement.dir=S.lang=="ar"?"rtl":"ltr";document.querySelectorAll("[data-k]").forEach(e=>e.textContent=T[S.lang][e.dataset.k]);title.textContent=S.lang=="ar"?"وزني Pro":"Wazni Pro";sub.textContent=S.lang=="ar"?"متابعة ذكية للوزن":"Smart weight tracker"}
 function lang(){S.lang=S.lang=="ar"?"en":"ar";localStorage.wazniS=JSON.stringify(S);tr()}
 function dark(){document.body.classList.toggle("dark")}
@@ -274,7 +285,62 @@ function pg(id,b){document.querySelectorAll(".page").forEach(x=>x.classList.remo
 function save(){if(!weight.value)return alert("اكتب الوزن");let x={d:date.value,w:+weight.value,st:+steps.value||0,cal:+cal.value||0};D=D.filter(a=>a.d!=x.d);D.push(x);D.sort((a,b)=>a.d.localeCompare(b.d));localStorage.wazni=JSON.stringify(D);weight.value=steps.value=cal.value="";render()}
 function set(){S={start:+start.value,goal:+goal.value,height:+height.value,name:name.value,lang:S.lang};localStorage.wazniS=JSON.stringify(S);render()}
 function clearAll(){if(confirm("مسح كل البيانات؟")){D=[];localStorage.wazni="[]";render()}}
-function render(){tr();let cur=D.length?D[D.length-1].w:S.start,loss=S.start-cur,total=S.start-S.goal,rem=cur-S.goal,p=Math.max(0,Math.min(100,loss/total*100));sV.textContent=S.start;gV.textContent=S.goal;cV.textContent=cur;rV.textContent=rem.toFixed(1);pct.textContent=p.toFixed(0)+"%";fill.style.width=p+"%";tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i? (x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");coach.innerHTML=insights(cur,loss,rem);draw()}
+
+function render(){
+  tr();
+  let cur=D.length?D[D.length-1].w:S.start,
+      loss=S.start-cur,
+      total=S.start-S.goal,
+      rem=cur-S.goal,
+      p=Math.max(0,Math.min(100,loss/total*100));
+
+  sV.textContent=S.start;
+  gV.textContent=S.goal;
+  cV.textContent=cur;
+  rV.textContent=rem.toFixed(1);
+  pct.textContent=p.toFixed(0)+"%";
+  fill.style.width=p+"%";
+
+  tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i? (x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st}</td><td>${x.cal}</td></tr>`).join("");
+
+  coach.innerHTML=insights(cur,loss,rem);
+  dashboardStats(cur,loss,rem);
+  draw();
+}
+
+function dashboardStats(cur,loss,rem){
+  let box=document.getElementById("advancedStats");
+  if(!box)return;
+
+  if(!D.length){
+    box.innerHTML=`
+      <div class="statCard"><div class="statLabel">الحالة</div><div class="statValue">ابدأ</div></div>
+      <div class="statCard"><div class="statLabel">الهدف</div><div class="statValue">${S.goal}</div></div>
+    `;
+    return;
+  }
+
+  let best=Math.min(...D.map(x=>x.w));
+  let high=Math.max(...D.map(x=>x.w));
+  let avgSteps=Math.round(D.reduce((a,x)=>a+(+x.st||0),0)/D.length);
+  let avgCal=Math.round(D.reduce((a,x)=>a+(+x.cal||0),0)/D.length);
+  let rate=loss/Math.max(1,D.length/7);
+  let weeks=rate>0?rem/rate:null;
+
+  box.innerHTML=`
+    <div class="statCard"><div class="statLabel">الوزن الحالي</div><div class="statValue">${cur.toFixed(1)}</div></div>
+    <div class="statCard"><div class="statLabel">أقل وزن</div><div class="statValue">${best.toFixed(1)}</div></div>
+    <div class="statCard"><div class="statLabel">أعلى وزن</div><div class="statValue">${high.toFixed(1)}</div></div>
+    <div class="statCard"><div class="statLabel">المفقود</div><div class="statValue">${loss.toFixed(1)}</div></div>
+    <div class="statCard"><div class="statLabel">المتبقي</div><div class="statValue">${rem.toFixed(1)}</div></div>
+    <div class="statCard"><div class="statLabel">عدد السجلات</div><div class="statValue">${D.length}</div></div>
+    <div class="statCard"><div class="statLabel">متوسط الخطوات</div><div class="statValue">${avgSteps}</div></div>
+    <div class="statCard"><div class="statLabel">متوسط السعرات</div><div class="statValue">${avgCal}</div></div>
+    <div class="statCard"><div class="statLabel">النزول الأسبوعي</div><div class="statValue">${rate.toFixed(1)}</div></div>
+    <div class="statCard"><div class="statLabel">توقع الوصول</div><div class="statValue">${weeks?weeks.toFixed(1)+" أسبوع":"--"}</div></div>
+  `;
+}
+
 function insights(cur,loss,rem){
   if(D.length<2){
     return `
@@ -289,8 +355,8 @@ function insights(cur,loss,rem){
   let rate=loss/Math.max(1,D.length/7);
   let weeks=rate>0?rem/rate:null;
   let best=Math.min(...D.map(x=>x.w));
-  let avgSteps=Math.round(D.reduce((a,x)=>a+(+x.s||0),0)/D.length);
-  let avgCal=Math.round(D.reduce((a,x)=>a+(+x.c||0),0)/D.length);
+  let avgSteps=Math.round(D.reduce((a,x)=>a+(+x.st||0),0)/D.length);
+  let avgCal=Math.round(D.reduce((a,x)=>a+(+x.cal||0),0)/D.length);
   let status=diff<0?"🟢 ممتاز":diff==0?"🟡 ثابت":"🔴 انتبه";
 
   return `
@@ -326,25 +392,37 @@ function draw(){
         datasets:[{
           label:"Weight",
           data,
-          tension:.35
+          tension:.35,
+          pointRadius:4,
+          pointHoverRadius:6
         }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:false}}
       }
     });
 
   let weeks=[];
   for(let i=1;i<D.length;i+=7)
-    weeks.push((D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));
+    weeks.push(+(D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));
 
   let w=document.getElementById("weekChart");
   if(w)
     W=new Chart(w,{
       type:"bar",
       data:{
-        labels:weeks.map((_,i)=>"W"+(i+1)),
+        labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),
         datasets:[{
           label:"Weekly loss",
           data:weeks
         }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true}}
       }
     });
 }
