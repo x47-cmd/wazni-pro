@@ -443,11 +443,17 @@ function renderCalendar(){
 
   for(let i=1;i<=last;i++){
     const d=y+"-"+String(m).padStart(2,"0")+"-"+String(i).padStart(2,"0");
+    const prev=y+"-"+String(m).padStart(2,"0")+"-"+String(i-1).padStart(2,"0");
+
     let cls="day";
 
     if(map[d]!==undefined){
-      const prev=d;
-      cls+=" loss";
+      if(map[prev]!==undefined){
+        if(map[d]<map[prev]) cls+=" loss";
+        else if(map[d]>map[prev]) cls+=" gain";
+      }else{
+        cls+=" loss";
+      }
     }
 
     if(i===now.getDate()) cls+=" today";
@@ -455,20 +461,24 @@ function renderCalendar(){
     cal.innerHTML+=`<div class="${cls}">${i}</div>`;
   }
 }
+
 function draw(){
-  let labels=D.map(x=>x.d),data=D.map(x=>x.w);
+  let labels=D.map(x=>x.d);
+  let data=D.map(x=>x.w);
+
   if(C)C.destroy();
   if(W)W.destroy();
 
   let c=document.getElementById("chart");
-  if(c)
+
+  if(c){
     C=new Chart(c,{
       type:"line",
       data:{
-        labels,
+        labels:labels,
         datasets:[{
           label:"Weight",
-          data,
+          data:data,
           tension:.35,
           pointRadius:4,
           pointHoverRadius:6
@@ -476,38 +486,56 @@ function draw(){
       },
       options:{
         responsive:true,
-        plugins:{legend:{display:false}},
-        scales:{y:{beginAtZero:false}}
+        plugins:{
+          legend:{
+            display:false
+          }
+        },
+        scales:{
+          y:{
+            beginAtZero:false
+          }
+        }
       }
     });
+  }
 
   let weeks=[];
-for(let i=1;i<D.length;i+=7){
-  weeks.push(+(D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1));
+
+  for(let i=1;i<D.length;i+=7){
+    weeks.push(
+      +(D[i-1].w-D[Math.min(i+6,D.length-1)].w).toFixed(1)
+    );
+  }
+
+  let w=document.getElementById("weekChart");
+
+  if(w){
+    W=new Chart(w,{
+      type:"bar",
+      data:{
+        labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),
+        datasets:[{
+          label:"Weekly loss",
+          data:weeks
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{
+            display:false
+          }
+        },
+        scales:{
+          y:{
+            beginAtZero:true
+          }
+        }
+      }
+    });
+  }
 }
-
-let w=document.getElementById("weekChart");
-if(w){
-  W=new Chart(w,{
-    type:"bar",
-    data:{
-      labels:weeks.map((_,i)=>"الأسبوع "+(i+1)),
-      datasets:[{
-        label:"Weekly loss",
-        data:weeks
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true}}
-    }
-  });
-}
-
-
-}
-
 function csv(){
   let s="date,weight,steps,calories\n"+
     D.map(x=>`${x.d},${x.w},${x.st},${x.cal}`).join("\n"),
@@ -518,16 +546,7 @@ function csv(){
   a.click();
 }
 
-setTimeout(()=>{
-  render();
-  const cal=document.getElementById("calendarBox");
-  if(cal){
-    cal.innerHTML="";
-    for(let i=1;i<=31;i++){
-      cal.innerHTML+=`<div class="day">${i}</div>`;
-    }
-  }
-},500);
+render();
 </script>
 </body>
 </html>
