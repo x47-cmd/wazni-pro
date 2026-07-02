@@ -467,14 +467,45 @@ function pickDay(d){
   if(!info)return;
 
   let x=D.find(a=>a.d===d);
+
   if(!x){
-    info.textContent="لا توجد بيانات لهذا اليوم";
+    info.className="dayInfo emptyInfo";
+    info.innerHTML="اختر يوماً فيه تسجيل لعرض التفاصيل.";
     return;
   }
 
+  info.className="dayInfo";
+
   let i=D.findIndex(a=>a.d===d);
   let diff=i>0?(x.w-D[i-1].w).toFixed(1):"--";
-  info.textContent=`${d} | الوزن: ${x.w} كجم | التغير: ${diff} | الخطوات: ${x.st||0} | السعرات: ${x.cal||0}`;
+
+  info.innerHTML=`
+    <div class="dayInfoTitle">📅 ${d}</div>
+
+    <div class="dayInfoGrid">
+
+      <div class="dayInfoItem">
+        <div>⚖️ الوزن</div>
+        <div class="dayInfoValue">${x.w} كجم</div>
+      </div>
+
+      <div class="dayInfoItem">
+        <div>📉 التغير</div>
+        <div class="dayInfoValue">${diff}</div>
+      </div>
+
+      <div class="dayInfoItem">
+        <div>👣 الخطوات</div>
+        <div class="dayInfoValue">${x.st||0}</div>
+      </div>
+
+      <div class="dayInfoItem">
+        <div>🔥 السعرات</div>
+        <div class="dayInfoValue">${x.cal||0}</div>
+      </div>
+
+    </div>
+  `;
 }
 
 function renderCalendar(){
