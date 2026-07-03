@@ -803,6 +803,7 @@ return;
 }
 
 let t=S.sportTest||{distance:3,targetTime:15,currentTime:0};
+if(!S.trainingDone)S.trainingDone={};
 
 if(!t.currentTime){
 box.innerHTML=`
@@ -815,65 +816,44 @@ return;
 
 let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
 
-let weekPlan=[];
+let weekPlan=[
+["sun","الأحد","🏃 جري خفيف","2 كم"],
+["mon","الإثنين","💨 تنفس وتمدد","15 دقيقة"],
+["tue","الثلاثاء","🏃 جري متوسط","2.5 كم"],
+["wed","الأربعاء","😴 راحة","لا تختبر نفسك"],
+["thu","الخميس","🏃 جري تدريجي","3 كم آخر 500م أسرع"],
+["fri","الجمعة","🦵 رجلين وكور","20 دقيقة"],
+["sat","السبت","🎯 اختبار مصغر","2 كم بوتيرة جيدة"]
+];
 
-if(readiness>=100){
-weekPlan=[
-["الأحد","🏃 جري خفيف","2 كم للحفاظ على اللياقة"],
-["الإثنين","💨 تنفس وتمدد","15 دقيقة"],
-["الثلاثاء","🏃 جري متوسط","3 كم بدون ضغط"],
-["الأربعاء","😴 راحة","استشفاء كامل"],
-["الخميس","⚡ سرعة قصيرة","4 × 200 متر"],
-["الجمعة","🚶 مشي خفيف","20 دقيقة"],
-["السبت","🎯 محاكاة اختبار","3 كم بوتيرة مريحة"]
-];
-}else if(readiness>=90){
-weekPlan=[
-["الأحد","🏃 جري متوسط","3 كم"],
-["الإثنين","🦵 تقوية أرجل","سكوات + لونجز"],
-["الثلاثاء","⚡ فترات سرعة","5 × 300 متر"],
-["الأربعاء","😴 راحة","استشفاء"],
-["الخميس","🏃 جري ثابت","3 كم بوتيرة قريبة من الهدف"],
-["الجمعة","💨 تنفس وتمدد","15 دقيقة"],
-["السبت","🎯 محاكاة اختبار","3 كم"]
-];
-}else if(readiness>=80){
-weekPlan=[
-["الأحد","🏃 جري خفيف","2 كم"],
-["الإثنين","💨 تنفس وتمدد","15 دقيقة"],
-["الثلاثاء","🏃 جري متوسط","2.5 كم"],
-["الأربعاء","😴 راحة","لا تختبر نفسك"],
-["الخميس","🏃 جري تدريجي","3 كم آخر 500م أسرع"],
-["الجمعة","🦵 رجلين وكور","20 دقيقة"],
-["السبت","🎯 اختبار مصغر","2 كم بوتيرة جيدة"]
-];
-}else{
-weekPlan=[
-["الأحد","🚶 مشي + جري","20 دقيقة"],
-["الإثنين","😴 راحة","استشفاء"],
-["الثلاثاء","🏃 جري خفيف","1.5 كم"],
-["الأربعاء","💨 تنفس وتمدد","15 دقيقة"],
-["الخميس","🏃 جري تدريجي","2 كم"],
-["الجمعة","🦵 تقوية خفيفة","15 دقيقة"],
-["السبت","🚶 مشي طويل","30 دقيقة"]
-];
-}
+let doneCount=weekPlan.filter(x=>S.trainingDone[x[0]]).length;
+let donePct=Math.round(doneCount/weekPlan.length*100);
 
 box.innerHTML=`
 <div class="coachBox">
 <div class="coachTitle">📅 جدول الأسبوع الذكي</div>
-<div class="coachText">الخطة مبنية على جاهزيتك الحالية ${readiness.toFixed(0)}%.</div>
+<div class="coachText">التزامك هذا الأسبوع: ${doneCount} من 7 — ${donePct}%</div>
+
+<div class="bar"><div class="fill" style="width:${donePct}%"></div></div>
+
 <div class="coachList">
 ${weekPlan.map(x=>`
-<div class="coachItem">
-<strong>${x[0]}</strong><br>
-${x[1]}<br>
-<span class="muted">${x[2]}</span>
+<div class="coachItem" onclick="toggleTrainingDay('${x[0]}')" style="cursor:pointer">
+<strong>${S.trainingDone[x[0]]?"✅":"⬜"} ${x[1]}</strong><br>
+${x[2]}<br>
+<span class="muted">${x[3]}</span>
 </div>
 `).join("")}
 </div>
 </div>`;
 }
+function toggleTrainingDay(day){
+if(!S.trainingDone)S.trainingDone={};
+S.trainingDone[day]=!S.trainingDone[day];
+localStorage.wazniS=JSON.stringify(S);
+renderTrainingPlan();
+}
+
 function insights(cur,loss,rem){
 if(D.length<2){
 return `<div class="coachBox"><div class="coachTitle">👋 ابدأ رحلتك</div><div class="coachText">التحليل الذكي يبدأ بعد أول تسجيلين.</div></div>`;
