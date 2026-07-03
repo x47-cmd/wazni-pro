@@ -1435,12 +1435,13 @@ function updateLiveActivity(){
   if(!activityRunning || !activityStartTime)return;
 
   let elapsed=Date.now()-activityStartTime;
-  let minutes=Math.max(1,Math.floor(elapsed/60000));
+  let minutes=Math.floor(elapsed/60000);
+let calcMinutes=Math.max(1,minutes);
   let type=document.getElementById("activityType")?activityType.value:"walk";
   let steps=document.getElementById("activitySteps")?(+activitySteps.value||0):0;
-  let km=getActivityKm(type,steps,minutes);
-  let burn=Math.round(minutes*activityRate(type));
-  let pace=km>0?(minutes/km).toFixed(1):"--";
+  let km=getActivityKm(type,steps,calcMinutes);
+let burn=minutes>0?Math.round(minutes*activityRate(type)):0;
+let pace=km>0 && minutes>0?(minutes/km).toFixed(1):"--";
 
   if(document.getElementById("activityTimer"))activityTimer.textContent=formatTime(elapsed);
   if(document.getElementById("liveMinutes"))liveMinutes.textContent=minutes+" د";
