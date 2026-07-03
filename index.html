@@ -1786,16 +1786,20 @@ box.scrollIntoView({
     if(pts.length>1){
 
   let line=L.polyline(pts,{
-    weight:6
-  }).addTo(map);
+  weight:7,
+  opacity:0.9,
+  smoothFactor:1.5
+}).addTo(map);
 
   L.circleMarker(pts[0],{
-    radius:8
-  }).addTo(map).bindPopup("🟢 البداية");
+  radius:9,
+  fillOpacity:1
+}).addTo(map).bindPopup("🟢 البداية");
 
-  L.circleMarker(pts[pts.length-1],{
-    radius:8
-  }).addTo(map).bindPopup("🔴 النهاية");
+L.circleMarker(pts[pts.length-1],{
+  radius:9,
+  fillOpacity:1
+}).addTo(map).bindPopup("🔴 النهاية");
 
   map.fitBounds(line.getBounds(),{
     padding:[30,30]
