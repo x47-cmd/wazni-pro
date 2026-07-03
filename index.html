@@ -1780,13 +1780,15 @@ function unlockAchievement(id,title,icon){
 
   if(achievements.includes(id)) return;
 
-  achievements.push(id);
-  localStorage.setItem("achievements",JSON.stringify(achievements));
+  if(navigator.vibrate){
+    navigator.vibrate([150,80,150]);
+}
 
-  alert(
-    "🏆 إنجاز جديد!\n\n"+
-    icon+" "+title
-  );
+alert(
+"🎉🏆 إنجاز جديد!\n\n"
++icon+" "+title+
+"\n\nتم فتح الإنجاز بنجاح 🎊"
+);
 
 }
 function renderAchievements(){
