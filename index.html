@@ -459,6 +459,7 @@ style="display:none;margin-top:20px">
 <div class="statValue" id="motionStatus">طبيعي</div>
 </div>
 </div>
+<div id="liveActivityMap" class="routeMap" style="display:none"></div>
 <div class="activityBtns">
 
 <button class="btn" onclick="startActivity()">
@@ -1343,6 +1344,9 @@ let vehicleSuspectSeconds=0;
 let motionState="طبيعي";
 let gpsWarmupUntil=0;
 let activityRoute=[];
+let liveMap=null;
+let liveLine=null;
+let liveMarker=null;
 
 function formatTime(ms){
   let total=Math.floor(ms/1000);
@@ -1488,6 +1492,21 @@ activityRoute.push({
   speed:+activitySpeed.toFixed(1),
   state:motionState
 });
+if(liveMap){
+  let point=[lat,lon];
+
+  if(liveLine){
+    liveLine.addLatLng(point);
+  }
+
+  if(liveMarker){
+    liveMarker.setLatLng(point);
+  }else{
+    liveMarker=L.marker(point).addTo(liveMap);
+  }
+
+  liveMap.setView(point,17);
+}
       gpsEnabled=true;
 
     },function(){
@@ -1554,7 +1573,28 @@ if(document.getElementById("motionStatus"))motionStatus.textContent=motionState;
       : "النشاط شغال الآن 🔥";
   }
 }
+function initLiveMap(){
+  let mapBox=document.getElementById("liveActivityMap");
+  if(!mapBox || typeof L==="undefined")return;
 
+  mapBox.style.display="block";
+
+  if(liveMap){
+    liveMap.remove();
+    liveMap=null;
+  }
+
+  liveMap=L.map("liveActivityMap");
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    maxZoom:19,
+    attribution:"© OpenStreetMap"
+  }).addTo(liveMap);
+
+  liveLine=L.polyline([],{
+    weight:5
+  }).addTo(liveMap);
+}
 function startActivity(){
   if(activityRunning){
     alert("النشاط شغال حالياً");
@@ -1565,6 +1605,7 @@ function startActivity(){
   activityStartTime=Date.now();
 
   startActivityGPS();
+  initLiveMap();
 
   if(document.getElementById("activityStatus")){
     activityStatus.textContent="النشاط شغال الآن 🔥";
@@ -1638,7 +1679,16 @@ if(document.getElementById("motionStatus"))motionStatus.textContent="طبيعي"
   if(document.getElementById("activityStatus")){
     activityStatus.textContent="تم حفظ النشاط ✅";
   }
+if(document.getElementById("liveActivityMap")){
+  liveActivityMap.style.display="none";
+}
 
+if(liveMap){
+  liveMap.remove();
+  liveMap=null;
+  liveLine=null;
+  liveMarker=null;
+}
   render();
 }
 function motionIcon(state){
