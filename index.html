@@ -1710,8 +1710,20 @@ function showRoute(id){
     <button class="btn btn2" style="margin-top:12px;width:100%" onclick="document.getElementById('routeViewer').remove()">إغلاق الخريطة</button>
   `;
 
-  let list=document.getElementById("activitiesList");
-  list.parentElement.appendChild(box);
+  let btn=document.querySelector(`[onclick="showRoute(${id})"]`);
+let item=btn?btn.closest(".activityItem"):null;
+
+if(item){
+    item.insertAdjacentElement("afterend",box);
+}else{
+    let list=document.getElementById("activitiesList");
+    list.parentElement.appendChild(box);
+}
+
+box.scrollIntoView({
+    behavior:"smooth",
+    block:"center"
+});
 
   setTimeout(function(){
     let pts=x.route.map(p=>[p.lat,p.lon]);
