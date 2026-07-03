@@ -1623,7 +1623,14 @@ if(document.getElementById("motionStatus"))motionStatus.textContent="طبيعي"
 
   render();
 }
-
+function motionIcon(state){
+  if(state==="طبيعي")return "🟢";
+  if(state==="سريع")return "🟡";
+  if(state==="سبرنت عالي")return "🟠";
+  if(state==="اشتباه سيارة")return "🔴";
+  if(state==="سيارة/سرعة غير منطقية")return "🔴";
+  return "🟢";
+}
 function renderActivities(){
   let box=document.getElementById("activitiesList");
   if(!box)return;
@@ -1649,8 +1656,8 @@ function renderActivities(){
 </div>
 
 <div class="muted">
-${x.gps?"🟢 GPS متصل":"🔴 GPS غير متوفر"}
-&nbsp;&nbsp;🧠 ${x.motion||"طبيعي"}
+${x.gps?"🟢 GPS":"🔴 بدون GPS"}
+&nbsp;&nbsp;${motionIcon(x.motion)} ${x.motion||"طبيعي"}
 </div>
     </div>
   `).join("");
