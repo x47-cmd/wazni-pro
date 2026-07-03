@@ -1803,7 +1803,7 @@ function renderAchievements(){
   let totalMinutes=AD.reduce((a,x)=>a+(+x.minutes||0),0);
 
   let list=[
-    ["first_activity","🥇","أول نشاط",AD.length,1,"نشاط"],
+    ["first_activity","🥇","أول نشاط",AD.length>=1?1:0,1,"نشاط"],
     ["first_km","🚶","أول كيلومتر",totalKm,1,"كم"],
     ["burn100","🔥","100 سعرة",totalBurn,100,"سعرة"],
     ["30min","⏱️","30 دقيقة",totalMinutes,30,"دقيقة"]
