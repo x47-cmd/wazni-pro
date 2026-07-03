@@ -1505,7 +1505,12 @@ if(liveMap){
     liveMarker=L.marker(point).addTo(liveMap);
   }
 
-  liveMap.setView(point,17);
+  if(!window.userMovedLiveMap){
+    liveMap.setView(point,17,{
+      animate:true,
+      duration:0.5
+    });
+  }
 }
       gpsEnabled=true;
 
@@ -1594,6 +1599,11 @@ function initLiveMap(){
   liveLine=L.polyline([],{
     weight:5
   }).addTo(liveMap);
+  window.userMovedLiveMap=false;
+
+liveMap.on("dragstart zoomstart",function(){
+  window.userMovedLiveMap=true;
+});
 }
 function startActivity(){
   if(activityRunning){
@@ -1606,6 +1616,7 @@ function startActivity(){
 
   startActivityGPS();
   initLiveMap();
+  window.userMovedLiveMap=false;
 
   if(document.getElementById("activityStatus")){
     activityStatus.textContent="النشاط شغال الآن 🔥";
