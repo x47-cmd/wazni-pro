@@ -670,16 +670,15 @@ readiness>=80?"تحتاج تحسين بسيط 💪":
 "تحتاج خطة تدريب أقوى ⚠️";
 
   sportAnalysis.innerHTML=`
-<div class="coachTitle">📊 تحليل الجاهزية</div>
+<div class="coachTitle">📊 لوحة الجاهزية</div>
 <div class="coachList">
-<div class="coachItem">🎯 المطلوب: ${t.distance} كم خلال ${t.targetTime} دقيقة.</div>
+<div class="coachItem">🎯 الهدف: ${t.distance} كم / ${t.targetTime} دقيقة.</div>
 <div class="coachItem">⏱️ الوتيرة المطلوبة: ${targetPace.toFixed(2)} دقيقة/كم.</div>
-<div class="coachItem">🏃 وتيرتك الحالية: ${currentPace.toFixed(2)} دقيقة/كم.</div>
-<div class="coachItem">📉 الفرق المطلوب تحسينه: ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
-<div class="coachItem">🔥 جاهزيتك الحالية: ${readiness.toFixed(0)}%.</div>
-<div class="coachItem">📅 الأيام المتبقية: ${daysLeft!==null?Math.max(0,daysLeft)+" يوم":"لم تحدد التاريخ"}.</div>
+<div class="coachItem">🏃 الوتيرة الحالية: ${currentPace.toFixed(2)} دقيقة/كم.</div>
+<div class="coachItem">📉 الفرق: ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
+<div class="coachItem">🔥 الجاهزية: ${readiness.toFixed(0)}%.</div>
+<div class="coachItem">📅 المتبقي: ${daysLeft!==null?Math.max(0,daysLeft)+" يوم":"لم تحدد التاريخ"}.</div>
 <div class="coachItem">📈 المطلوب أسبوعياً: ${weeklyNeed>0?weeklyNeed.toFixed(1)+" دقيقة":"جاهز أو قريب"}.</div>
-<div class="coachItem">🧠 التقييم: ${statusText}</div>
 </div>
 `;
 }
@@ -690,30 +689,35 @@ function sportCoach(){
     return `
     <div class="coachBox">
       <div class="coachTitle">🏃 ابدأ اختبارك الرياضي</div>
-      <div class="coachText">أدخل آخر زمن لك عشان نقدر نحسب جاهزيتك ونبني لك تحليل خاص بالاختبار.</div>
+      <div class="coachText">أدخل آخر زمن لك عشان نحدد مستواك ونبني لك توصية تدريبية.</div>
     </div>`;
   }
 
   let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
   let diff=t.currentTime-t.targetTime;
-  let targetPace=t.targetTime/t.distance;
-  let currentPace=t.currentTime/t.distance;
 
   let status=readiness>=100?"🟢 جاهز للاختبار":
              readiness>=90?"🟢 قريب جداً":
              readiness>=80?"🟡 تحتاج تحسين بسيط":
              "🔴 تحتاج تطوير";
 
+  let advice=readiness>=100?
+  "أنت حالياً محقق الهدف. حافظ على مستواك، ولا تجهد نفسك قبل يوم الاختبار.":
+  readiness>=90?
+  "أنت قريب جداً. ركز على آخر كيلومتر وحاول تثبيت الوتيرة بدون اندفاع في البداية.":
+  readiness>=80?
+  "مستواك جيد، لكن تحتاج تحسين بسيط. ركز على الجري المتوسط وتمارين النفس 3 مرات بالأسبوع.":
+  "تحتاج خطة تدريب أقوى. ابدأ بجري خفيف متدرج، ثم زد السرعة تدريجياً بدون إجهاد.";
+
   return `
   <div class="coachBox">
     <div class="coachTitle">${status}</div>
-    <div class="coachText">تحليل اختبار ${t.distance} كم خلال ${t.targetTime} دقيقة</div>
+    <div class="coachText">${advice}</div>
     <div class="coachList">
-      <div class="coachItem">🔥 جاهزيتك الحالية ${readiness.toFixed(0)}%.</div>
-      <div class="coachItem">📉 تحتاج تحسن ${Math.max(0,diff).toFixed(1)} دقيقة للوصول للهدف.</div>
-      <div class="coachItem">⏱️ الوتيرة المطلوبة ${targetPace.toFixed(2)} دقيقة/كم.</div>
-      <div class="coachItem">🏃 وتيرتك الحالية ${currentPace.toFixed(2)} دقيقة/كم.</div>
-      <div class="coachItem">🎯 استمر بالتدريب المنتظم، وركز على تحسين النفس والوتيرة.</div>
+      <div class="coachItem">🎯 الهدف الآن: تقليل الزمن بمقدار ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
+      <div class="coachItem">🏃 تمرين مقترح: 3 حصص ركض أسبوعياً.</div>
+      <div class="coachItem">💨 ركز على التنفس والوتيرة الثابتة.</div>
+      <div class="coachItem">😴 لا تختبر نفسك يومياً، خلك على يوم راحة بين الجلسات.</div>
     </div>
   </div>`;
 }
