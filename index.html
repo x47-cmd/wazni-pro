@@ -440,7 +440,15 @@ style="display:none;margin-top:20px">
 <div class="statLabel">⚡ الوتيرة</div>
 <div class="statValue" id="livePace">--</div>
 </div>
+<div class="statCard">
+<div class="statLabel">🚀 السرعة</div>
+<div class="statValue" id="liveSpeed">0 كم/س</div>
+</div>
 
+<div class="statCard">
+<div class="statLabel">🧠 حالة الحركة</div>
+<div class="statValue" id="motionStatus">طبيعي</div>
+</div>
 </div>
 <div class="activityBtns">
 
@@ -1320,6 +1328,10 @@ let gpsWatchId=null;
 let activityDistance=0;
 let activityLastPos=null;
 let gpsEnabled=false;
+let activitySpeed=0;
+let activityIgnoredDistance=0;
+let vehicleSuspectSeconds=0;
+let motionState="طبيعي";
 
 function formatTime(ms){
   let total=Math.floor(ms/1000);
@@ -1350,7 +1362,49 @@ function activityRate(type){
   };
   return rates[type]||5;
 }
+function speedRules(type){
+  let rules={
+    walk:{normal:10, sprint:18, vehicle:22},
+    run:{normal:22, sprint:30, vehicle:35},
+    bike:{normal:35, sprint:45, vehicle:55},
+    swim:{normal:8, sprint:12, vehicle:15},
+    gym:{normal:0, sprint:0, vehicle:0}
+  };
 
+  return rules[type]||rules.walk;
+}
+
+function analyzeMotion(type,speed,seconds){
+  let r=speedRules(type);
+
+  if(type==="gym"){
+    return {allow:true,state:"تمرين"};
+  }
+
+  if(speed<=r.normal){
+    vehicleSuspectSeconds=0;
+    return {allow:true,state:"طبيعي"};
+  }
+
+  if(speed<=r.sprint){
+    vehicleSuspectSeconds=0;
+    return {allow:true,state:"سريع"};
+  }
+
+  if(speed<=r.vehicle){
+    vehicleSuspectSeconds+=seconds;
+    return {
+      allow:vehicleSuspectSeconds<10,
+      state:vehicleSuspectSeconds>=10?"اشتباه سيارة":"سبرنت عالي"
+    };
+  }
+
+  vehicleSuspectSeconds+=seconds;
+  return {
+    allow:false,
+    state:"سيارة/سرعة غير منطقية"
+  };
+}
 function calcDistance(lat1,lon1,lat2,lon2){
   let R=6371;
   let dLat=(lat2-lat1)*Math.PI/180;
@@ -1365,7 +1419,11 @@ function calcDistance(lat1,lon1,lat2,lon2){
 function startActivityGPS(){
   gpsEnabled=false;
   activityDistance=0;
+  activityIgnoredDistance=0;
   activityLastPos=null;
+  activitySpeed=0;
+  vehicleSuspectSeconds=0;
+  motionState="طبيعي";
 
   if(!navigator.geolocation){
     return;
@@ -1376,22 +1434,41 @@ function startActivityGPS(){
       let lat=pos.coords.latitude;
       let lon=pos.coords.longitude;
       let accuracy=pos.coords.accuracy||999;
+      let type=document.getElementById("activityType")?activityType.value:"walk";
 
       if(accuracy>80)return;
 
       if(activityLastPos){
         let add=calcDistance(activityLastPos.lat,activityLastPos.lon,lat,lon);
+        let seconds=(pos.timestamp-activityLastPos.time)/1000;
+
+        if(seconds>0){
+          activitySpeed=add/(seconds/3600);
+        }
+
+        let check=analyzeMotion(type,activitySpeed,seconds);
+        motionState=check.state;
 
         if(add>0 && add<0.25){
-          activityDistance+=add;
+          if(check.allow){
+            activityDistance+=add;
+          }else{
+            activityIgnoredDistance+=add;
+          }
         }
       }
 
-      activityLastPos={lat:lat,lon:lon};
+      activityLastPos={
+        lat:lat,
+        lon:lon,
+        time:pos.timestamp
+      };
+
       gpsEnabled=true;
 
     },function(){
       gpsEnabled=false;
+      motionState="GPS غير متاح";
     },{
       enableHighAccuracy:true,
       maximumAge:0,
@@ -1399,6 +1476,7 @@ function startActivityGPS(){
     });
   }catch(e){
     gpsEnabled=false;
+    motionState="GPS خطأ";
   }
 }
 
@@ -1448,7 +1526,8 @@ let pace=km>0 && minutes>0?(minutes/km).toFixed(1):"--";
   if(document.getElementById("liveKm"))liveKm.textContent=km.toFixed(2)+" كم";
   if(document.getElementById("liveBurn"))liveBurn.textContent=burn;
   if(document.getElementById("livePace"))livePace.textContent=pace==="--"?"--":pace+" د/كم";
-
+if(document.getElementById("liveSpeed"))liveSpeed.textContent=activitySpeed.toFixed(1)+" كم/س";
+if(document.getElementById("motionStatus"))motionStatus.textContent=motionState;
   if(document.getElementById("activityStatus")){
     activityStatus.textContent=gpsEnabled
       ? "النشاط شغال الآن 🔥 GPS"
@@ -1527,7 +1606,8 @@ function stopActivity(){
   if(document.getElementById("liveKm"))liveKm.textContent="0.00 كم";
   if(document.getElementById("liveBurn"))liveBurn.textContent="0";
   if(document.getElementById("livePace"))livePace.textContent="--";
-
+if(document.getElementById("liveSpeed"))liveSpeed.textContent="0 كم/س";
+if(document.getElementById("motionStatus"))motionStatus.textContent="طبيعي";
   if(document.getElementById("activityStatus")){
     activityStatus.textContent="تم حفظ النشاط ✅";
   }
