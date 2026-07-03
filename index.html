@@ -419,7 +419,29 @@ style="display:none;margin-top:20px">
 <div id="activityStatus" style="text-align:center">
 جاهز للبدء
 </div>
+<div class="statsGrid" style="margin-top:16px">
 
+<div class="statCard">
+<div class="statLabel">⏱️ المدة</div>
+<div class="statValue" id="liveMinutes">0 د</div>
+</div>
+
+<div class="statCard">
+<div class="statLabel">📍 المسافة</div>
+<div class="statValue" id="liveKm">0.00 كم</div>
+</div>
+
+<div class="statCard">
+<div class="statLabel">🔥 الحرق</div>
+<div class="statValue" id="liveBurn">0</div>
+</div>
+
+<div class="statCard">
+<div class="statLabel">⚡ الوتيرة</div>
+<div class="statValue" id="livePace">--</div>
+</div>
+
+</div>
 <div class="activityBtns">
 
 <button class="btn" onclick="startActivity()">
@@ -1338,10 +1360,33 @@ function startActivity(){
   }
 
   activityInterval=setInterval(function(){
-    if(document.getElementById("activityTimer")){
-      activityTimer.textContent=formatTime(Date.now()-activityStartTime);
-    }
-  },1000);
+  let elapsed=Date.now()-activityStartTime;
+  let minutes=Math.max(1,Math.floor(elapsed/60000));
+  let type=document.getElementById("activityType")?activityType.value:"walk";
+  let steps=+activitySteps.value||0;
+
+  let km=0;
+
+  if(type==="walk" || type==="run"){
+    km=steps>0?steps*0.00075:minutes*(type==="run"?0.13:0.08);
+  }else if(type==="bike"){
+    km=minutes*0.25;
+  }else if(type==="swim"){
+    km=minutes*0.03;
+  }
+
+  let burn=Math.round(minutes*activityRate(type));
+  let pace=km>0?(minutes/km).toFixed(1):"--";
+
+  if(document.getElementById("activityTimer")){
+    activityTimer.textContent=formatTime(elapsed);
+  }
+
+  if(document.getElementById("liveMinutes"))liveMinutes.textContent=minutes+" د";
+  if(document.getElementById("liveKm"))liveKm.textContent=km.toFixed(2)+" كم";
+  if(document.getElementById("liveBurn"))liveBurn.textContent=burn;
+  if(document.getElementById("livePace"))livePace.textContent=pace==="--"?"--":pace+" د/كم";
+},1000);
 }
 
 function stopActivity(){
@@ -1407,6 +1452,10 @@ function stopActivity(){
 
   if(document.getElementById("activityTimer")){
     activityTimer.textContent="00:00:00";
+    if(document.getElementById("liveMinutes"))liveMinutes.textContent="0 د";
+if(document.getElementById("liveKm"))liveKm.textContent="0.00 كم";
+if(document.getElementById("liveBurn"))liveBurn.textContent="0";
+if(document.getElementById("livePace"))livePace.textContent="--";
   }
 
   if(document.getElementById("activityStatus")){
