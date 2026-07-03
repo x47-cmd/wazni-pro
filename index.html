@@ -670,18 +670,17 @@ readiness>=80?"تحتاج تحسين بسيط 💪":
 "تحتاج خطة تدريب أقوى ⚠️";
 
   sportAnalysis.innerHTML=`
-  <div class="coachTitle">📊 تحليل الجاهزية</div>
-  <div class="coachList">
-    <div class="coachItem">🎯 المطلوب: ${t.distance} كم خلال ${t.targetTime} دقيقة.</div>
-    <div class="coachItem">⏱️ الوتيرة المطلوبة: ${targetPace.toFixed(2)} دقيقة/كم.</div>
-    <div class="coachItem">🏃 وتيرتك الحالية: ${currentPace.toFixed(2)} دقيقة/كم.</div>
-    <div class="coachItem">📉 الفرق المطلوب تحسينه: ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
-    <div class="coachItem">⚡ فرق الوتيرة: ${Math.max(0,paceDiff).toFixed(2)} دقيقة/كم.</div>
-    <div class="coachItem">🔥 جاهزيتك الحالية: ${readiness.toFixed(0)}%.</div>
-    <div class="coachItem">📅 الأيام المتبقية: ${daysLeft!==null?Math.max(0,daysLeft)+" يوم":"لم يتم تحديد التاريخ"}.</div>
-    <div class="coachItem">📈 المطلوب أسبوعياً: ${weeklyNeed>0?weeklyNeed.toFixed(1)+" دقيقة تحسن بالأسبوع":"أنت قريب أو جاهز"}.</div>
-    <div class="coachItem">🧠 التقييم: ${statusText}</div>
-  </div>
+<div class="coachTitle">📊 تحليل الجاهزية</div>
+<div class="coachList">
+<div class="coachItem">🎯 المطلوب: ${t.distance} كم خلال ${t.targetTime} دقيقة.</div>
+<div class="coachItem">⏱️ الوتيرة المطلوبة: ${targetPace.toFixed(2)} دقيقة/كم.</div>
+<div class="coachItem">🏃 وتيرتك الحالية: ${currentPace.toFixed(2)} دقيقة/كم.</div>
+<div class="coachItem">📉 الفرق المطلوب تحسينه: ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
+<div class="coachItem">🔥 جاهزيتك الحالية: ${readiness.toFixed(0)}%.</div>
+<div class="coachItem">📅 الأيام المتبقية: ${daysLeft!==null?Math.max(0,daysLeft)+" يوم":"لم تحدد التاريخ"}.</div>
+<div class="coachItem">📈 المطلوب أسبوعياً: ${weeklyNeed>0?weeklyNeed.toFixed(1)+" دقيقة":"جاهز أو قريب"}.</div>
+<div class="coachItem">🧠 التقييم: ${statusText}</div>
+</div>
 `;
 }
 function render(){
