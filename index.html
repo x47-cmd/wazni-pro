@@ -229,7 +229,7 @@ style="display:none;margin-top:20px">
 
 </div>
 <div class="grid hero">
-<div class="card">
+<div class="card" id="weightEntryCard">
 <h3 data-k="add">تسجيل اليوم</h3>
 <div class="grid form entryForm">
 <div class="field"><label data-k="date">التاريخ</label><input id="date" type="text" readonly></div>
@@ -242,6 +242,22 @@ style="display:none;margin-top:20px">
 <p class="muted"><span id="pct">0%</span> إنجاز</p>
 </div>
 <div class="card"><h3 data-k="coach">التحليل الذكي</h3><div id="coach"></div></div>
+<div class="card" id="sportTestCard" style="display:none">
+<h3>🏃 اختبار رياضي</h3>
+
+<div class="grid form entryForm">
+<div class="field"><label>المسافة المطلوبة km</label><input id="runDistance" type="number" step=".1" placeholder="مثال 3"></div>
+<div class="field"><label>الزمن المطلوب بالدقائق</label><input id="runTargetTime" type="number" step=".1" placeholder="مثال 15"></div>
+<div class="field"><label>تاريخ الاختبار</label><input id="runTestDate" type="date"></div>
+<div class="field"><label>آخر زمن لك بالدقائق</label><input id="runCurrentTime" type="number" step=".1" placeholder="مثال 18.5"></div>
+</div>
+
+<button class="btn saveBtn" onclick="saveSportTest()">حفظ اختبار الرياضة</button>
+
+<div id="sportAnalysis" class="coachBox" style="margin-top:16px">
+اختر بيانات الاختبار لعرض التحليل.
+</div>
+</div>
 </div>
 </div>
 
@@ -563,9 +579,65 @@ if(document.getElementById("goalType"))goalType.textContent=names[S.goalType]||"
 if(document.getElementById("homeGoalName"))homeGoalName.textContent=names[S.goalType]||"نزول وزن";
 
 }
+function saveSportTest(){
+  S.sportTest={
+    distance:+runDistance.value||3,
+    targetTime:+runTargetTime.value||15,
+    testDate:runTestDate.value||"",
+    currentTime:+runCurrentTime.value||0
+  };
+
+  localStorage.wazniS=JSON.stringify(S);
+  renderSportTest();
+}
+
+function renderGoalContent(){
+  let isSport=S.goalType==="run";
+
+  let wCard=document.getElementById("weightEntryCard");
+  let sCard=document.getElementById("sportTestCard");
+
+  if(wCard)wCard.style.display=isSport?"none":"block";
+  if(sCard)sCard.style.display=isSport?"block":"none";
+
+  renderSportTest();
+}
+
+function renderSportTest(){
+  if(!document.getElementById("sportAnalysis"))return;
+
+  let t=S.sportTest||{distance:3,targetTime:15,testDate:"",currentTime:0};
+
+  if(document.getElementById("runDistance"))runDistance.value=t.distance||3;
+  if(document.getElementById("runTargetTime"))runTargetTime.value=t.targetTime||15;
+  if(document.getElementById("runTestDate"))runTestDate.value=t.testDate||"";
+  if(document.getElementById("runCurrentTime"))runCurrentTime.value=t.currentTime||"";
+
+  if(!t.currentTime){
+    sportAnalysis.innerHTML="أدخل آخر زمن لك عشان نبدأ التحليل.";
+    return;
+  }
+
+  let targetPace=t.targetTime/t.distance;
+  let currentPace=t.currentTime/t.distance;
+  let diff=t.currentTime-t.targetTime;
+  let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
+
+  sportAnalysis.innerHTML=`
+    <div class="coachTitle">📊 تحليل الجاهزية</div>
+    <div class="coachList">
+      <div class="coachItem">🎯 المطلوب: ${t.distance} كم خلال ${t.targetTime} دقيقة.</div>
+      <div class="coachItem">⏱️ الوتيرة المطلوبة: ${targetPace.toFixed(2)} دقيقة/كم.</div>
+      <div class="coachItem">🏃 وتيرتك الحالية: ${currentPace.toFixed(2)} دقيقة/كم.</div>
+      <div class="coachItem">📉 الفرق المطلوب تحسينه: ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
+      <div class="coachItem">🔥 جاهزيتك الحالية: ${readiness.toFixed(0)}%.</div>
+    </div>
+  `;
+}
 function render(){
 tr();
 renderGoalType();
+renderGoalContent();
 let cur=D.length?D[D.length-1].w:S.start;
 let loss=S.start-cur;
 let total=S.start-S.goal;
