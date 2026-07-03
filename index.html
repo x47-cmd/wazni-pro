@@ -575,8 +575,45 @@ gym:"بناء عضلات",
 custom:"هدف مخصص"
 };
 
-if(document.getElementById("goalType"))goalType.textContent=names[S.goalType]||"نزول وزن";
-if(document.getElementById("homeGoalName"))homeGoalName.textContent=names[S.goalType]||"نزول وزن";
+let name=names[S.goalType]||"نزول وزن";
+
+if(document.getElementById("goalType"))goalType.textContent=name;
+if(document.getElementById("homeGoalName"))homeGoalName.textContent=name;
+
+let cur=D.length?D[D.length-1].w:S.start;
+let loss=S.start-cur;
+let total=S.start-S.goal;
+let rem=cur-S.goal;
+let weightPct=total?Math.max(0,Math.min(100,loss/total*100)):0;
+
+let percent=weightPct;
+let status="نشط";
+
+if(S.goalType==="run"){
+  let t=S.sportTest||{distance:3,targetTime:15,currentTime:0};
+
+  if(t.currentTime>0){
+    percent=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
+    status=percent>=100?"جاهز":percent>=85?"قريب":"يحتاج تطوير";
+  }else{
+    percent=0;
+    status="أدخل بياناتك";
+  }
+}
+
+if(S.goalType==="steps"){
+  let today=currentSteps().steps||0;
+  percent=Math.max(0,Math.min(100,today/8000*100));
+  status=percent>=100?"مكتمل":percent>=80?"قريب":"نشط";
+}
+
+if(S.goalType==="gain" || S.goalType==="gym" || S.goalType==="custom"){
+  percent=0;
+  status="قريباً";
+}
+
+if(document.getElementById("goalPercent"))goalPercent.textContent=percent.toFixed(0)+"%";
+if(document.getElementById("goalStatus"))goalStatus.textContent=status;
 
 }
 function saveSportTest(){
@@ -642,8 +679,12 @@ let cur=D.length?D[D.length-1].w:S.start;
 let loss=S.start-cur;
 let total=S.start-S.goal;
 let rem=cur-S.goal;
-let p=total?Math.max(0,Math.min(100,loss/total*100)):0;
 
+let p=0;
+
+if(S.goalType==="loss"){
+p=total?Math.max(0,Math.min(100,loss/total*100)):0;
+}
 sV.textContent=S.start;
 gV.textContent=S.goal;
 cV.textContent=D.length?cur:"--";
