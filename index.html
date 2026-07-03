@@ -1634,21 +1634,24 @@ function renderActivities(){
   }
 
   box.innerHTML=AD.slice(-5).reverse().map(x=>`
-    <div class="activityItem">
+    <div class="activityItem" style="padding:18px">
       <div><b>${activityName(x.type)}</b> — ${x.d}</div>
       <div class="muted">
-      ⏱️ ${x.minutes} دقيقة |
-      📍 ${x.km} كم |
-      ⚡ ${x.pace||"--"} د/كم |
-      🚀 ${x.speed||"0.0"} كم/س |
-      🔥 ${x.burn} سعرة |
-      👣 ${x.steps||0} خطوة |
-      ${x.gps?"📡 GPS":"📝 تقديري"}
-      </div>
-      <div class="muted">
-      🧠 الحالة: ${x.motion||"طبيعي"}
-      ${x.ignored?` | 🚫 تجاهل ${x.ignored} كم غير منطقية`:""}
-      </div>
+⏱️ ${x.minutes} دقيقة
+&nbsp;&nbsp;📍 ${x.km} كم
+&nbsp;&nbsp;🔥 ${x.burn} سعرة
+&nbsp;&nbsp;👣 ${x.steps||0} خطوة
+</div>
+
+<div class="muted">
+🚀 ${x.speed && x.speed!="0.0" ? x.speed+" كم/س" : "—"}
+&nbsp;&nbsp;⚡ ${x.pace && x.pace!="--" ? x.pace+" د/كم" : "—"}
+</div>
+
+<div class="muted">
+${x.gps?"🟢 GPS متصل":"🔴 GPS غير متوفر"}
+&nbsp;&nbsp;🧠 ${x.motion||"طبيعي"}
+</div>
     </div>
   `).join("");
 }
