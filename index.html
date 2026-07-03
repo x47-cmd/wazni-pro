@@ -370,7 +370,8 @@ style="display:none;margin-top:20px">
 
 <script>
 let D=JSON.parse(localStorage.wazni||'[]');
-let S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar"}');
+let S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar","goalType":"loss"}');
+if(!S.goalType)S.goalType="loss";
 let SD=JSON.parse(localStorage.wazniSteps||'[]');
 let C,W,P,stepsChartObj;
 let stepsRange="7";
@@ -537,14 +538,34 @@ gym:"بناء عضلات",
 custom:"هدف مخصص"
 };
 
-goalType.textContent=names[type];
+S.goalType=type;
+localStorage.wazniS=JSON.stringify(S);
+
+if(document.getElementById("goalType"))goalType.textContent=names[type];
+if(document.getElementById("homeGoalName"))homeGoalName.textContent=names[type];
 
 goalSelector.style.display="none";
+render();
+
+}
+function renderGoalType(){
+
+let names={
+loss:"نزول وزن",
+gain:"زيادة وزن",
+run:"اختبار رياضي",
+steps:"تحدي خطوات",
+gym:"بناء عضلات",
+custom:"هدف مخصص"
+};
+
+if(document.getElementById("goalType"))goalType.textContent=names[S.goalType]||"نزول وزن";
+if(document.getElementById("homeGoalName"))homeGoalName.textContent=names[S.goalType]||"نزول وزن";
 
 }
 function render(){
 tr();
-
+renderGoalType();
 let cur=D.length?D[D.length-1].w:S.start;
 let loss=S.start-cur;
 let total=S.start-S.goal;
