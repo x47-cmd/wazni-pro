@@ -1490,20 +1490,16 @@ function stopActivityGPS(){
 }
 
 function getActivityKm(type,steps,minutes){
+  if(gpsEnabled){
+    return activityDistance;
+  }
+
   if(activityDistance>0){
     return activityDistance;
   }
 
-  if(type==="walk" || type==="run"){
-    return steps>0 ? steps*0.00075 : minutes*(type==="run"?0.13:0.08);
-  }
-
-  if(type==="bike"){
-    return minutes*0.25;
-  }
-
-  if(type==="swim"){
-    return minutes*0.03;
+  if(steps>0 && (type==="walk" || type==="run")){
+    return steps*0.00075;
   }
 
   return 0;
