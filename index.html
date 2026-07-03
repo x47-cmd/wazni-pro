@@ -683,6 +683,40 @@ readiness>=80?"تحتاج تحسين بسيط 💪":
 </div>
 `;
 }
+function sportCoach(){
+  let t=S.sportTest||{distance:3,targetTime:15,testDate:"",currentTime:0};
+
+  if(!t.currentTime){
+    return `
+    <div class="coachBox">
+      <div class="coachTitle">🏃 ابدأ اختبارك الرياضي</div>
+      <div class="coachText">أدخل آخر زمن لك عشان نقدر نحسب جاهزيتك ونبني لك تحليل خاص بالاختبار.</div>
+    </div>`;
+  }
+
+  let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
+  let diff=t.currentTime-t.targetTime;
+  let targetPace=t.targetTime/t.distance;
+  let currentPace=t.currentTime/t.distance;
+
+  let status=readiness>=100?"🟢 جاهز للاختبار":
+             readiness>=90?"🟢 قريب جداً":
+             readiness>=80?"🟡 تحتاج تحسين بسيط":
+             "🔴 تحتاج تطوير";
+
+  return `
+  <div class="coachBox">
+    <div class="coachTitle">${status}</div>
+    <div class="coachText">تحليل اختبار ${t.distance} كم خلال ${t.targetTime} دقيقة</div>
+    <div class="coachList">
+      <div class="coachItem">🔥 جاهزيتك الحالية ${readiness.toFixed(0)}%.</div>
+      <div class="coachItem">📉 تحتاج تحسن ${Math.max(0,diff).toFixed(1)} دقيقة للوصول للهدف.</div>
+      <div class="coachItem">⏱️ الوتيرة المطلوبة ${targetPace.toFixed(2)} دقيقة/كم.</div>
+      <div class="coachItem">🏃 وتيرتك الحالية ${currentPace.toFixed(2)} دقيقة/كم.</div>
+      <div class="coachItem">🎯 استمر بالتدريب المنتظم، وركز على تحسين النفس والوتيرة.</div>
+    </div>
+  </div>`;
+}
 function render(){
 tr();
 renderGoalType();
@@ -706,7 +740,11 @@ fill.style.width=p+"%";
 
 tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i?(x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st||0}</td><td>${x.cal||0}</td></tr>`).join("");
 
-coach.innerHTML=insights(cur,loss,rem);
+if(S.goalType==="run"){
+  coach.innerHTML=sportCoach();
+}else{
+  coach.innerHTML=insights(cur,loss,rem);
+}
 dashboardStats(cur,loss,rem);
 renderCalendar();
 renderSteps();
