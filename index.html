@@ -141,7 +141,93 @@ body.dark .coachItem{background:#10201d}
 <div class="card"><div class="muted" data-k="goal">الهدف</div><div class="num"><span id="gV">75</span> kg</div></div>
 <div class="card"><div class="muted" data-k="remain">المتبقي</div><div class="num"><span id="rV">--</span> kg</div></div>
 </div>
+<div class="card" style="margin-bottom:16px">
 
+<h3>🎯 الهدف الحالي</h3>
+
+<div class="statsGrid">
+
+<div class="statCard">
+<div class="statLabel">الهدف النشط</div>
+<div class="statValue" id="goalType">
+نزول وزن
+</div>
+</div>
+
+<div class="statCard">
+<div class="statLabel">نسبة الإنجاز</div>
+<div class="statValue" id="goalPercent">
+20%
+</div>
+</div>
+
+<div class="statCard">
+<div class="statLabel">الحالة</div>
+<div class="statValue" id="goalStatus">
+نشط
+</div>
+</div>
+
+<div class="statCard">
+<button
+class="btn"
+style="margin-top:18px;width:100%"
+onclick="toggleGoalSelector()">
+✏️ تغيير الهدف
+</button>
+</div>
+
+</div>
+
+<div
+id="goalSelector"
+style="display:none;margin-top:20px">
+
+<h3>اختر هدفك</h3>
+
+<div class="statsGrid">
+
+<div class="statCard" onclick="setGoalType('loss')">
+⚖️
+<br><br>
+نزول وزن
+</div>
+
+<div class="statCard" onclick="setGoalType('gain')">
+📈
+<br><br>
+زيادة وزن
+</div>
+
+<div class="statCard" onclick="setGoalType('run')">
+🏃
+<br><br>
+اختبار رياضي
+</div>
+
+<div class="statCard" onclick="setGoalType('steps')">
+👣
+<br><br>
+تحدي خطوات
+</div>
+
+<div class="statCard" onclick="setGoalType('gym')">
+💪
+<br><br>
+بناء عضلات
+</div>
+
+<div class="statCard" onclick="setGoalType('custom')">
+🎯
+<br><br>
+هدف مخصص
+</div>
+
+</div>
+
+</div>
+
+</div>
 <div class="grid hero">
 <div class="card">
 <h3 data-k="add">تسجيل اليوم</h3>
@@ -429,6 +515,32 @@ function renderHomeDashboard(){
       <div class="statCard"><div class="statLabel">🏆 الإنجازات</div><div class="statValue">قريباً</div></div>
     `;
   }
+}
+function toggleGoalSelector(){
+
+let x=document.getElementById("goalSelector");
+
+x.style.display=
+x.style.display=="block"
+?"none":"block";
+
+}
+
+function setGoalType(type){
+
+let names={
+loss:"نزول وزن",
+gain:"زيادة وزن",
+run:"اختبار رياضي",
+steps:"تحدي خطوات",
+gym:"بناء عضلات",
+custom:"هدف مخصص"
+};
+
+goalType.textContent=names[type];
+
+goalSelector.style.display="none";
+
 }
 function render(){
 tr();
