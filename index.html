@@ -1317,9 +1317,9 @@ let activityStartTime=null;
 let activityInterval=null;
 
 let gpsWatchId=null;
-let activityLastPos=null;
 let activityDistance=0;
-let activityGpsReady=false;
+let activityLastPos=null;
+let gpsEnabled=false;
 
 function formatTime(ms){
   let total=Math.floor(ms/1000);
@@ -1328,70 +1328,7 @@ function formatTime(ms){
   let s=total%60;
   return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 }
-function distanceBetween(lat1,lon1,lat2,lon2){
-  const R=6371;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLon=(lon2-lon1)*Math.PI/180;
-  const a=
-    Math.sin(dLat/2)*Math.sin(dLat/2)+
-    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
-    Math.sin(dLon/2)*Math.sin(dLon/2);
 
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-function startGPS(){
-  if(!navigator.geolocation){
-    if(document.getElementById("activityStatus")){
-      activityStatus.textContent="GPS غير مدعوم في هذا المتصفح";
-    }
-    return;
-  }
-
-  activityDistance=0;
-  activityLastPos=null;
-  activityGpsReady=false;
-
-  gpsWatchId=navigator.geolocation.watchPosition(function(pos){
-    let lat=pos.coords.latitude;
-    let lon=pos.coords.longitude;
-    let accuracy=pos.coords.accuracy||999;
-
-    if(accuracy>50)return;
-
-    if(activityLastPos){
-      let add=distanceBetween(
-        activityLastPos.lat,
-        activityLastPos.lon,
-        lat,
-        lon
-      );
-
-      if(add>0 && add<0.2){
-        activityDistance+=add;
-      }
-    }
-
-    activityLastPos={lat,lon};
-    activityGpsReady=true;
-
-  },function(){
-    if(document.getElementById("activityStatus")){
-      activityStatus.textContent="اسمح للموقع باستخدام GPS";
-    }
-  },{
-    enableHighAccuracy:true,
-    maximumAge:0,
-    timeout:10000
-  });
-}
-
-function stopGPS(){
-  if(gpsWatchId!==null){
-    navigator.geolocation.clearWatch(gpsWatchId);
-    gpsWatchId=null;
-  }
-}
 function activityName(type){
   let names={
     walk:"🚶 مشي",
@@ -1414,6 +1351,110 @@ function activityRate(type){
   return rates[type]||5;
 }
 
+function calcDistance(lat1,lon1,lat2,lon2){
+  let R=6371;
+  let dLat=(lat2-lat1)*Math.PI/180;
+  let dLon=(lon2-lon1)*Math.PI/180;
+  let a=
+    Math.sin(dLat/2)*Math.sin(dLat/2)+
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function startActivityGPS(){
+  gpsEnabled=false;
+  activityDistance=0;
+  activityLastPos=null;
+
+  if(!navigator.geolocation){
+    return;
+  }
+
+  try{
+    gpsWatchId=navigator.geolocation.watchPosition(function(pos){
+      let lat=pos.coords.latitude;
+      let lon=pos.coords.longitude;
+      let accuracy=pos.coords.accuracy||999;
+
+      if(accuracy>80)return;
+
+      if(activityLastPos){
+        let add=calcDistance(activityLastPos.lat,activityLastPos.lon,lat,lon);
+
+        if(add>0 && add<0.25){
+          activityDistance+=add;
+        }
+      }
+
+      activityLastPos={lat:lat,lon:lon};
+      gpsEnabled=true;
+
+    },function(){
+      gpsEnabled=false;
+    },{
+      enableHighAccuracy:true,
+      maximumAge:0,
+      timeout:15000
+    });
+  }catch(e){
+    gpsEnabled=false;
+  }
+}
+
+function stopActivityGPS(){
+  try{
+    if(gpsWatchId!==null){
+      navigator.geolocation.clearWatch(gpsWatchId);
+      gpsWatchId=null;
+    }
+  }catch(e){}
+}
+
+function getActivityKm(type,steps,minutes){
+  if(activityDistance>0){
+    return activityDistance;
+  }
+
+  if(type==="walk" || type==="run"){
+    return steps>0 ? steps*0.00075 : minutes*(type==="run"?0.13:0.08);
+  }
+
+  if(type==="bike"){
+    return minutes*0.25;
+  }
+
+  if(type==="swim"){
+    return minutes*0.03;
+  }
+
+  return 0;
+}
+
+function updateLiveActivity(){
+  if(!activityRunning || !activityStartTime)return;
+
+  let elapsed=Date.now()-activityStartTime;
+  let minutes=Math.max(1,Math.floor(elapsed/60000));
+  let type=document.getElementById("activityType")?activityType.value:"walk";
+  let steps=document.getElementById("activitySteps")?(+activitySteps.value||0):0;
+  let km=getActivityKm(type,steps,minutes);
+  let burn=Math.round(minutes*activityRate(type));
+  let pace=km>0?(minutes/km).toFixed(1):"--";
+
+  if(document.getElementById("activityTimer"))activityTimer.textContent=formatTime(elapsed);
+  if(document.getElementById("liveMinutes"))liveMinutes.textContent=minutes+" د";
+  if(document.getElementById("liveKm"))liveKm.textContent=km.toFixed(2)+" كم";
+  if(document.getElementById("liveBurn"))liveBurn.textContent=burn;
+  if(document.getElementById("livePace"))livePace.textContent=pace==="--"?"--":pace+" د/كم";
+
+  if(document.getElementById("activityStatus")){
+    activityStatus.textContent=gpsEnabled
+      ? "النشاط شغال الآن 🔥 GPS"
+      : "النشاط شغال الآن 🔥";
+  }
+}
+
 function startActivity(){
   if(activityRunning){
     alert("النشاط شغال حالياً");
@@ -1422,42 +1463,15 @@ function startActivity(){
 
   activityRunning=true;
   activityStartTime=Date.now();
-  startGPS();
+
+  startActivityGPS();
 
   if(document.getElementById("activityStatus")){
     activityStatus.textContent="النشاط شغال الآن 🔥";
   }
 
-  activityInterval=setInterval(function(){
-  let elapsed=Date.now()-activityStartTime;
-  let minutes=Math.max(1,Math.floor(elapsed/60000));
-  let type=document.getElementById("activityType")?activityType.value:"walk";
-  let steps=+activitySteps.value||0;
-
-  let km=0;
-
-  if(activityDistance>0){
-  km=activityDistance;
-}else if(type==="walk" || type==="run"){
-  km=steps>0?steps*0.00075:minutes*(type==="run"?0.13:0.08);
-}else if(type==="bike"){
-  km=minutes*0.25;
-}else if(type==="swim"){
-  km=minutes*0.03;
-}
-
-  let burn=Math.round(minutes*activityRate(type));
-  let pace=km>0?(minutes/km).toFixed(1):"--";
-
-  if(document.getElementById("activityTimer")){
-    activityTimer.textContent=formatTime(elapsed);
-  }
-
-  if(document.getElementById("liveMinutes"))liveMinutes.textContent=minutes+" د";
-  if(document.getElementById("liveKm"))liveKm.textContent=km.toFixed(2)+" كم";
-  if(document.getElementById("liveBurn"))liveBurn.textContent=burn;
-  if(document.getElementById("livePace"))livePace.textContent=pace==="--"?"--":pace+" د/كم";
-},1000);
+  updateLiveActivity();
+  activityInterval=setInterval(updateLiveActivity,1000);
 }
 
 function stopActivity(){
@@ -1467,28 +1481,13 @@ function stopActivity(){
   }
 
   clearInterval(activityInterval);
-  stopGPS();
+  stopActivityGPS();
 
-  let end=Date.now();
-  let durationMs=end-activityStartTime;
+  let durationMs=Date.now()-activityStartTime;
   let minutes=Math.max(1,Math.round(durationMs/60000));
   let type=document.getElementById("activityType")?activityType.value:"walk";
-  let steps=+activitySteps.value||0;
-
-  let km=0;
-
-  if(activityDistance>0){
-    km=activityDistance;
-  }else if(type==="walk" || type==="run"){
-    km=steps>0?steps*0.00075:minutes*(type==="run"?0.13:0.08);
-  }else if(type==="bike"){
-    km=minutes*0.25;
-  }else if(type==="swim"){
-    km=minutes*0.03;
-  }else{
-    km=0;
-  }
-
+  let steps=document.getElementById("activitySteps")?(+activitySteps.value||0):0;
+  let km=getActivityKm(type,steps,minutes);
   let burn=Math.round(minutes*activityRate(type));
 
   let item={
@@ -1498,7 +1497,8 @@ function stopActivity(){
     minutes:minutes,
     steps:steps,
     km:+km.toFixed(2),
-    burn:burn
+    burn:burn,
+    gps:gpsEnabled
   };
 
   AD.push(item);
