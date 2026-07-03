@@ -6,7 +6,8 @@
 <meta name="theme-color" content="#0f766e">
 <title>وزني Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <style>
 :root{--bg:#f4f7f6;--card:#fff;--txt:#111827;--muted:#667085;--pri:#0f766e;--line:#e5e7eb}
 body.dark{--bg:#071412;--card:#10201d;--txt:#f8fafc;--muted:#a7b5b1;--line:#1f3833}
@@ -130,6 +131,14 @@ background:var(--card);
 border:1px solid var(--line);
 border-radius:16px;
 padding:14px;
+}
+.routeMap{
+height:320px;
+width:100%;
+border-radius:20px;
+border:1px solid var(--line);
+margin-top:14px;
+overflow:hidden;
 }
 </style>
 </head>
@@ -1683,17 +1692,41 @@ function showRoute(id){
     return;
   }
 
-  let first=x.route[0];
-  let last=x.route[x.route.length-1];
+  let old=document.getElementById("routeViewer");
+  if(old)old.remove();
 
-  alert(
-    "🗺️ مسار النشاط\n\n"+
-    "عدد نقاط GPS: "+x.route.length+"\n\n"+
-    "البداية:\n"+
-    first.lat+", "+first.lon+"\n\n"+
-    "النهاية:\n"+
-    last.lat+", "+last.lon
-  );
+  let box=document.createElement("div");
+  box.id="routeViewer";
+  box.className="card";
+  box.style.marginTop="16px";
+
+  box.innerHTML=`
+    <h3>🗺️ مسار النشاط</h3>
+    <div class="muted">
+      ${activityName(x.type)} — ${x.d}<br>
+      ⏱️ ${x.minutes} دقيقة | 📍 ${x.km} كم | 🔥 ${x.burn} سعرة
+    </div>
+    <div id="routeMap" class="routeMap"></div>
+    <button class="btn btn2" style="margin-top:12px;width:100%" onclick="document.getElementById('routeViewer').remove()">إغلاق الخريطة</button>
+  `;
+
+  let list=document.getElementById("activitiesList");
+  list.parentElement.appendChild(box);
+
+  setTimeout(function(){
+    let pts=x.route.map(p=>[p.lat,p.lon]);
+    let map=L.map("routeMap").setView(pts[0],16);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+      maxZoom:19
+    }).addTo(map);
+
+    L.polyline(pts,{weight:5}).addTo(map);
+    L.marker(pts[0]).addTo(map).bindPopup("البداية 🟢");
+    L.marker(pts[pts.length-1]).addTo(map).bindPopup("النهاية 🔴");
+
+    map.fitBounds(pts,{padding:[30,30]});
+  },200);
 }
 render();
 </script>
