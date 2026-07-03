@@ -1478,16 +1478,15 @@ function stopActivity(){
   let km=0;
 
   if(activityDistance>0){
-  km=activityDistance;
-}else if(type==="walk" || type==="run"){
-  km=steps>0?steps*0.00075:minutes*(type==="run"?0.13:0.08);
-}else if(type==="bike"){
-  km=minutes*0.25;
-}else if(type==="swim"){
-  km=minutes*0.03;
-}else{
-  km=0;
-}
+    km=activityDistance;
+  }else if(type==="walk" || type==="run"){
+    km=steps>0?steps*0.00075:minutes*(type==="run"?0.13:0.08);
+  }else if(type==="bike"){
+    km=minutes*0.25;
+  }else if(type==="swim"){
+    km=minutes*0.03;
+  }else{
+    km=0;
   }
 
   let burn=Math.round(minutes*activityRate(type));
@@ -1521,17 +1520,12 @@ function stopActivity(){
   activityRunning=false;
   activityStartTime=null;
 
-  if(document.getElementById("activitySteps")){
-    activitySteps.value="";
-  }
-
-  if(document.getElementById("activityTimer")){
-    activityTimer.textContent="00:00:00";
-    if(document.getElementById("liveMinutes"))liveMinutes.textContent="0 د";
-if(document.getElementById("liveKm"))liveKm.textContent="0.00 كم";
-if(document.getElementById("liveBurn"))liveBurn.textContent="0";
-if(document.getElementById("livePace"))livePace.textContent="--";
-  }
+  if(document.getElementById("activitySteps"))activitySteps.value="";
+  if(document.getElementById("activityTimer"))activityTimer.textContent="00:00:00";
+  if(document.getElementById("liveMinutes"))liveMinutes.textContent="0 د";
+  if(document.getElementById("liveKm"))liveKm.textContent="0.00 كم";
+  if(document.getElementById("liveBurn"))liveBurn.textContent="0";
+  if(document.getElementById("livePace"))livePace.textContent="--";
 
   if(document.getElementById("activityStatus")){
     activityStatus.textContent="تم حفظ النشاط ✅";
