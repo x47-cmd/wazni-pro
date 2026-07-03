@@ -260,7 +260,10 @@ style="display:none;margin-top:20px">
 </div>
 </div>
 </div>
-
+<div class="card">
+  <h3>📅 خطة التدريب الذكية</h3>
+  <div id="trainingPlan"></div>
+</div>
 <div id="dash" class="page">
 <h3 data-k="dash">الداشبورد</h3>
 <div id="advancedStats" class="statsGrid"></div>
@@ -754,7 +757,7 @@ dashboardStats(cur,loss,rem);
 renderCalendar();
 renderSteps();
 renderHomeDashboard();
-
+renderTrainingPlan();
 if(D.length && !selectedDay)pickDay(D[D.length-1].d);
 
 draw();
@@ -790,7 +793,61 @@ box.innerHTML=`
 <div class="statCard"><div class="statLabel">النزول الأسبوعي</div><div class="statValue">${rate.toFixed(1)}</div></div>
 <div class="statCard"><div class="statLabel">توقع الوصول</div><div class="statValue">${weeks?weeks.toFixed(1)+" أسبوع":"--"}</div></div>`;
 }
+function renderTrainingPlan(){
+let box=document.getElementById("trainingPlan");
+if(!box)return;
 
+if(S.goalType!=="run"){
+box.innerHTML="";
+return;
+}
+
+let t=S.sportTest||{distance:3,targetTime:15,currentTime:0};
+
+if(!t.currentTime){
+box.innerHTML=`
+<div class="coachBox">
+<div class="coachTitle">📅 الخطة التدريبية الذكية</div>
+<div class="coachText">سجل نتيجة أول اختبار رياضي لإنشاء خطة تدريب مخصصة.</div>
+</div>`;
+return;
+}
+
+let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
+
+let plan=
+readiness>=100?
+[
+"🏃‍♂️ حافظ على مستواك بجريتين خفيفتين أسبوعياً.",
+"💨 ركز على تمارين السرعة القصيرة.",
+"😴 خذ راحة قبل الاختبار بيوم."
+]:
+readiness>=90?
+[
+"🏃‍♂️ 3 حصص جري أسبوعياً.",
+"💨 تمارين وتيرة متوسطة.",
+"🦵 يوم تقوية أرجل."
+]:
+readiness>=80?
+[
+"🏃‍♂️ 4 حصص أسبوعياً.",
+"💨 تمارين تنفس ووثيرة.",
+"🦵 تمارين رجلين وكور."
+]:
+[
+"🏃‍♂️ ابدأ بالمشي والجري المتدرج.",
+"💨 زد المسافة تدريجياً.",
+"😴 يوم راحة بين كل حصتين."
+];
+
+box.innerHTML=`
+<div class="coachBox">
+<div class="coachTitle">📅 الخطة التدريبية الذكية</div>
+<div class="coachList">
+${plan.map(x=>`<div class="coachItem">${x}</div>`).join("")}
+</div>
+</div>`;
+}
 function insights(cur,loss,rem){
 if(D.length<2){
 return `<div class="coachBox"><div class="coachTitle">👋 ابدأ رحلتك</div><div class="coachText">التحليل الذكي يبدأ بعد أول تسجيلين.</div></div>`;
