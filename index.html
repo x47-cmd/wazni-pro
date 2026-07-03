@@ -1733,11 +1733,32 @@ box.scrollIntoView({
       maxZoom:19
     }).addTo(map);
 
-    L.polyline(pts,{weight:5}).addTo(map);
-    L.marker(pts[0]).addTo(map).bindPopup("البداية 🟢");
-    L.marker(pts[pts.length-1]).addTo(map).bindPopup("النهاية 🔴");
+    if(pts.length>1){
 
-    map.fitBounds(pts,{padding:[30,30]});
+  let line=L.polyline(pts,{
+    weight:6
+  }).addTo(map);
+
+  L.circleMarker(pts[0],{
+    radius:8
+  }).addTo(map).bindPopup("🟢 البداية");
+
+  L.circleMarker(pts[pts.length-1],{
+    radius:8
+  }).addTo(map).bindPopup("🔴 النهاية");
+
+  map.fitBounds(line.getBounds(),{
+    padding:[30,30]
+  });
+
+}else{
+
+  L.marker(pts[0]).addTo(map)
+    .bindPopup("📍 نقطة النشاط");
+
+  map.setView(pts[0],17);
+
+}
   },200);
 }
 render();
