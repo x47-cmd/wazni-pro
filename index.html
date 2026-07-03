@@ -95,6 +95,42 @@ body.dark .coachItem{background:#10201d}
 .kpis{grid-template-columns:1fr}
 .tab{font-size:13px;padding:10px 5px}
 }
+.activityLive{
+background:linear-gradient(135deg,#0f766e,#14b8a6);
+color:#fff;
+border-radius:22px;
+padding:18px;
+margin-top:14px;
+box-shadow:0 10px 24px #0002;
+}
+
+.activityTimer{
+font-size:42px;
+font-weight:900;
+text-align:center;
+direction:ltr;
+margin:12px 0;
+}
+
+.activityBtns{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+margin-top:15px;
+}
+
+.activityHistory{
+display:grid;
+gap:12px;
+margin-top:16px;
+}
+
+.activityItem{
+background:var(--card);
+border:1px solid var(--line);
+border-radius:16px;
+padding:14px;
+}
 </style>
 </head>
 
@@ -333,6 +369,79 @@ style="display:none;margin-top:20px">
 <input id="stepsManual" type="number" placeholder="مثال 8000">
 </div>
 <button class="btn saveBtn" onclick="saveSteps()">حفظ الخطوات</button>
+</div>
+<div class="card" style="margin-top:16px">
+
+<h3>🏃 النشاط المباشر</h3>
+
+<div class="grid form">
+
+<div>
+
+<label>نوع النشاط</label>
+
+<select id="activityType" style="width:100%;height:60px;border-radius:18px;border:1px solid #ddd;padding:10px">
+
+<option value="walk">🚶 مشي</option>
+
+<option value="run">🏃 ركض</option>
+
+<option value="bike">🚴 دراجة</option>
+
+<option value="swim">🏊 سباحة</option>
+
+<option value="gym">💪 نادي</option>
+
+</select>
+
+</div>
+
+<div>
+
+<label>خطوات النشاط</label>
+
+<input id="activitySteps" type="number" placeholder="مثال 2500">
+
+</div>
+
+</div>
+
+<div class="activityLive">
+
+<div style="text-align:center;font-weight:900">
+النشاط الحالي
+</div>
+
+<div id="activityTimer" class="activityTimer">
+00:00:00
+</div>
+
+<div id="activityStatus" style="text-align:center">
+جاهز للبدء
+</div>
+
+<div class="activityBtns">
+
+<button class="btn" onclick="startActivity()">
+▶️ ابدأ
+</button>
+
+<button class="btn btn2" onclick="stopActivity()">
+⏹️ إيقاف
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card" style="margin-top:16px">
+
+<h3>📋 آخر الأنشطة</h3>
+
+<div id="activitiesList" class="activityHistory"></div>
+
 </div>
 
 <div class="card" style="margin-top:16px">
@@ -758,6 +867,7 @@ renderCalendar();
 renderSteps();
 renderHomeDashboard();
 renderTrainingPlan();
+renderActivities();
 if(D.length && !selectedDay)pickDay(D[D.length-1].d);
 
 draw();
@@ -1179,7 +1289,154 @@ function csv(){
   a.download="wazni.csv";
   a.click();
 }
+let AD=JSON.parse(localStorage.wazniActivities||'[]');
+let activityRunning=false;
+let activityStartTime=null;
+let activityInterval=null;
 
+function formatTime(ms){
+  let total=Math.floor(ms/1000);
+  let h=Math.floor(total/3600);
+  let m=Math.floor((total%3600)/60);
+  let s=total%60;
+  return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+function activityName(type){
+  let names={
+    walk:"🚶 مشي",
+    run:"🏃 ركض",
+    bike:"🚴 دراجة",
+    swim:"🏊 سباحة",
+    gym:"💪 نادي"
+  };
+  return names[type]||"نشاط";
+}
+
+function activityRate(type){
+  let rates={
+    walk:5,
+    run:10,
+    bike:8,
+    swim:9,
+    gym:6
+  };
+  return rates[type]||5;
+}
+
+function startActivity(){
+  if(activityRunning){
+    alert("النشاط شغال حالياً");
+    return;
+  }
+
+  activityRunning=true;
+  activityStartTime=Date.now();
+
+  if(document.getElementById("activityStatus")){
+    activityStatus.textContent="النشاط شغال الآن 🔥";
+  }
+
+  activityInterval=setInterval(function(){
+    if(document.getElementById("activityTimer")){
+      activityTimer.textContent=formatTime(Date.now()-activityStartTime);
+    }
+  },1000);
+}
+
+function stopActivity(){
+  if(!activityRunning){
+    alert("مافي نشاط شغال حالياً");
+    return;
+  }
+
+  clearInterval(activityInterval);
+
+  let end=Date.now();
+  let durationMs=end-activityStartTime;
+  let minutes=Math.max(1,Math.round(durationMs/60000));
+  let type=document.getElementById("activityType")?activityType.value:"walk";
+  let steps=+activitySteps.value||0;
+
+  let km=0;
+
+  if(type==="walk" || type==="run"){
+    km=steps>0?steps*0.00075:minutes*(type==="run"?0.13:0.08);
+  }else if(type==="bike"){
+    km=minutes*0.25;
+  }else if(type==="swim"){
+    km=minutes*0.03;
+  }else{
+    km=0;
+  }
+
+  let burn=Math.round(minutes*activityRate(type));
+
+  let item={
+    id:Date.now(),
+    d:isoDate(),
+    type:type,
+    minutes:minutes,
+    steps:steps,
+    km:+km.toFixed(2),
+    burn:burn
+  };
+
+  AD.push(item);
+  AD.sort((a,b)=>a.d.localeCompare(b.d));
+  localStorage.wazniActivities=JSON.stringify(AD);
+
+  if(steps>0){
+    let today=isoDate();
+    let old=currentSteps().steps||0;
+    let total=old+steps;
+
+    SD=SD.filter(x=>x.d!==today);
+    SD.push({d:today,steps:total});
+    SD.sort((a,b)=>a.d.localeCompare(b.d));
+    localStorage.wazniSteps=JSON.stringify(SD);
+    syncStepsToWeight(today,total);
+  }
+
+  activityRunning=false;
+  activityStartTime=null;
+
+  if(document.getElementById("activitySteps")){
+    activitySteps.value="";
+  }
+
+  if(document.getElementById("activityTimer")){
+    activityTimer.textContent="00:00:00";
+  }
+
+  if(document.getElementById("activityStatus")){
+    activityStatus.textContent="تم حفظ النشاط ✅";
+  }
+
+  render();
+}
+
+function renderActivities(){
+  let box=document.getElementById("activitiesList");
+  if(!box)return;
+
+  if(!AD.length){
+    box.innerHTML='<div class="muted">لا توجد أنشطة محفوظة بعد.</div>';
+    return;
+  }
+
+  box.innerHTML=AD.slice(-5).reverse().map(x=>`
+    <div class="activityItem">
+      <div><b>${activityName(x.type)}</b> — ${x.d}</div>
+      <div class="muted">
+      ⏱️ ${x.minutes} دقيقة |
+      📍 ${x.km} كم |
+      🔥 ${x.burn} سعرة |
+      👣 ${x.steps||0} خطوة
+      </div>
+    </div>
+  `).join("");
+}
 render();
 </script>
 </body>
