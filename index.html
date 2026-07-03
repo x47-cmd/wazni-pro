@@ -483,7 +483,18 @@ style="display:none;margin-top:20px">
 </div>
 
 </div>
+<div class="card">
+  <h3>🏆 الإنجازات</h3>
 
+  <div id="achievementsBox"
+       style="
+         display:grid;
+         grid-template-columns:repeat(2,1fr);
+         gap:10px;
+       ">
+  </div>
+
+</div>
 <div class="card" style="margin-top:16px">
 
 <h3>📋 آخر الأنشطة</h3>
@@ -916,6 +927,7 @@ renderSteps();
 renderHomeDashboard();
 renderTrainingPlan();
 renderActivities();
+renderAchievements();
 if(D.length && !selectedDay)pickDay(D[D.length-1].d);
 
 draw();
@@ -1676,6 +1688,41 @@ route:activityRoute
   };
 
   AD.push(item);
+  // الإنجاز الأول
+if(AD.length===1){
+  unlockAchievement(
+    "first_activity",
+    "أول نشاط رياضي",
+    "🥇"
+  );
+}
+
+// أول كيلومتر
+if(activity.km>=1){
+  unlockAchievement(
+    "first_km",
+    "أول كيلومتر",
+    "🚶"
+  );
+}
+
+// أول 100 سعرة
+if(activity.burn>=100){
+  unlockAchievement(
+    "burn100",
+    "حرقت 100 سعرة",
+    "🔥"
+  );
+}
+
+// أول 30 دقيقة
+if(activity.minutes>=30){
+  unlockAchievement(
+    "30min",
+    "30 دقيقة متواصلة",
+    "⏱️"
+  );
+}
   AD.sort((a,b)=>a.d.localeCompare(b.d));
   localStorage.wazniActivities=JSON.stringify(AD);
 
@@ -1726,6 +1773,59 @@ function motionIcon(state){
   if(state==="اشتباه سيارة")return "🔴";
   if(state==="سيارة/سرعة غير منطقية")return "🔴";
   return "🟢";
+}
+function unlockAchievement(id,title,icon){
+
+  let achievements=JSON.parse(localStorage.getItem("achievements")||"[]");
+
+  if(achievements.includes(id)) return;
+
+  achievements.push(id);
+  localStorage.setItem("achievements",JSON.stringify(achievements));
+
+  alert(
+    "🏆 إنجاز جديد!\n\n"+
+    icon+" "+title
+  );
+
+}
+function renderAchievements(){
+
+  let box=document.getElementById("achievementsBox");
+  if(!box) return;
+
+  let unlocked=JSON.parse(localStorage.getItem("achievements")||"[]");
+
+  let list=[
+    ["first_activity","🥇","أول نشاط"],
+    ["first_km","🚶","أول كيلومتر"],
+    ["burn100","🔥","100 سعرة"],
+    ["30min","⏱️","30 دقيقة"]
+  ];
+
+  box.innerHTML=list.map(a=>{
+
+    let ok=unlocked.includes(a[0]);
+
+    return `
+      <div class="card"
+      style="
+      text-align:center;
+      padding:12px;
+      opacity:${ok?1:.45};
+      ">
+        <div style="font-size:30px">
+          ${ok?a[1]:"🔒"}
+        </div>
+
+        <div style="margin-top:6px;font-weight:bold">
+          ${a[2]}
+        </div>
+      </div>
+    `;
+
+  }).join("");
+
 }
 function renderActivities(){
   let box=document.getElementById("activitiesList");
