@@ -625,7 +625,7 @@ function saveSportTest(){
   };
 
   localStorage.wazniS=JSON.stringify(S);
-  renderSportTest();
+  render();
 }
 
 function renderGoalContent(){
@@ -656,20 +656,33 @@ function renderSportTest(){
   }
 
   let targetPace=t.targetTime/t.distance;
-  let currentPace=t.currentTime/t.distance;
-  let diff=t.currentTime-t.targetTime;
-  let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
+let currentPace=t.currentTime/t.distance;
+let diff=t.currentTime-t.targetTime;
+let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
+let paceDiff=currentPace-targetPace;
+let daysLeft=t.testDate?Math.ceil((new Date(t.testDate)-new Date())/(1000*60*60*24)):null;
+let weeklyNeed=diff>0 && daysLeft>0?(diff/(daysLeft/7)):0;
+
+let statusText=
+readiness>=100?"جاهز للاختبار ✅":
+readiness>=90?"قريب جداً 🔥":
+readiness>=80?"تحتاج تحسين بسيط 💪":
+"تحتاج خطة تدريب أقوى ⚠️";
 
   sportAnalysis.innerHTML=`
-    <div class="coachTitle">📊 تحليل الجاهزية</div>
-    <div class="coachList">
-      <div class="coachItem">🎯 المطلوب: ${t.distance} كم خلال ${t.targetTime} دقيقة.</div>
-      <div class="coachItem">⏱️ الوتيرة المطلوبة: ${targetPace.toFixed(2)} دقيقة/كم.</div>
-      <div class="coachItem">🏃 وتيرتك الحالية: ${currentPace.toFixed(2)} دقيقة/كم.</div>
-      <div class="coachItem">📉 الفرق المطلوب تحسينه: ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
-      <div class="coachItem">🔥 جاهزيتك الحالية: ${readiness.toFixed(0)}%.</div>
-    </div>
-  `;
+  <div class="coachTitle">📊 تحليل الجاهزية</div>
+  <div class="coachList">
+    <div class="coachItem">🎯 المطلوب: ${t.distance} كم خلال ${t.targetTime} دقيقة.</div>
+    <div class="coachItem">⏱️ الوتيرة المطلوبة: ${targetPace.toFixed(2)} دقيقة/كم.</div>
+    <div class="coachItem">🏃 وتيرتك الحالية: ${currentPace.toFixed(2)} دقيقة/كم.</div>
+    <div class="coachItem">📉 الفرق المطلوب تحسينه: ${Math.max(0,diff).toFixed(1)} دقيقة.</div>
+    <div class="coachItem">⚡ فرق الوتيرة: ${Math.max(0,paceDiff).toFixed(2)} دقيقة/كم.</div>
+    <div class="coachItem">🔥 جاهزيتك الحالية: ${readiness.toFixed(0)}%.</div>
+    <div class="coachItem">📅 الأيام المتبقية: ${daysLeft!==null?Math.max(0,daysLeft)+" يوم":"لم يتم تحديد التاريخ"}.</div>
+    <div class="coachItem">📈 المطلوب أسبوعياً: ${weeklyNeed>0?weeklyNeed.toFixed(1)+" دقيقة تحسن بالأسبوع":"أنت قريب أو جاهز"}.</div>
+    <div class="coachItem">🧠 التقييم: ${statusText}</div>
+  </div>
+`;
 }
 function render(){
 tr();
