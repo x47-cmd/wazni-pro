@@ -1668,8 +1668,32 @@ function renderActivities(){
 ${x.gps?"🟢 GPS":"🔴 بدون GPS"}
 &nbsp;&nbsp;${motionIcon(x.motion)} ${x.motion||"طبيعي"}
 </div>
+${x.route && x.route.length ? `
+<button class="miniBtn" style="margin-top:10px" onclick="showRoute(${x.id})">
+🗺️ عرض المسار
+</button>
+` : ""}
     </div>
   `).join("");
+}
+function showRoute(id){
+  let x=AD.find(a=>a.id===id);
+  if(!x || !x.route || !x.route.length){
+    alert("لا يوجد مسار محفوظ لهذا النشاط");
+    return;
+  }
+
+  let first=x.route[0];
+  let last=x.route[x.route.length-1];
+
+  alert(
+    "🗺️ مسار النشاط\n\n"+
+    "عدد نقاط GPS: "+x.route.length+"\n\n"+
+    "البداية:\n"+
+    first.lat+", "+first.lon+"\n\n"+
+    "النهاية:\n"+
+    last.lat+", "+last.lon
+  );
 }
 render();
 </script>
