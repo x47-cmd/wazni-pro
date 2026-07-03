@@ -1572,6 +1572,8 @@ function stopActivity(){
   let steps=document.getElementById("activitySteps")?(+activitySteps.value||0):0;
   let km=getActivityKm(type,steps,minutes);
   let burn=Math.round(minutes*activityRate(type));
+  let pace=km>0 && minutes>0?(minutes/km).toFixed(1):"--";
+let avgSpeed=km>0 && minutes>0?(km/(minutes/60)).toFixed(1):"0.0";
 
   let item={
     id:Date.now(),
@@ -1581,7 +1583,11 @@ function stopActivity(){
     steps:steps,
     km:+km.toFixed(2),
     burn:burn,
-    gps:gpsEnabled
+    pace:pace,
+    speed:avgSpeed,
+    gps:gpsEnabled,
+    motion:motionState,
+    ignored:+activityIgnoredDistance.toFixed(2)
   };
 
   AD.push(item);
@@ -1633,8 +1639,15 @@ function renderActivities(){
       <div class="muted">
       ⏱️ ${x.minutes} دقيقة |
       📍 ${x.km} كم |
+      ⚡ ${x.pace||"--"} د/كم |
+      🚀 ${x.speed||"0.0"} كم/س |
       🔥 ${x.burn} سعرة |
-      👣 ${x.steps||0} خطوة
+      👣 ${x.steps||0} خطوة |
+      ${x.gps?"📡 GPS":"📝 تقديري"}
+      </div>
+      <div class="muted">
+      🧠 الحالة: ${x.motion||"طبيعي"}
+      ${x.ignored?` | 🚫 تجاهل ${x.ignored} كم غير منطقية`:""}
       </div>
     </div>
   `).join("");
