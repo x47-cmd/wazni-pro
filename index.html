@@ -1333,6 +1333,7 @@ let activityIgnoredDistance=0;
 let vehicleSuspectSeconds=0;
 let motionState="طبيعي";
 let gpsWarmupUntil=0;
+let activityRoute=[];
 
 function formatTime(ms){
   let total=Math.floor(ms/1000);
@@ -1426,6 +1427,7 @@ function startActivityGPS(){
   vehicleSuspectSeconds=0;
   motionState="طبيعي";
   gpsWarmupUntil=Date.now()+10000;
+  activityRoute=[];
 
   if(!navigator.geolocation){
     return;
@@ -1470,7 +1472,13 @@ function startActivityGPS(){
         lon:lon,
         time:pos.timestamp
       };
-
+activityRoute.push({
+  lat:+lat.toFixed(6),
+  lon:+lon.toFixed(6),
+  time:pos.timestamp,
+  speed:+activitySpeed.toFixed(1),
+  state:motionState
+});
       gpsEnabled=true;
 
     },function(){
@@ -1587,7 +1595,8 @@ let avgSpeed=km>0 && minutes>0?(km/(minutes/60)).toFixed(1):"0.0";
     speed:avgSpeed,
     gps:gpsEnabled,
     motion:motionState,
-    ignored:+activityIgnoredDistance.toFixed(2)
+    ignored:+activityIgnoredDistance.toFixed(2),
+route:activityRoute
   };
 
   AD.push(item);
