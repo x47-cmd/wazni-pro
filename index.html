@@ -1332,6 +1332,7 @@ let activitySpeed=0;
 let activityIgnoredDistance=0;
 let vehicleSuspectSeconds=0;
 let motionState="طبيعي";
+let gpsWarmupUntil=0;
 
 function formatTime(ms){
   let total=Math.floor(ms/1000);
@@ -1424,6 +1425,7 @@ function startActivityGPS(){
   activitySpeed=0;
   vehicleSuspectSeconds=0;
   motionState="طبيعي";
+  gpsWarmupUntil=Date.now()+10000;
 
   if(!navigator.geolocation){
     return;
@@ -1439,6 +1441,11 @@ function startActivityGPS(){
       if(accuracy>80)return;
 
       if(activityLastPos){
+        if(Date.now()<gpsWarmupUntil){
+  activityLastPos={lat:lat,lon:lon,time:pos.timestamp};
+  gpsEnabled=true;
+  return;
+}
         let add=calcDistance(activityLastPos.lat,activityLastPos.lon,lat,lon);
         let seconds=(pos.timestamp-activityLastPos.time)/1000;
 
