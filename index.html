@@ -1792,38 +1792,39 @@ function unlockAchievement(id,title,icon){
 function renderAchievements(){
 
   let box=document.getElementById("achievementsBox");
-  if(!box) return;
+  if(!box)return;
 
   let unlocked=JSON.parse(localStorage.getItem("achievements")||"[]");
 
+  let totalKm=AD.reduce((a,x)=>a+(+x.km||0),0);
+  let totalBurn=AD.reduce((a,x)=>a+(+x.burn||0),0);
+  let totalMinutes=AD.reduce((a,x)=>a+(+x.minutes||0),0);
+
   let list=[
-    ["first_activity","🥇","أول نشاط"],
-    ["first_km","🚶","أول كيلومتر"],
-    ["burn100","🔥","100 سعرة"],
-    ["30min","⏱️","30 دقيقة"]
+    ["first_activity","🥇","أول نشاط",AD.length,1,"نشاط"],
+    ["first_km","🚶","أول كيلومتر",totalKm,1,"كم"],
+    ["burn100","🔥","100 سعرة",totalBurn,100,"سعرة"],
+    ["30min","⏱️","30 دقيقة",totalMinutes,30,"دقيقة"]
   ];
 
   box.innerHTML=list.map(a=>{
-
-    let ok=unlocked.includes(a[0]);
+    let id=a[0], icon=a[1], title=a[2], current=a[3], target=a[4], unit=a[5];
+    let ok=unlocked.includes(id) || current>=target;
+    let pct=Math.min(100,Math.round((current/target)*100));
 
     return `
-      <div class="card"
-      style="
-      text-align:center;
-      padding:12px;
-      opacity:${ok?1:.45};
-      ">
-        <div style="font-size:30px">
-          ${ok?a[1]:"🔒"}
+      <div class="statCard" style="opacity:${ok?1:.65}">
+        <div style="font-size:30px">${ok?icon:"🔒"}</div>
+        <div class="statLabel" style="margin-top:6px">${title}</div>
+        <div class="bar" style="height:10px;margin-top:10px">
+          <div class="fill" style="width:${pct}%"></div>
         </div>
-
-        <div style="margin-top:6px;font-weight:bold">
-          ${a[2]}
+        <div class="muted" style="margin-top:8px">
+          ${ok?"✅ مكتمل":pct+"%"}<br>
+          ${current.toFixed(current%1?1:0)} / ${target} ${unit}
         </div>
       </div>
     `;
-
   }).join("");
 
 }
