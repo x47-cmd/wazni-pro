@@ -16,7 +16,34 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Bl
 .app{max-width:1050px;margin:auto;padding:16px 16px 95px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .logo{display:flex;gap:10px;align-items:center}
-.ico{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#0f766e,#14b8a6);display:grid;place-items:center;color:#fff;font-size:25px}
+.ico{
+    width:64px;
+    height:64px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#17b3a3,#0f766e);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    color:#fff;
+    box-shadow:0 10px 25px rgba(15,118,110,.25);
+}
+
+.logoL{
+    font-size:38px;
+    font-weight:800;
+    color:#fff;
+    line-height:1;
+}
+
+.logoLeaf{
+    position:absolute;
+    top:8px;
+    right:12px;
+    font-size:11px;
+    color:#b8ffcb;
+    transform:rotate(45deg);
+}
 .btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;background:var(--pri);color:white;font-size:15px}
 .btn2{background:var(--card);color:var(--txt);border:1px solid var(--line)}
 .grid{display:grid;gap:14px}
@@ -146,7 +173,10 @@ overflow:hidden;
 <body>
 <div class="app">
 <div class="top">
-<div class="logo"><div class="ico">L</div><div><h2 id="title">لياقتي | Liyaqti</h2><div class="muted" id="sub">رفيقك الذكي للصحة واللياقة</div></div></div>
+<div class="logo"><div class="ico">
+    <span class="logoL">L</span>
+    <span class="logoLeaf">◢</span>
+</div><div><h2 id="title">لياقتي | Liyaqti</h2><div class="muted" id="sub">رفيقك الذكي للصحة واللياقة</div></div></div>
 <div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div>
 </div>
 
@@ -627,7 +657,7 @@ document.documentElement.lang=S.lang;
 document.documentElement.dir=S.lang=="ar"?"rtl":"ltr";
 document.querySelectorAll("[data-k]").forEach(e=>e.textContent=T[S.lang][e.dataset.k]);
 title.textContent=S.lang=="ar"?"لياقتي | Liyaqti":"Liyaqti";
-sub.textContent=S.lang=="ar"?"متابعة ذكية للوزن":"Smart weight tracker";
+sub.textContent=S.lang=="ar"?"رفيقك الذكي لصحة ولياقة أفضل":"Smart weight tracker";
 }
 
 function lang(){S.lang=S.lang=="ar"?"en":"ar";localStorage.wazniS=JSON.stringify(S);tr()}
