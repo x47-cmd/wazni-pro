@@ -185,7 +185,7 @@ overflow:hidden;
 
 <div class="grid kpis">
 <div class="card"><div class="muted">الوزن الحالي</div><div class="num"><span id="homeCurrent">--</span> kg</div></div>
-<div class="card"><div class="muted">الهدف النشط</div><div class="num" id="homeGoalName">نزولخسارة الوزن</div></div>
+<div class="card"><div class="muted">الهدف النشط</div><div class="num" id="homeGoalName">خسارة الوزن</div></div>
 <div class="card"><div class="muted">نسبة الإنجاز</div><div class="num"><span id="homeProgress">0</span>%</div></div>
 <div class="card"><div class="muted">خطوات اليوم</div><div class="num"><span id="homeSteps">0</span></div></div>
 </div>
@@ -208,6 +208,8 @@ overflow:hidden;
 <div id="homeModules" class="statsGrid"></div>
 </div>
 </div>
+
+<div id="goalPage" class="page">
 
 <div class="card">
   <h3>🗓️ خطة التدريب الذكية</h3>
@@ -775,7 +777,7 @@ x.style.display=="block"
 function setGoalType(type){
 
 let names={
-loss:"نخسارة الوزن",
+loss:"خسارة الوزن",
 gain:"زيادة وزن",
 run:"اختبار رياضي",
 steps:"تحدي خطوات",
