@@ -357,6 +357,9 @@ style="display:none;margin-top:20px">
 <div class="field"><label data-k="cal">السعرات</label><input id="cal" type="number" placeholder="مثال 1800"></div>
 </div>
 <button class="btn saveBtn" onclick="save()" data-k="save">حفظ</button>
+<div id="todayPreview" class="coachBox" style="margin-top:16px">
+  اكتب الوزن أو الخطوات لعرض ملخص اليوم قبل الحفظ.
+</div>
 <div class="bar"><div id="fill" class="fill"></div></div>
 <p class="muted"><span id="pct">0%</span> إنجاز</p>
 </div>
@@ -896,6 +899,43 @@ function saveSportTest(){
 
   localStorage.wazniS=JSON.stringify(S);
   render();
+}
+function updateTodayPreview(){
+  let box=document.getElementById("todayPreview");
+  if(!box)return;
+
+  let w=+weight.value||0;
+  let st=+steps.value||0;
+  let calv=+cal.value||0;
+
+  if(!w && !st && !calv){
+    box.innerHTML="اكتب الوزن أو الخطوات لعرض ملخص اليوم قبل الحفظ.";
+    return;
+  }
+
+  let cur=w || (D.length?D[D.length-1].w:S.start);
+  let lost=S.start-cur;
+  let total=S.start-S.goal;
+  let remain=cur-S.goal;
+  let pct=total?Math.max(0,Math.min(100,lost/total*100)):0;
+
+  let stepsMsg=st>=8000
+    ? "✅ تجاوزت هدف الخطوات اليوم"
+    : st>0
+      ? `👣 باقي لك ${8000-st} خطوة للوصول للهدف`
+      : "👣 لم تدخل خطوات اليوم";
+
+  box.innerHTML=`
+    <div class="coachTitle">✨ ملخص اليوم قبل الحفظ</div>
+    <div class="coachList">
+      <div class="coachItem">⚖️ الوزن: ${w?w.toFixed(1)+" كجم":"لم يتم إدخاله"}</div>
+      <div class="coachItem">${stepsMsg}</div>
+      <div class="coachItem">🔥 السعرات: ${calv?calv:"لم يتم إدخالها"}</div>
+      <div class="coachItem">📉 إجمالي النزول بعد الحفظ: ${lost.toFixed(1)} كجم</div>
+      <div class="coachItem">⏳ المتبقي للهدف: ${remain.toFixed(1)} كجم</div>
+      <div class="coachItem">🎯 نسبة الإنجاز بعد الحفظ: ${pct.toFixed(0)}%</div>
+    </div>
+  `;
 }
 function renderGoalProgress(){
   let cur=D.length?D[D.length-1].w:S.start;
@@ -2124,6 +2164,14 @@ if(startEndDistance<10){
 }
   },200);
 }
+["weight","steps","cal"].forEach(id=>{
+  let el=document.getElementById(id);
+  if(el){
+    el.addEventListener("input",updateTodayPreview);
+  }
+});
+
+updateTodayPreview();
 render();
 </script>
 
