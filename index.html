@@ -505,9 +505,9 @@ box-shadow:0 8px 20px rgba(0,0,0,.08);
 
 <div class="card" style="margin-top:16px">
 
-  <button class="btn" style="width:100%" onclick="toggleAchievements()">
-    🏆 عرض الإنجازات
-  </button>
+<button id="achievementsToggleBtn" class="btn" style="width:100%" onclick="toggleAchievements()">
+  🏆 عرض الإنجازات
+</button>
 
   <div id="achievementsPanel" style="display:none;margin-top:16px">
 
@@ -1851,7 +1851,16 @@ function renderAchievements(){
     ["burn100","🔥","100 سعرة",totalBurn,100,"سعرة"],
     ["30min","⏱️","30 دقيقة",totalMinutes,30,"دقيقة"]
   ];
+let completed = list.filter(a=>{
+  let current = a[3];
+  let target = a[4];
+  return current >= target;
+}).length;
 
+let btn = document.getElementById("achievementsToggleBtn");
+if(btn){
+  btn.textContent = "🏆 عرض الإنجازات (" + completed + "/" + list.length + ")";
+}
   box.innerHTML=list.map(a=>{
     let id=a[0], icon=a[1], title=a[2], current=a[3], target=a[4], unit=a[5];
     let ok=unlocked.includes(id) || current>=target;
@@ -1876,13 +1885,16 @@ function renderAchievements(){
 function toggleAchievements(){
 
   const panel=document.getElementById("achievementsPanel");
+  const btn=document.getElementById("achievementsToggleBtn");
 
-  if(!panel) return;
+  if(!panel)return;
 
   if(panel.style.display==="none" || panel.style.display===""){
     panel.style.display="block";
+    if(btn)btn.textContent="🏆 إخفاء الإنجازات";
   }else{
     panel.style.display="none";
+    renderAchievements();
   }
 
 }
