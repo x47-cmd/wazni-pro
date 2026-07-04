@@ -928,9 +928,9 @@ function updateTodayPreview(){
   box.innerHTML=`
     <div class="coachTitle">✨ ملخص اليوم قبل الحفظ</div>
     <div class="coachList">
-      <div class="coachItem">⚖️ الوزن: ${w?w.toFixed(1)+" كجم":"لم يتم إدخاله"}</div>
+      <div class="coachItem">⚖️ الوزن: ${cur.toFixed(1)} كجم</div>
       <div class="coachItem">${stepsMsg}</div>
-      <div class="coachItem">🔥 السعرات: ${calv?calv:"لم يتم إدخالها"}</div>
+      <div class="coachItem">🔥 السعرات: ${calv>0?calv:"لم يتم إدخالها"}</div>
       <div class="coachItem">📉 إجمالي النزول بعد الحفظ: ${lost.toFixed(1)} كجم</div>
       <div class="coachItem">⏳ المتبقي للهدف: ${remain.toFixed(1)} كجم</div>
       <div class="coachItem">🎯 نسبة الإنجاز بعد الحفظ: ${pct.toFixed(0)}%</div>
