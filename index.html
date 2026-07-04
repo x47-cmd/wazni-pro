@@ -1680,8 +1680,9 @@ let avgSpeed=km>0 && minutes>0?(km/(minutes/60)).toFixed(1):"0.0";
 route:activityRoute
   };
 
-  AD.push(item);
-  // الإنجاز الأول
+AD.push(item);
+
+// الإنجاز الأول
 if(AD.length===1){
   unlockAchievement(
     "first_activity",
@@ -1690,7 +1691,8 @@ if(AD.length===1){
   );
 }
 
-// أول كيلومترif(item.km>=1){
+// أول كيلومتر
+if(item.km>=1){
   unlockAchievement(
     "first_km",
     "أول كيلومتر",
@@ -1704,6 +1706,15 @@ if(item.burn>=100){
     "burn100",
     "حرقت 100 سعرة",
     "🔥"
+  );
+}
+
+// أول 30 دقيقة
+if(item.minutes>=30){
+  unlockAchievement(
+    "30min",
+    "30 دقيقة متواصلة",
+    "⏱️"
   );
 }
 
