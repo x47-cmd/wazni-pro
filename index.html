@@ -146,16 +146,16 @@ overflow:hidden;
 <body>
 <div class="app">
 <div class="top">
-<div class="logo"><div class="ico">⚖️</div><div><h2 id="title">لياقتي | Liyaqti</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div>
+<div class="logo"><div class="ico">💚</div><div><h2 id="title">لياقتي | Liyaqti</h2><div class="muted" id="sub">رفيقك الذكي للصحة واللياقة</div></div></div>
 <div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div>
 </div>
 
 <div id="home" class="page on">
-<h3>🏠 لوحة التحكم الذكية</h3>
+<h3>🏠 الرئيسية </h3>
 
 <div class="grid kpis">
 <div class="card"><div class="muted">الوزن الحالي</div><div class="num"><span id="homeCurrent">--</span> kg</div></div>
-<div class="card"><div class="muted">الهدف النشط</div><div class="num" id="homeGoalName">نزول وزن</div></div>
+<div class="card"><div class="muted">الهدف النشط</div><div class="num" id="homeGoalName">نزولخسارة الوزن</div></div>
 <div class="card"><div class="muted">نسبة الإنجاز</div><div class="num"><span id="homeProgress">0</span>%</div></div>
 <div class="card"><div class="muted">خطوات اليوم</div><div class="num"><span id="homeSteps">0</span></div></div>
 </div>
@@ -195,7 +195,7 @@ overflow:hidden;
 <div class="statCard">
 <div class="statLabel">الهدف النشط</div>
 <div class="statValue" id="goalType">
-نزول وزن
+ خسارة الوزن
 </div>
 </div>
 
@@ -235,7 +235,7 @@ style="display:none;margin-top:20px">
 <div class="statCard" onclick="setGoalType('loss')">
 ⚖️
 <br><br>
-نزول وزن
+خسارة الوزن 
 </div>
 
 <div class="statCard" onclick="setGoalType('gain')">
@@ -745,7 +745,7 @@ x.style.display=="block"
 function setGoalType(type){
 
 let names={
-loss:"نزول وزن",
+loss:"نخسارة الوزن",
 gain:"زيادة وزن",
 run:"اختبار رياضي",
 steps:"تحدي خطوات",
@@ -766,7 +766,7 @@ render();
 function renderGoalType(){
 
 let names={
-loss:"نزول وزن",
+loss:"خسارة الوزن",
 gain:"زيادة وزن",
 run:"اختبار رياضي",
 steps:"تحدي خطوات",
@@ -774,7 +774,7 @@ gym:"بناء عضلات",
 custom:"هدف مخصص"
 };
 
-let name=names[S.goalType]||"نزول وزن";
+let name=names[S.goalType]||" خسارة الوزن";
 
 if(document.getElementById("goalType"))goalType.textContent=name;
 if(document.getElementById("homeGoalName"))homeGoalName.textContent=name;
