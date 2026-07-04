@@ -503,15 +503,30 @@ box-shadow:0 8px 20px rgba(0,0,0,.08);
 </div>
 </div>
 
-<div class="card">
-  <h3>🏆 الإنجازات</h3>
+<div class="card" style="margin-top:16px">
 
-  <div id="achievementsBox"
-       style="
-         display:grid;
-         grid-template-columns:repeat(2,1fr);
-         gap:10px;
-       ">
+  <button class="btn" style="width:100%" onclick="toggleAchievements()">
+    🏆 عرض الإنجازات
+  </button>
+
+  <div id="achievementsPanel" style="display:none;margin-top:16px">
+
+    <h3>🏆 الإنجازات</h3>
+
+    <div id="achievementsBox"
+         style="
+           display:grid;
+           grid-template-columns:repeat(2,1fr);
+           gap:10px;
+         ">
+    </div>
+
+    <button class="btn btn2"
+            style="width:100%;margin-top:15px"
+            onclick="toggleAchievements()">
+      إغلاق
+    </button>
+
   </div>
 
 </div>
@@ -1856,6 +1871,19 @@ function renderAchievements(){
       </div>
     `;
   }).join("");
+
+}
+function toggleAchievements(){
+
+  const panel=document.getElementById("achievementsPanel");
+
+  if(!panel) return;
+
+  if(panel.style.display==="none" || panel.style.display===""){
+    panel.style.display="block";
+  }else{
+    panel.style.display="none";
+  }
 
 }
 function renderActivities(){
