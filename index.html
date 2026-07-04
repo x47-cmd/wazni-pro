@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0f766e">
-<title>وزني Pro</title>
+<title>لياقتي | Liyaqti</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -146,7 +146,7 @@ overflow:hidden;
 <body>
 <div class="app">
 <div class="top">
-<div class="logo"><div class="ico">⚖️</div><div><h2 id="title">وزني Pro</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div>
+<div class="logo"><div class="ico">⚖️</div><div><h2 id="title">لياقتي | Liyaqti</h2><div class="muted" id="sub">متابعة ذكية للوزن</div></div></div>
 <div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div>
 </div>
 
@@ -626,7 +626,7 @@ function tr(){
 document.documentElement.lang=S.lang;
 document.documentElement.dir=S.lang=="ar"?"rtl":"ltr";
 document.querySelectorAll("[data-k]").forEach(e=>e.textContent=T[S.lang][e.dataset.k]);
-title.textContent=S.lang=="ar"?"وزني Pro":"Wazni Pro";
+title.textContent=S.lang=="ar"?"لياقتي | Liyaqti":"Liyaqti";
 sub.textContent=S.lang=="ar"?"متابعة ذكية للوزن":"Smart weight tracker";
 }
 
