@@ -937,6 +937,52 @@ function updateTodayPreview(){
     </div>
   `;
 }
+let smart=document.getElementById("coach");
+
+if(smart){
+
+let status="🟢 ممتاز";
+let text=[];
+
+if(st>=8000){
+text.push("✅ حققت هدف النشاط تقريباً.");
+}else{
+text.push(`👣 باقي ${8000-st} خطوة للوصول للهدف.`);
+}
+
+if(calv>0){
+if(calv<=1800){
+text.push("🔥 السعرات مناسبة لخسارة الوزن.");
+}else if(calv<=2300){
+text.push("🍽️ السعرات ضمن الحدود المقبولة.");
+}else{
+status="🟠 يحتاج انتباه";
+text.push("⚠️ السعرات مرتفعة اليوم.");
+}
+}
+
+if(w>0){
+let last=D.length?D[D.length-1].w:S.start;
+
+if(w<last){
+text.push("📉 وزنك أفضل من آخر تسجيل.");
+}else if(w>last){
+status="🟠 يحتاج انتباه";
+text.push("📈 الوزن أعلى من آخر تسجيل.");
+}
+}
+
+smart.innerHTML=`
+<div class="coachBox">
+<div class="coachTitle">${status}</div>
+<div class="coachText">تحليل مباشر قبل الحفظ</div>
+
+<div class="coachList">
+${text.map(x=>`<div class="coachItem">${x}</div>`).join("")}
+</div>
+
+</div>`;
+}
 function renderGoalProgress(){
   let cur=D.length?D[D.length-1].w:S.start;
   let lost=S.start-cur;
