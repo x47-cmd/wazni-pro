@@ -2211,14 +2211,14 @@ if(startEndDistance<10){
 }
   },200);
 }
-["weight","steps","cal"].forEach(id=>{
-  let el=document.getElementById(id);
-  if(el){
-    el.addEventListener("input",updateTodayPreview);
-  }
-});
 
 updateTodayPreview();
+["weight","steps","cal"].forEach(function(id){
+  let el=document.getElementById(id);
+  if(el){
+    el.addEventListener("input", updateTodayPreview);
+  }
+});
 render();
 </script>
 
