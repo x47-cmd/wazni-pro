@@ -1885,6 +1885,14 @@ function toggleAchievements(){
   if(panel.style.display==="none" || panel.style.display===""){
     panel.style.display="block";
     if(btn)btn.textContent="🏆 إخفاء الإنجازات";
+
+    setTimeout(function(){
+      panel.scrollIntoView({
+        behavior:"smooth",
+        block:"center"
+      });
+    },150);
+
   }else{
     panel.style.display="none";
     renderAchievements();
