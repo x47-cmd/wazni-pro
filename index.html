@@ -1076,58 +1076,56 @@ box.innerHTML=`
 <div class="statCard"><div class="statLabel">توقع الوصول</div><div class="statValue">${weeks?weeks.toFixed(1)+" أسبوع":"--"}</div></div>`;
 }
 function renderTrainingPlan(){
-let box=document.getElementById("trainingPlan");
-if(!box)return;
+  let box=document.getElementById("trainingPlan");
+  if(!box)return;
 
-if(S.goalType!=="run"){
-box.innerHTML="";
-return;
-}
+  if(!S.trainingDone)S.trainingDone={};
 
-let t=S.sportTest||{distance:3,targetTime:15,currentTime:0};
-if(!S.trainingDone)S.trainingDone={};
+  let weekPlan=[
+    ["sat","السبت","🚶 مشي","45 دقيقة مشي خفيف"],
+    ["sun","الأحد","💪 مقاومة","تمارين جسم كامل 25 دقيقة"],
+    ["mon","الإثنين","🚶 مشي سريع","30 دقيقة"],
+    ["tue","الثلاثاء","😴 راحة","راحة أو تمدد خفيف"],
+    ["wed","الأربعاء","🏃 كارديو","20 دقيقة"],
+    ["thu","الخميس","💪 مقاومة","رجلين وكور 25 دقيقة"],
+    ["fri","الجمعة","🚶 مشي طويل","60 دقيقة مشي مريح"]
+  ];
 
-if(!t.currentTime){
-box.innerHTML=`
-<div class="coachBox">
-<div class="coachTitle">📅 الخطة التدريبية الذكية</div>
-<div class="coachText">سجل نتيجة أول اختبار رياضي لإنشاء خطة تدريب مخصصة.</div>
-</div>`;
-return;
-}
+  if(S.goalType==="run"){
+    weekPlan=[
+      ["sat","السبت","🏃 جري خفيف","2 كم"],
+      ["sun","الأحد","💨 تنفس وتمدد","15 دقيقة"],
+      ["mon","الإثنين","🏃 جري متوسط","2.5 كم"],
+      ["tue","الثلاثاء","😴 راحة","لا تختبر نفسك"],
+      ["wed","الأربعاء","🏃 جري تدريجي","3 كم"],
+      ["thu","الخميس","🦵 رجلين وكور","20 دقيقة"],
+      ["fri","الجمعة","🎯 اختبار مصغر","2 كم"]
+    ];
+  }
 
-let readiness=Math.max(0,Math.min(100,(t.targetTime/t.currentTime)*100));
+  let doneCount=weekPlan.filter(x=>S.trainingDone[x[0]]).length;
+  let donePct=Math.round(doneCount/weekPlan.length*100);
 
-let weekPlan=[
-["sun","الأحد","🏃 جري خفيف","2 كم"],
-["mon","الإثنين","💨 تنفس وتمدد","15 دقيقة"],
-["tue","الثلاثاء","🏃 جري متوسط","2.5 كم"],
-["wed","الأربعاء","😴 راحة","لا تختبر نفسك"],
-["thu","الخميس","🏃 جري تدريجي","3 كم آخر 500م أسرع"],
-["fri","الجمعة","🦵 رجلين وكور","20 دقيقة"],
-["sat","السبت","🎯 اختبار مصغر","2 كم بوتيرة جيدة"]
-];
+  box.innerHTML=`
+    <div class="coachBox">
+      <div class="coachTitle">📅 خطة هذا الأسبوع</div>
+      <div class="coachText">التزامك هذا الأسبوع: ${doneCount} من 7 — ${donePct}%</div>
 
-let doneCount=weekPlan.filter(x=>S.trainingDone[x[0]]).length;
-let donePct=Math.round(doneCount/weekPlan.length*100);
+      <div class="bar">
+        <div class="fill" style="width:${donePct}%"></div>
+      </div>
 
-box.innerHTML=`
-<div class="coachBox">
-<div class="coachTitle">📅 جدول الأسبوع الذكي</div>
-<div class="coachText">التزامك هذا الأسبوع: ${doneCount} من 7 — ${donePct}%</div>
-
-<div class="bar"><div class="fill" style="width:${donePct}%"></div></div>
-
-<div class="coachList">
-${weekPlan.map(x=>`
-<div class="coachItem" onclick="toggleTrainingDay('${x[0]}')" style="cursor:pointer">
-<strong>${S.trainingDone[x[0]]?"✅":"⬜"} ${x[1]}</strong><br>
-${x[2]}<br>
-<span class="muted">${x[3]}</span>
-</div>
-`).join("")}
-</div>
-</div>`;
+      <div class="coachList">
+        ${weekPlan.map(x=>`
+          <div class="coachItem" onclick="toggleTrainingDay('${x[0]}')" style="cursor:pointer">
+            <strong>${S.trainingDone[x[0]]?"✅":"⬜"} ${x[1]}</strong><br>
+            ${x[2]}<br>
+            <span class="muted">${x[3]}</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
 }
 function toggleTrainingDay(day){
 if(!S.trainingDone)S.trainingDone={};
