@@ -308,6 +308,45 @@ style="display:none;margin-top:20px">
 </div>
 
 </div>
+<div class="card" style="margin-bottom:16px">
+  <h3>📈 تقدم الهدف</h3>
+
+  <div class="bar">
+    <div id="goalProgressFill" class="fill"></div>
+  </div>
+
+  <div class="statsGrid" style="margin-top:16px">
+
+    <div class="statCard">
+      <div class="statLabel">⚖️ الوزن الحالي</div>
+      <div class="statValue">
+        <span id="goalCurrentWeight">--</span> كجم
+      </div>
+    </div>
+
+    <div class="statCard">
+      <div class="statLabel">🎯 الوزن المستهدف</div>
+      <div class="statValue">
+        <span id="goalTargetWeight">--</span> كجم
+      </div>
+    </div>
+
+    <div class="statCard">
+      <div class="statLabel">📉 المفقود</div>
+      <div class="statValue">
+        <span id="goalLostWeight">--</span> كجم
+      </div>
+    </div>
+
+    <div class="statCard">
+      <div class="statLabel">⏳ المتبقي</div>
+      <div class="statValue">
+        <span id="goalRemainWeight">--</span> كجم
+      </div>
+    </div>
+
+  </div>
+</div>
 <div class="grid hero">
 <div class="card" id="weightEntryCard">
 <h3 data-k="add">تسجيل اليوم</h3>
@@ -858,7 +897,19 @@ function saveSportTest(){
   localStorage.wazniS=JSON.stringify(S);
   render();
 }
+function renderGoalProgress(){
+  let cur=D.length?D[D.length-1].w:S.start;
+  let lost=S.start-cur;
+  let total=S.start-S.goal;
+  let remain=cur-S.goal;
+  let pct=total?Math.max(0,Math.min(100,lost/total*100)):0;
 
+  if(document.getElementById("goalProgressFill"))goalProgressFill.style.width=pct+"%";
+  if(document.getElementById("goalCurrentWeight"))goalCurrentWeight.textContent=cur.toFixed(1);
+  if(document.getElementById("goalTargetWeight"))goalTargetWeight.textContent=S.goal;
+  if(document.getElementById("goalLostWeight"))goalLostWeight.textContent=lost.toFixed(1);
+  if(document.getElementById("goalRemainWeight"))goalRemainWeight.textContent=remain.toFixed(1);
+}
 function renderGoalContent(){
   let isSport=S.goalType==="run";
 
@@ -956,6 +1007,7 @@ function sportCoach(){
 function render(){
 tr();
 renderGoalType();
+renderGoalProgress();
 renderGoalContent();
 let cur=D.length?D[D.length-1].w:S.start;
 let loss=S.start-cur;
