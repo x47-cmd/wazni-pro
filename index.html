@@ -1091,6 +1091,11 @@ function sportCoach(){
   </div>`;
 }
 function render(){
+    D=JSON.parse(localStorage.wazni||"[]");
+SD=JSON.parse(localStorage.wazniSteps||"[]");
+S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar","goalType":"loss"}');
+
+if(!S.goalType)S.goalType="loss";
 tr();
 renderGoalType();
 renderGoalProgress();
