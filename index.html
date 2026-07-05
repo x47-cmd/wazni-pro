@@ -712,7 +712,7 @@ title.textContent=S.lang=="ar"?"لياقتي | Liyaqti":"Liyaqti";
 sub.textContent=S.lang=="ar"?"رفيقك الذكي لصحة ولياقة أفضل":"Smart weight tracker";
 }
 
-function lang(){S.lang=S.lang=="ar"?"en":"ar";localStorage.wazniS=JSON.stringify(S);tr()}
+function lang(){S.lang=S.lang=="ar"?"en":"ar";saveSettings(S);tr()}
 function dark(){document.body.classList.toggle("dark")}
 
 function pg(id,b){
