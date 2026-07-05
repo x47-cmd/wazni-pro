@@ -2078,7 +2078,10 @@ function renderAchievements(){
   let box=document.getElementById("achievementsBox");
   if(!box)return;
 
-  let unlocked=JSON.parse(localStorage.getItem("achievements")||"[]");
+  let unlocked =
+  typeof getAchievements === "function"
+    ? getAchievements()
+    : JSON.parse(localStorage.getItem("achievements") || "[]");
 
   let totalKm=AD.reduce((a,x)=>a+(+x.km||0),0);
   let totalBurn=AD.reduce((a,x)=>a+(+x.burn||0),0);
