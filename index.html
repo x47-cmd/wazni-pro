@@ -1226,14 +1226,15 @@ function goalSummary(cur,loss,rem){
   let valid=D.filter(x=>x.w).sort((a,b)=>a.d.localeCompare(b.d));
 
   if(valid.length<2){
-    return `
-    <div class="coachBox">
+    return `<div class="coachBox">
       <div class="coachTitle">💡 ملخص ذكي</div>
-      <div class="coachText">سجل وزنك يومين على الأقل حتى يبدأ المدرب الذكي بالتحليل.</div>
+      <div class="coachText">سجل وزنك يومين على الأقل حتى يبدأ المدرب الذكي.</div>
     </div>`;
   }
 
-  let first=valid[0], last=valid[valid.length-1], prev=valid[valid.length-2];
+  let first=valid[0];
+  let last=valid[valid.length-1];
+  let prev=valid[valid.length-2];
 
   cur=+cur||+last.w;
   loss=+loss||((+S.start||+first.w)-cur);
@@ -1253,17 +1254,7 @@ function goalSummary(cur,loss,rem){
   let avgSteps=Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
   let avgCal=Math.round(valid.reduce((a,x)=>a+(+x.cal||0),0)/valid.length);
   let best=Math.min(...valid.map(x=>+x.w));
-  let highest=Math.max(...valid.map(x=>+x.w));
   let daysSinceLast=Math.max(0,Math.floor((new Date()-new Date(last.d))/(1000*60*60*24)));
-
-  let last7=valid.slice(-7);
-  let prev7=valid.slice(-14,-7);
-
-  let last7Loss=last7.length>1?(+last7[0].w)-(+last7[last7.length-1].w):0;
-  let prev7Loss=prev7.length>1?(+prev7[0].w)-(+prev7[prev7.length-1].w):null;
-
-  let last7Steps=Math.round(last7.reduce((a,x)=>a+(+x.st||0),0)/Math.max(1,last7.length));
-  let prev7Steps=prev7.length?Math.round(prev7.reduce((a,x)=>a+(+x.st||0),0)/prev7.length):null;
 
   let status=
     weeklyRate>=0.7?"🔥 ممتاز جداً":
@@ -1274,33 +1265,20 @@ function goalSummary(cur,loss,rem){
 
   let alerts=[];
 
-  if(daysSinceLast>=3) alerts.push("📅 آخر تسجيل قديم، سجل وزنك اليوم حتى يبقى التحليل دقيق.");
-  if(diff>0) alerts.push("⚠️ وزنك ارتفع عن آخر تسجيل، غالباً بسبب سوائل أو وجبة ثقيلة. لا تغيّر خطتك من يوم واحد.");
-  if(diff===0) alerts.push("🟡 وزنك ثابت، جرّب ترفع خطواتك أو تراجع السعرات يومين.");
   if(diff<0) alerts.push("📉 آخر تسجيل عندك أفضل من السابق، استمر.");
+  if(diff>0) alerts.push("⚠️ وزنك ارتفع عن آخر تسجيل، غالباً سوائل أو وجبة ثقيلة.");
+  if(daysSinceLast>=3) alerts.push("📅 آخر تسجيل قديم، سجل وزنك اليوم حتى يبقى التحليل دقيق.");
   if(weeklyRate>1.2) alerts.push("🚨 نزولك سريع جداً، تأكد أنه صحي وبدون حرمان شديد.");
-  if(weeklyRate>=0.3&&weeklyRate<=1.0) alerts.push("✅ معدل نزولك ممتاز ومناسب للاستمرار.");
-  if(weeklyRate>0&&weeklyRate<0.3) alerts.push("🐢 النزول موجود لكنه بطيء، زِد الحركة اليومية قليلاً.");
-  if(avgSteps&&avgSteps<5000) alerts.push("🚶 خطواتك قليلة، حاول ترفعها تدريجياً إلى 8000 خطوة.");
-  if(avgSteps>=8000) alerts.push("🔥 نشاطك اليومي ممتاز ويدعم هدفك.");
+  if(avgSteps<6000) alerts.push("🚶 خطواتك قليلة، حاول ترفعها تدريجياً إلى 8000 خطوة.");
+  if(avgSteps>=8000) alerts.push("🔥 نشاطك ممتاز ويدعم هدفك.");
   if(avgCal>0&&avgCal<1200) alerts.push("🍽️ سعراتك منخفضة، تأكد أنك تأكل كفايتك بشكل صحي.");
-  if(progress>=25&&progress<50) alerts.push("🎯 قطعت ربع الطريق تقريباً، بداية قوية.");
-  if(progress>=50&&progress<75) alerts.push("🏁 تجاوزت نصف الهدف، الاستمرارية الآن أهم من السرعة.");
-  if(progress>=75) alerts.push("🏆 اقتربت كثيراً من الهدف، حافظ على الثبات.");
   if(cur===best) alerts.push("🥇 وصلت لأفضل وزن مسجل عندك.");
-  if(cur<90&&highest>=90) alerts.push("🎉 نزلت تحت 90 كجم، إنجاز ممتاز.");
 
-  if(prev7Loss!==null){
-    if(last7Loss>prev7Loss) alerts.push("📈 أداء هذا الأسبوع أفضل من الأسبوع السابق.");
-    if(last7Loss<prev7Loss) alerts.push("📉 هذا الأسبوع أبطأ من السابق، راجع الالتزام والخطوات.");
-  }
-
-  if(prev7Steps!==null){
-    if(last7Steps>prev7Steps) alerts.push("👣 خطواتك تحسنت مقارنة بالأسبوع السابق.");
-    if(last7Steps<prev7Steps) alerts.push("🚶 خطواتك أقل من الأسبوع السابق، حاول ترجع لمستواك.");
-  }
-
-  if(!alerts.length) alerts.push("💬 استمر بنفس الأداء وواصل تسجيل بياناتك.");
+  let plan=
+    avgSteps<6000 ? "خطة اليوم: امشِ 20-30 دقيقة وحاول توصل 8000 خطوة." :
+    weeklyRate>1.2 ? "خطة اليوم: حافظ على الأكل المتوازن ولا تزيد الحرمان." :
+    diff>0 ? "خطة اليوم: ركز على الماء والمشي وارجع للقياس بعد يومين." :
+    "خطة اليوم: استمر بنفس النظام وحافظ على نشاطك.";
 
   let etaText=weeks?`متوقع الوصول خلال ${weeks.toFixed(1)} أسبوع إذا استمريت بنفس الأداء.`:"نحتاج بيانات أكثر لحساب موعد الوصول.";
 
@@ -1308,7 +1286,6 @@ function goalSummary(cur,loss,rem){
   <div class="coachBox">
     <div class="coachTitle">💡 ملخص ذكي</div>
     <div class="coachText">${status}</div>
-
     <div class="coachList">
       <div class="coachItem">🎯 أنجزت ${progress.toFixed(0)}% من هدفك.</div>
       <div class="coachItem">⚖️ المتبقي ${rem.toFixed(1)} كجم.</div>
@@ -1316,8 +1293,10 @@ function goalSummary(cur,loss,rem){
       <div class="coachItem">🏆 أفضل وزن ${best.toFixed(1)} كجم.</div>
       <div class="coachItem">🚶 متوسط خطواتك ${avgSteps||0} خطوة.</div>
       ${alerts.slice(0,4).map(x=>`<div class="coachItem">${x}</div>`).join("")}
+      <div class="coachItem">🧭 ${plan}</div>
     </div>
   </div>`;
+}
 }
 function changeMonth(n){
 calDate.setMonth(calDate.getMonth()+n);
