@@ -1179,33 +1179,67 @@ renderTrainingPlan();
 }
 
 function insights(cur,loss,rem){
-if(D.length<2){
-return `<div class="coachBox"><div class="coachTitle">👋 ابدأ رحلتك</div><div class="coachText">التحليل الذكي يبدأ بعد أول تسجيلين.</div></div>`;
-}
+  let valid = D.filter(x => x.w).sort((a,b)=>a.d.localeCompare(b.d));
 
-let diff=D[D.length-1].w-D[D.length-2].w;
-let rate=loss/Math.max(1,D.length/7);
-let weeks=rate>0?rem/rate:null;
-let best=Math.min(...D.map(x=>x.w));
-let avgSteps=Math.round(D.reduce((a,x)=>a+(+x.st||0),0)/D.length);
-let avgCal=Math.round(D.reduce((a,x)=>a+(+x.cal||0),0)/D.length);
-let status=diff<0?"🟢 ممتاز":diff==0?"🟡 ثابت":"🔴 انتبه";
+  if(valid.length < 2){
+    return `<div class="coachBox"><div class="coachTitle">👋 ابدأ رحلتك</div><div class="coachText">التحليل الذكي يبدأ بعد أول تسجيلين.</div></div>`;
+  }
 
-return `
-<div class="coachBox">
-<div class="coachTitle">${status}</div>
-<div class="coachText">ملخص تقدمك الحالي</div>
-<div class="coachList">
-<div class="coachItem">📉 نزلت ${loss.toFixed(1)} كجم من البداية.</div>
-<div class="coachItem">⚖️ آخر تغيير ${diff.toFixed(1)} كجم.</div>
-<div class="coachItem">🔥 معدل النزول الأسبوعي ${rate.toFixed(1)} كجم.</div>
-<div class="coachItem">🏆 أفضل وزن وصلت له ${best.toFixed(1)} كجم.</div>
-<div class="coachItem">📅 عدد أيام التسجيل ${D.length} يوم.</div>
-<div class="coachItem">👣 متوسط الخطوات ${avgSteps||0} خطوة.</div>
-<div class="coachItem">🍽️ متوسط السعرات ${avgCal||0} سعرة.</div>
-<div class="coachItem">🎯 ${weeks?`قد تصل لهدفك خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.`:"سجل أكثر عشان نحسب توقع الوصول."}</div>
-</div>
-</div>`;
+  let first = valid[0];
+  let last = valid[valid.length-1];
+  let prev = valid[valid.length-2];
+
+  cur = +cur || +last.w;
+  loss = +loss || ((+S.start || +first.w) - cur);
+  rem = +rem || (cur - (+S.goal || 75));
+
+  let startW = +S.start || +first.w;
+  let goalW = +S.goal || 75;
+  let totalTarget = startW - goalW;
+
+  let diff = cur - +prev.w;
+  let best = Math.min(...valid.map(x=>+x.w));
+  let highest = Math.max(...valid.map(x=>+x.w));
+
+  let days = Math.max(1, Math.ceil((new Date(last.d)-new Date(first.d))/(1000*60*60*24)));
+  let rate = (loss / days) * 7;
+  let weeks = rate > 0 && rem > 0 ? rem / rate : null;
+  let progress = totalTarget ? Math.max(0,Math.min(100,(loss/totalTarget)*100)) : 0;
+
+  let avgSteps = Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
+  let avgCal = Math.round(valid.reduce((a,x)=>a+(+x.cal||0),0)/valid.length);
+
+  let status =
+    diff < 0 && rate >= 0.7 ? "🔥 ممتاز جداً" :
+    diff < 0 && rate >= 0.3 ? "🟢 ممتاز" :
+    diff === 0 ? "🟡 ثابت" :
+    diff > 0 ? "🔴 انتبه" :
+    "🟢 تقدم جيد";
+
+  let advice =
+    rate >= 0.7 ? "نزولك قوي، تأكد أنه صحي وثابت بدون حرمان." :
+    rate >= 0.3 ? "أداؤك ممتاز، استمر على نفس النظام." :
+    rate > 0 ? "في تقدم، حاول تثبت الأكل وترفع خطواتك شوي." :
+    "حالياً النزول غير واضح، راجع السعرات والخطوات خلال الأيام القادمة.";
+
+  return `
+  <div class="coachBox">
+    <div class="coachTitle">${status}</div>
+    <div class="coachText">${advice}</div>
+    <div class="coachList">
+      <div class="coachItem">📉 نزلت ${loss.toFixed(1)} كجم من البداية.</div>
+      <div class="coachItem">🎯 نسبة الإنجاز ${progress.toFixed(0)}% من الهدف.</div>
+      <div class="coachItem">⚖️ آخر تغيير ${diff.toFixed(1)} كجم.</div>
+      <div class="coachItem">🔥 معدل النزول الأسبوعي ${rate.toFixed(1)} كجم.</div>
+      <div class="coachItem">🏆 أفضل وزن وصلت له ${best.toFixed(1)} كجم.</div>
+      <div class="coachItem">📈 أعلى وزن مسجل ${highest.toFixed(1)} كجم.</div>
+      <div class="coachItem">📅 عدد السجلات ${valid.length} تسجيل.</div>
+      <div class="coachItem">👣 متوسط الخطوات ${avgSteps||0} خطوة.</div>
+      <div class="coachItem">🍽️ متوسط السعرات ${avgCal||0} سعرة.</div>
+      <div class="coachItem">⏳ ${weeks?`قد تصل لهدفك خلال ${weeks.toFixed(1)} أسبوع إن شاء الله.`:"نحتاج بيانات أكثر لحساب توقع الوصول بدقة."}</div>
+      <div class="coachItem">✅ المتبقي للوصول ${rem.toFixed(1)} كجم.</div>
+    </div>
+  </div>`;
 }
 
 function changeMonth(n){
