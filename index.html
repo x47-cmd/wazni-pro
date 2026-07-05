@@ -1256,7 +1256,26 @@ function goalSummary(cur,loss,rem){
   let best=Math.min(...valid.map(x=>+x.w));
 
   let status=weeklyRate>=0.7?"🔥 ممتاز جداً":weeklyRate>=0.3?"🟢 ممتاز":weeklyRate>0?"🟡 جيد":diff===0?"🟠 ثابت":"🔴 يحتاج انتباه";
+let successScore=50;
 
+if(weeklyRate>0) successScore+=20;
+if(weeklyRate>=0.3&&weeklyRate<=1.0) successScore+=20;
+if(weeklyRate>1.2) successScore-=10;
+if(avgSteps>=8000) successScore+=10;
+if(avgSteps>0&&avgSteps<5000) successScore-=10;
+if(valid.length>=7) successScore+=10;
+if(daysSinceLast>=3) successScore-=15;
+if(diff>0) successScore-=5;
+if(progress>=20) successScore+=10;
+if(progress>=50) successScore+=10;
+
+successScore=Math.max(0,Math.min(100,successScore));
+
+let successLabel=
+successScore>=85?"🟢 مرتفع جداً":
+successScore>=70?"🟢 مرتفع":
+successScore>=50?"🟡 متوسط":
+"🔴 منخفض";
   let advice="استمر بنفس الأداء.";
   if(diff<0) advice="آخر تسجيل عندك أفضل من السابق، استمر.";
   if(diff>0) advice="وزنك ارتفع عن آخر تسجيل، غالباً سوائل أو وجبة ثقيلة.";
@@ -1279,6 +1298,7 @@ let etaText=weeks?
     '<div class="coachText">'+status+'</div>'+
     '<div class="coachList">'+
       '<div class="coachItem">🎯 أنجزت '+progress.toFixed(0)+'% من هدفك.</div>'+
+    '<div class="coachItem">⚡ احتمال نجاحك '+successScore+'% - '+successLabel+'.</div>'+
       '<div class="coachItem">⚖️ المتبقي '+rem.toFixed(1)+' كجم.</div>'+
       '<div class="coachItem">⏳ '+etaText+'</div>'+
       '<div class="coachItem">🏆 أفضل وزن '+best.toFixed(1)+' كجم.</div>'+
