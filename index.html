@@ -1263,7 +1263,16 @@ function goalSummary(cur,loss,rem){
   if(avgSteps<6000) advice="خطواتك قليلة، حاول ترفعها تدريجياً إلى 8000 خطوة.";
   if(weeklyRate>1.2) advice="نزولك سريع جداً، تأكد أنه صحي وبدون حرمان شديد.";
 
-  let etaText=weeks?("متوقع الوصول خلال "+weeks.toFixed(1)+" أسبوع إذا استمريت بنفس الأداء."):"نحتاج بيانات أكثر لحساب موعد الوصول.";
+  let etaDate="";
+if(weeks){
+  let d=new Date();
+  d.setDate(d.getDate()+Math.round(weeks*7));
+  etaDate=d.toLocaleDateString(S.lang==="ar"?"ar-AE":"en-US",{day:"numeric",month:"long",year:"numeric"});
+}
+
+let etaText=weeks?
+("متوقع الوصول خلال "+weeks.toFixed(1)+" أسبوع تقريباً، حوالي "+etaDate+"."):
+"نحتاج بيانات أكثر لحساب موعد الوصول.";
 
   return '<div class="coachBox">'+
     '<div class="coachTitle">💡 ملخص ذكي</div>'+
