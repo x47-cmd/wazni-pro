@@ -1249,19 +1249,20 @@ function goalSummary(cur,loss,rem){
   let days=Math.max(1,Math.ceil((new Date(last.d)-new Date(first.d))/(1000*60*60*24)));
   let daysSinceLast=Math.max(0,Math.floor((new Date()-new Date(last.d))/(1000*60*60*24)));
   let weeklyRate=(loss/days)*7;
-  let safeWeeklyRate = weeklyRate > 0 ? Math.min(Math.max(weeklyRate,0.3),1.0) : 0;
-let weeks = safeWeeklyRate > 0 && rem > 0 ? rem / safeWeeklyRate : null;
+
+  let safeWeeklyRate=weeklyRate>0?Math.min(Math.max(weeklyRate,0.3),1.0):0;
+  let weeks=safeWeeklyRate>0&&rem>0?rem/safeWeeklyRate:null;
 
   let avgSteps=Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
   let best=Math.min(...valid.map(x=>+x.w));
-let lastWeights=valid.slice(-4).map(x=>+x.w);
-let plateau=false;
 
-if(lastWeights.length>=4){
-  let maxW=Math.max(...lastWeights);
-  let minW=Math.min(...lastWeights);
-  plateau=(maxW-minW)<=0.2;
-}
+  let lastWeights=valid.slice(-4).map(x=>+x.w);
+  let plateau=false;
+  if(lastWeights.length>=4){
+    let maxW=Math.max(...lastWeights);
+    let minW=Math.min(...lastWeights);
+    plateau=(maxW-minW)<=0.2;
+  }
 
   let status=weeklyRate>=0.7?"🔥 ممتاز جداً":weeklyRate>=0.3?"🟢 ممتاز":weeklyRate>0?"🟡 جيد":diff===0?"🟠 ثابت":"🔴 يحتاج انتباه";
 
@@ -1281,28 +1282,29 @@ if(lastWeights.length>=4){
   let successLabel=successScore>=85?"🟢 مرتفع جداً":successScore>=70?"🟢 مرتفع":successScore>=50?"🟡 متوسط":"🔴 منخفض";
 
   let advice="استمر بنفس الأداء وحافظ على تسجيل وزنك وخطواتك بانتظام.";
-if(plateau){
-  advice="وزنك ثابت تقريباً في آخر عدة تسجيلات. هذا ممكن يكون Plateau طبيعي. خطة 3 أيام: ارفع المشي 2000 خطوة، ثبّت أكلك، واشرب ماء أكثر قبل ما تغيّر النظام.";
-}else if(daysSinceLast>=3){
-if(daysSinceLast>=3){
-  advice="آخر تسجيل كان قبل "+daysSinceLast+" أيام. سجّل وزنك اليوم حتى تبقى التوقعات دقيقة.";
-}else if(diff===0){
-  advice="وزنك ثابت عن آخر تسجيل. جرّب زيادة المشي 2000 خطوة يومياً خلال الثلاثة أيام القادمة.";
-}else if(diff>0){
-  advice="وزنك ارتفع "+diff.toFixed(1)+" كجم عن آخر تسجيل. غالباً بسبب سوائل أو وجبة ثقيلة، ركّز اليوم على الماء والمشي ولا تغيّر خطتك من يوم واحد.";
-}else if(weeklyRate>1.2){
-  advice="نزولك سريع جداً. استمر، لكن تأكد أن أكلك متوازن ولا تعتمد على الحرمان.";
-}else if(avgSteps>0 && avgSteps<6000){
-  advice="متوسط خطواتك "+avgSteps+" خطوة، وهذا أقل من المطلوب. حاول ترفعها تدريجياً إلى 8000 خطوة.";
-}else if(avgSteps>=8000 && weeklyRate>0){
-  advice="خطواتك ممتازة ونزولك مستمر. حافظ على نفس النشاط هذا الأسبوع.";
-}else if(progress>=75){
-  advice="اقتربت كثيراً من هدفك. في هذه المرحلة النزول قد يبطأ، فركز على الثبات أكثر من السرعة.";
-}else if(progress>=50){
-  advice="تجاوزت نصف الطريق. أفضل شيء الآن هو الاستمرارية وعدم تغيير الخطة كثيراً.";
-}else if(diff<0){
-  advice="آخر تسجيل أفضل من السابق. استمر بنفس النظام وحافظ على خطواتك اليومية.";
-}
+
+  if(plateau){
+    advice="وزنك ثابت تقريباً في آخر عدة تسجيلات. هذا ممكن يكون Plateau طبيعي. خطة 3 أيام: ارفع المشي 2000 خطوة، ثبّت أكلك، واشرب ماء أكثر قبل ما تغيّر النظام.";
+  }else if(daysSinceLast>=3){
+    advice="آخر تسجيل كان قبل "+daysSinceLast+" أيام. سجّل وزنك اليوم حتى تبقى التوقعات دقيقة.";
+  }else if(diff===0){
+    advice="وزنك ثابت عن آخر تسجيل. جرّب زيادة المشي 2000 خطوة يومياً خلال الثلاثة أيام القادمة.";
+  }else if(diff>0){
+    advice="وزنك ارتفع "+diff.toFixed(1)+" كجم عن آخر تسجيل. غالباً بسبب سوائل أو وجبة ثقيلة، ركّز اليوم على الماء والمشي ولا تغيّر خطتك من يوم واحد.";
+  }else if(weeklyRate>1.2){
+    advice="نزولك سريع جداً. استمر، لكن تأكد أن أكلك متوازن ولا تعتمد على الحرمان.";
+  }else if(avgSteps>0&&avgSteps<6000){
+    advice="متوسط خطواتك "+avgSteps+" خطوة، وهذا أقل من المطلوب. حاول ترفعها تدريجياً إلى 8000 خطوة.";
+  }else if(avgSteps>=8000&&weeklyRate>0){
+    advice="خطواتك ممتازة ونزولك مستمر. حافظ على نفس النشاط هذا الأسبوع.";
+  }else if(progress>=75){
+    advice="اقتربت كثيراً من هدفك. في هذه المرحلة النزول قد يبطأ، فركز على الثبات أكثر من السرعة.";
+  }else if(progress>=50){
+    advice="تجاوزت نصف الطريق. أفضل شيء الآن هو الاستمرارية وعدم تغيير الخطة كثيراً.";
+  }else if(diff<0){
+    advice="آخر تسجيل أفضل من السابق. استمر بنفس النظام وحافظ على خطواتك اليومية.";
+  }
+
   let etaDate="";
   if(weeks){
     let d=new Date();
