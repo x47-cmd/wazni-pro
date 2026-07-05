@@ -422,6 +422,10 @@ style="display:none;margin-top:20px">
 
 <br>
 <div class="card"><h3>المقارنة الأسبوعية</h3><canvas id="weekChart"></canvas></div>
+<div class="card">
+  <h3>التحليل الذكي</h3>
+  <div id="smartInsights"></div>
+</div>
 </div>
 
 <div id="stepsPage" class="page">
@@ -1076,6 +1080,10 @@ if(S.goalType==="run"){
   coach.innerHTML=sportCoach();
 }else{
   coach.innerHTML=insights(cur,loss,rem);
+let smartBox=document.getElementById("smartInsights");
+if(smartBox){
+  smartBox.innerHTML=insights(cur,loss,rem);
+}
 }
 dashboardStats(cur,loss,rem);
 renderCalendar();
