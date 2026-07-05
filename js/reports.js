@@ -680,6 +680,194 @@ function makeDoughnut(id,labels,data){
 }
 
 // ---------- Export ----------
+// ---------- Premium Export ----------
+
+function buildReportRows(){
+  const s = rStats();
+  const stepMap = {};
+  s.allSteps.forEach(x => stepMap[x.d] = x.steps);
+
+  const rows = s.allWeights.map(x => ({
+    date: x.d,
+    weight: x.w,
+    steps: stepMap[x.d] || x.st || 0,
+    calories: x.cal || 0
+  }));
+
+  return {s, rows};
+}
+
+function exportCSV(){
+  const {rows} = buildReportRows();
+
+  let csv = "\uFEFF";
+  csv += "Date,Weight KG,Steps,Calories\n";
+
+  rows.forEach(r=>{
+    csv += `${r.date},${r.weight},${r.steps},${r.calories}\n`;
+  });
+
+  downloadFile("liyaqti_powerbi_report.csv", csv, "text/csv;charset=utf-8;");
+}
+
+function exportJSON(){
+  const {s, rows} = buildReportRows();
+
+  const cleanStats = {
+    progress:s.progress,
+    healthScore:s.healthScore,
+    startWeight:s.start,
+    currentWeight:s.current,
+    goalWeight:s.goal,
+    lost:s.lost,
+    remaining:s.remaining,
+    totalSteps:s.totalSteps,
+    avgSteps:s.avgSteps,
+    bestSteps:s.bestSteps,
+    activities:s.activities.length,
+    totalKm:s.totalKm,
+    totalBurn:s.totalBurn,
+    totalMinutes:s.totalMin,
+    etaWeeks:s.etaWeeks
+  };
+
+  const data = {
+    app:"Liyaqti",
+    exportedAt:new Date().toISOString(),
+    settings:s.L.S,
+    summary:cleanStats,
+    reportRows:rows,
+    raw:{
+      weightData:s.L.D,
+      stepsData:s.L.SD,
+      activities:s.L.AD
+    }
+  };
+
+  downloadFile("liyaqti_backup.json", JSON.stringify(data,null,2), "application/json;charset=utf-8;");
+}
+
+function exportExcel(){
+  const {s, rows} = buildReportRows();
+
+  let html = `
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      body{font-family:Arial;background:#f7fafc;color:#111}
+      h1{color:#0f766e}
+      table{border-collapse:collapse;width:100%;margin-bottom:25px}
+      th{background:#0f766e;color:white;padding:10px;border:1px solid #ddd}
+      td{padding:9px;border:1px solid #ddd;text-align:center}
+      .box{background:#e6fffb;border:1px solid #99f6e4;padding:12px;margin:8px 0}
+    </style>
+  </head>
+  <body>
+    <h1>Liyaqti Health Report</h1>
+
+    <div class="box">Start Weight: ${s.start} KG</div>
+    <div class="box">Current Weight: ${s.current} KG</div>
+    <div class="box">Goal Weight: ${s.goal} KG</div>
+    <div class="box">Progress: ${s.progress}%</div>
+    <div class="box">Health Score: ${s.healthScore}/100</div>
+    <div class="box">Total Steps: ${s.totalSteps}</div>
+
+    <h2>Daily Data</h2>
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Weight KG</th>
+        <th>Steps</th>
+        <th>Calories</th>
+      </tr>
+  `;
+
+  rows.forEach(r=>{
+    html += `
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.weight}</td>
+        <td>${r.steps}</td>
+        <td>${r.calories}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+    </table>
+  </body>
+  </html>
+  `;
+
+  downloadFile("liyaqti_excel_report.xls", html, "application/vnd.ms-excel;charset=utf-8;");
+}
+
+function exportPDF(){
+  const {s, rows} = buildReportRows();
+
+  let win = window.open("", "_blank");
+  if(!win){
+    alert("اسمح بفتح النوافذ المنبثقة عشان يتم إنشاء التقرير");
+    return;
+  }
+
+  let tableRows = rows.map(r=>`
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.weight}</td>
+      <td>${r.steps}</td>
+      <td>${r.calories}</td>
+    </tr>
+  `).join("");
+
+  win.document.write(`
+    <html dir="rtl" lang="ar">
+    <head>
+      <meta charset="utf-8">
+      <title>Liyaqti Report</title>
+      <style>
+        body{font-family:Arial;padding:25px;background:#f8fafc;color:#0f172a}
+        .hero{background:#0f766e;color:white;padding:24px;border-radius:18px;text-align:center}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+        .card{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:16px}
+        .num{font-size:28px;font-weight:bold;color:#0f766e}
+        table{width:100%;border-collapse:collapse;background:white}
+        th{background:#0f766e;color:white;padding:10px}
+        td{border:1px solid #ddd;padding:9px;text-align:center}
+        @media print{button{display:none}}
+      </style>
+    </head>
+    <body>
+      <div class="hero">
+        <h1>تقرير لياقتي الصحي</h1>
+        <p>ملخص الوزن والخطوات والسعرات والهدف</p>
+      </div>
+
+      <div class="grid">
+        <div class="card">نسبة الإنجاز<div class="num">${s.progress}%</div></div>
+        <div class="card">مؤشر الصحة<div class="num">${s.healthScore}/100</div></div>
+        <div class="card">الوزن الحالي<div class="num">${s.current} كجم</div></div>
+        <div class="card">الهدف<div class="num">${s.goal} كجم</div></div>
+        <div class="card">المفقود<div class="num">${s.lost.toFixed(1)} كجم</div></div>
+        <div class="card">المتبقي<div class="num">${s.remaining.toFixed(1)} كجم</div></div>
+      </div>
+
+      <h2>البيانات اليومية</h2>
+      <table>
+        <tr><th>التاريخ</th><th>الوزن</th><th>الخطوات</th><th>السعرات</th></tr>
+        ${tableRows}
+      </table>
+
+      <br>
+      <button onclick="window.print()">طباعة / حفظ PDF</button>
+    </body>
+    </html>
+  `);
+
+  win.document.close();
+}
+
 function downloadFile(name, content, type){
   const blob = new Blob([content],{type});
   const a = document.createElement("a");
@@ -688,81 +876,7 @@ function downloadFile(name, content, type){
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),500);
-}
-
-function exportCSV(){
-  const s = rStats();
-  const stepMap = {};
-  s.allSteps.forEach(x=>stepMap[x.d] = x.steps);
-
-  const rows = [["date","weight","steps","calories"]];
-  s.allWeights.forEach(x=>{
-    rows.push([x.d,x.w,stepMap[x.d] || x.st || 0,x.cal || 0]);
-  });
-
-  const csv = "\uFEFF" + rows.map(r=>r.join(",")).join("\n");
-  downloadFile("liyaqti_powerbi_report.csv", csv, "text/csv;charset=utf-8;");
-}
-
-function exportJSON(){
-  const s = rStats();
-  const data = {
-    app:"Liyaqti",
-    exportedAt:new Date().toISOString(),
-    settings:s.L.S,
-    weightData:s.L.D,
-    stepsData:s.L.SD,
-    activities:s.L.AD,
-    summary:{
-      current:s.current,
-      start:s.start,
-      goal:s.goal,
-      progress:s.progress,
-      lost:s.lost,
-      remaining:s.remaining,
-      totalSteps:s.totalSteps,
-      avgSteps:s.avgSteps,
-      bestSteps:s.bestSteps,
-      healthScore:s.healthScore
-    }
-  };
-
-  downloadFile("liyaqti_backup.json", JSON.stringify(data,null,2), "application/json");
-}
-
-function exportExcel(){
-  const s = rStats();
-  const stepMap = {};
-  s.allSteps.forEach(x=>stepMap[x.d] = x.steps);
-
-  let html = `
-    <html>
-    <head><meta charset="utf-8"></head>
-    <body>
-    <table border="1">
-      <tr>
-        <th>Date</th>
-        <th>Weight</th>
-        <th>Steps</th>
-        <th>Calories</th>
-      </tr>
-  `;
-
-  s.allWeights.forEach(x=>{
-    html += `
-      <tr>
-        <td>${x.d}</td>
-        <td>${x.w}</td>
-        <td>${stepMap[x.d] || x.st || 0}</td>
-        <td>${x.cal || 0}</td>
-      </tr>
-    `;
-  });
-
-  html += `</table></body></html>`;
-
-  downloadFile("liyaqti_excel_report.xls", html, "application/vnd.ms-excel;charset=utf-8;");
+  setTimeout(()=>URL.revokeObjectURL(a.href),700);
 }
 
 // ---------- UI ----------
@@ -817,12 +931,10 @@ function renderAdvancedReports(){
         <p>🟢 لوحة تنفيذية تجمع الوزن، الهدف، الخطوات، النشاط، السعرات والتصدير بتصميم Premium نظيف.</p>
 
         <div class="rp-actions">
-          <button class="rp-btn ${liyaqtiReportRange === 7 ? "on" : ""}" onclick="setLiyaqtiReportRange(7)">7 أيام</button>
-          <button class="rp-btn ${liyaqtiReportRange === 30 ? "on" : ""}" onclick="setLiyaqtiReportRange(30)">30 يوم</button>
-          <button class="rp-btn ${liyaqtiReportRange === "all" ? "on" : ""}" onclick="setLiyaqtiReportRange('all')">الكل</button>
-          <button class="rp-btn csv" onclick="exportCSV()">CSV</button>
-          <button class="rp-btn json" onclick="exportJSON()">JSON</button>
-          <button class="rp-btn excel" onclick="exportExcel()">Excel</button>
+          <button class="rp-btn excel" onclick="exportPDF()">PDF</button>
+<button class="rp-btn excel" onclick="exportExcel()">Excel</button>
+<button class="rp-btn json" onclick="exportJSON()">JSON</button>
+<button class="rp-btn csv" onclick="exportCSV()">CSV</button>
         </div>
       </div>
 
