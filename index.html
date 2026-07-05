@@ -1251,58 +1251,87 @@ function insights(cur,loss,rem){
   </div>`;
 }
 function goalSummary(cur,loss,rem){
+  let valid = D.filter(x=>x.w).sort((a,b)=>a.d.localeCompare(b.d));
 
-let rate=loss/Math.max(1,D.length/7);
-let weeks=rate>0?rem/rate:null;
+  if(valid.length < 2){
+    return `
+    <div class="coachBox">
+      <div class="coachTitle">💡 ملخص ذكي</div>
+      <div class="coachText">ابدأ بتسجيل وزنك يومين على الأقل حتى يظهر التحليل الذكي.</div>
+    </div>`;
+  }
 
-let status=
-rate>=0.7?"🔥 ممتاز جداً":
-rate>=0.3?"🟢 ممتاز":
-rate>0?"🟡 جيد":
-"🔴 يحتاج تحسين";
+  let first = valid[0];
+  let last = valid[valid.length-1];
+  let prev = valid[valid.length-2];
 
-let msg=
-rate>=0.7?"استمر بنفس الأداء.":
-rate>=0.3?"أنت على الطريق الصحيح.":
-rate>0?"زد نشاطك قليلاً لتحقق نتائج أفضل.":
-"راجع أكلك ونشاطك اليومي.";
+  cur = +cur || +last.w;
+  loss = +loss || ((+S.start || +first.w) - cur);
+  rem = +rem || (cur - (+S.goal || 75));
 
-return `
-<div class="coachBox">
+  let startW = +S.start || +first.w;
+  let goalW = +S.goal || 75;
+  let target = startW - goalW;
 
-<div class="coachTitle">
-💡 ملخص ذكي
-</div>
+  let diff = cur - +prev.w;
+  let progress = target ? Math.max(0,Math.min(100,(loss/target)*100)) : 0;
 
-<div class="coachText">
-${status}
-</div>
+  let days = Math.max(1, Math.ceil((new Date(last.d)-new Date(first.d))/(1000*60*60*24)));
+  let weeklyRate = (loss / days) * 7;
+  let weeks = weeklyRate > 0 && rem > 0 ? rem / weeklyRate : null;
 
-<div class="coachList">
+  let avgSteps = Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
+  let avgCal = Math.round(valid.reduce((a,x)=>a+(+x.cal||0),0)/valid.length);
+  let best = Math.min(...valid.map(x=>+x.w));
+  let daysSinceLast = Math.max(0, Math.floor((new Date()-new Date(last.d))/(1000*60*60*24)));
 
-<div class="coachItem">
-🎯 أنجزت ${((loss/(S.start-S.goal))*100).toFixed(0)}% من هدفك.
-</div>
+  let status =
+    weeklyRate >= 0.7 ? "🔥 ممتاز جداً" :
+    weeklyRate >= 0.3 ? "🟢 ممتاز" :
+    weeklyRate > 0 ? "🟡 جيد" :
+    diff === 0 ? "🟠 ثابت" :
+    "🔴 يحتاج انتباه";
 
-<div class="coachItem">
-⚖️ المتبقي ${rem.toFixed(1)} كجم.
-</div>
+  let mainAdvice = "استمر بنفس الأداء.";
 
-<div class="coachItem">
-⏳ ${weeks?
-`متوقع الوصول خلال ${weeks.toFixed(1)} أسبوع إذا استمريت بنفس الأداء.`
-:
-"نحتاج بيانات أكثر لحساب موعد الوصول."
-}
-</div>
+  if(daysSinceLast >= 3){
+    mainAdvice = "مرّت عدة أيام بدون تسجيل، سجّل وزنك اليوم حتى يبقى التحليل دقيق.";
+  }else if(weeklyRate > 1.2){
+    mainAdvice = "نزولك سريع جداً، تأكد أنه صحي وبدون حرمان شديد.";
+  }else if(diff > 0){
+    mainAdvice = "ارتفع وزنك في آخر تسجيل، لا تقلق؛ ركّز اليوم على المشي وشرب الماء.";
+  }else if(avgSteps && avgSteps < 6000){
+    mainAdvice = "متوسط خطواتك منخفض، جرّب ترفع هدفك اليومي إلى 8000 خطوة.";
+  }else if(avgSteps >= 8000 && weeklyRate > 0){
+    mainAdvice = "خطواتك ممتازة وتدعم نزولك، استمر على نفس النشاط.";
+  }else if(avgCal > 0 && avgCal < 1200){
+    mainAdvice = "متوسط السعرات منخفض، تأكد أنك تأكل كفايتك بطريقة صحية.";
+  }else if(progress >= 75){
+    mainAdvice = "اقتربت كثيراً من هدفك، حافظ على الثبات ولا تستعجل النزول.";
+  }else if(progress >= 50){
+    mainAdvice = "تجاوزت نصف الطريق، ممتاز! ركّز على الاستمرارية.";
+  }else if(progress >= 20){
+    mainAdvice = "بدايتك قوية، حافظ على نفس النظام هذا الأسبوع.";
+  }
 
-<div class="coachItem">
-💬 ${msg}
-</div>
+  let etaText = weeks
+    ? `متوقع الوصول خلال ${weeks.toFixed(1)} أسبوع إذا استمريت بنفس الأداء.`
+    : "نحتاج بيانات أكثر لحساب موعد الوصول بدقة.";
 
-</div>
+  return `
+  <div class="coachBox">
+    <div class="coachTitle">💡 ملخص ذكي</div>
+    <div class="coachText">${status}</div>
 
-</div>`;
+    <div class="coachList">
+      <div class="coachItem">🎯 أنجزت ${progress.toFixed(0)}% من هدفك.</div>
+      <div class="coachItem">⚖️ المتبقي ${rem.toFixed(1)} كجم.</div>
+      <div class="coachItem">⏳ ${etaText}</div>
+      <div class="coachItem">🏆 أفضل وزن وصلت له ${best.toFixed(1)} كجم.</div>
+      <div class="coachItem">🚶 متوسط خطواتك ${avgSteps || 0} خطوة.</div>
+      <div class="coachItem">💬 ${mainAdvice}</div>
+    </div>
+  </div>`;
 }
 function changeMonth(n){
 calDate.setMonth(calDate.getMonth()+n);
