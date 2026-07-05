@@ -1,5 +1,5 @@
-/* Liyaqti Nutrition Intelligence Center - Premium Calm UI */
-console.log("Liyaqti Nutrition Premium loaded");
+/* Liyaqti Nutrition Intelligence Center - Premium Strategic UI */
+console.log("Liyaqti Nutrition Premium Strategic loaded");
 
 const NKEY="liyaqtiNutritionData";
 const NSET="liyaqtiNutritionSettings";
@@ -60,18 +60,26 @@ function nSum(list=nToday()){
 function scaleFood(x,amount){
   let base=+x.grams||100, qty=+amount||base, r=qty/base;
   return {
-    cal:Math.round((+x.cal||0)*r),p:Math.round((+x.p||0)*r),
-    c:Math.round((+x.c||0)*r),f:Math.round((+x.f||0)*r),
-    fiber:Math.round((+x.fiber||0)*r),sugar:Math.round((+x.sugar||0)*r),
+    cal:Math.round((+x.cal||0)*r),
+    p:Math.round((+x.p||0)*r),
+    c:Math.round((+x.c||0)*r),
+    f:Math.round((+x.f||0)*r),
+    fiber:Math.round((+x.fiber||0)*r),
+    sugar:Math.round((+x.sugar||0)*r),
     sodium:Math.round((+x.sodium||0)*r)
   }
 }
 
 function nScore(s){
   let cal=s.cal?Math.max(0,100-Math.abs(NS.calories-s.cal)/NS.calories*100):25;
-  return Math.round(cal*.24+pct(s.p,NS.protein)*.24+pct(s.water,NS.water)*.18+pct(s.fiber,NS.fiber)*.10+
-  Math.max(0,100-Math.max(0,pct(s.sugar,NS.sugar)-100))*.12+
-  Math.max(0,100-Math.max(0,pct(s.sodium,NS.sodium)-100))*.12);
+  return Math.round(
+    cal*.24+
+    pct(s.p,NS.protein)*.24+
+    pct(s.water,NS.water)*.18+
+    pct(s.fiber,NS.fiber)*.10+
+    Math.max(0,100-Math.max(0,pct(s.sugar,NS.sugar)-100))*.12+
+    Math.max(0,100-Math.max(0,pct(s.sodium,NS.sodium)-100))*.12
+  );
 }
 
 function renderNutrition(){
@@ -79,8 +87,7 @@ function renderNutrition(){
   if(!page)return;
   injectNutritionStyle();
 
-  let s=nSum(), score=nScore(s), meals=nToday();
-  let remain=Math.max(0,NS.calories-s.cal);
+  let s=nSum(), score=nScore(s), remain=Math.max(0,NS.calories-s.cal);
   let status=score>=85?"ممتاز":score>=70?"جيد":"يحتاج تحسين";
 
   page.innerHTML=`
@@ -90,7 +97,7 @@ function renderNutrition(){
       <div>
         <div class="niEyebrow">Nutrition Intelligence</div>
         <h2>🍎 مركز التغذية الذكي</h2>
-        <p>لوحة هادئة لتحليل السعرات والماكروز وربطها بالوزن والخطوات.</p>
+        <p>تحليل السعرات والماكروز والماء وربطها بالوزن والخطوات والهدف.</p>
       </div>
       <div class="niScore">
         <small>درجة اليوم</small>
@@ -110,7 +117,9 @@ function renderNutrition(){
           <b>${remain}</b>
         </div>
       </div>
+
       <div class="niProgress"><i style="width:${pct(s.cal,NS.calories)}%"></i></div>
+
       <div class="niMini">
         <div><small>بروتين</small><b>${fmt(s.p,NS.protein,"g")}</b></div>
         <div><small>كارب</small><b>${fmt(s.c,NS.carbs,"g")}</b></div>
@@ -190,6 +199,7 @@ function overviewTab(){
       <h3>🔥 توزيع السعرات</h3>
       ${s.cal?`<canvas id="calChart"></canvas>`:`<div class="niEmpty">سجل وجبة لعرض الرسم</div>`}
     </div>
+
     <div class="niCard">
       <h3>🥩 الماكروز</h3>
       ${(s.p+s.c+s.f)?`<canvas id="macroChart"></canvas>`:`<div class="niEmpty">سجل ماكروز لعرض الرسم</div>`}
@@ -209,6 +219,17 @@ function overviewTab(){
   <section class="niCard">
     <h3>🎯 تقدم الأهداف</h3>
     ${goalBars()}
+  </section>
+
+  <section class="niStrategic">
+    <div class="niStrategicHead">
+      <div>
+        <span>AI Nutrition Strategy</span>
+        <h3>🧭 التحليل الذكي الاستراتيجي للتغذية</h3>
+      </div>
+      <b>${nScore(s)}%</b>
+    </div>
+    ${strategicNutritionAnalysis()}
   </section>`;
 }
 
@@ -274,6 +295,17 @@ function coachTab(){
   <section class="niCard">
     <h3>🍽️ اقتراح ذكي</h3>
     <div class="niRecommend">${smartMealSuggestion(s)}</div>
+  </section>
+
+  <section class="niStrategic">
+    <div class="niStrategicHead">
+      <div>
+        <span>Strategic Nutrition Coach</span>
+        <h3>🧭 التحليل الذكي الاستراتيجي للتغذية</h3>
+      </div>
+      <b>${score}%</b>
+    </div>
+    ${strategicNutritionAnalysis()}
   </section>`;
 }
 
@@ -294,6 +326,62 @@ function smartMealSuggestion(s){
   if(s.cal>NS.calories)return "تونة ماء + سلطة خفيفة بدون صوص.";
   if(s.water<NS.water*.7)return "اشرب كوبين ماء ثم خذ وجبة بروتين خفيفة.";
   return "رز كمية صغيرة + دجاج + سلطة.";
+}
+
+function strategicNutritionAnalysis(){
+  let today=nToday();
+  let s=nSum();
+  let score=nScore(s);
+  let dates=[...new Set(N.map(x=>x.date))].sort();
+  let last7=dates.slice(-7);
+  let weekDays=last7.map(d=>nSum(N.filter(x=>x.date===d)));
+  let avgCal=weekDays.length?Math.round(weekDays.reduce((a,x)=>a+x.cal,0)/weekDays.length):0;
+  let avgP=weekDays.length?Math.round(weekDays.reduce((a,x)=>a+x.p,0)/weekDays.length):0;
+  let most=mostFood();
+
+  let overview=!today.length
+    ? "لا توجد وجبات مسجلة اليوم، لذلك التحليل الحالي يعتمد على أهدافك فقط. أول خطوة استراتيجية هي تسجيل أول وجبة."
+    : score>=85
+      ? "يومك الغذائي متوازن وقريب من أهدافك. الأفضل الآن الحفاظ على نفس النسق وعدم إضافة وجبات عالية السعرات آخر اليوم."
+      : score>=70
+        ? "الأداء جيد، لكن يحتاج تعديل بسيط في البروتين أو الماء أو الألياف حتى يصبح اليوم ممتازاً."
+        : "يوجد نقص واضح في عناصر أساسية مثل البروتين أو الماء أو الألياف. التركيز الآن ليس تقليل الأكل، بل تحسين جودة الاختيارات.";
+
+  let nextMove=s.p<NS.protein*.75
+    ? "أهم قرار الآن: أضف مصدر بروتين قبل نهاية اليوم."
+    : s.water<NS.water*.7
+      ? "أهم قرار الآن: أكمل الماء قبل التفكير في وجبة إضافية."
+      : s.cal>NS.calories
+        ? "أهم قرار الآن: اجعل الوجبة القادمة خفيفة وارفع خطواتك."
+        : "أهم قرار الآن: حافظ على التوازن ولا ترفع السعرات بدون حاجة.";
+
+  return `
+    <div class="niStrategyGrid">
+      <div>
+        <small>نظرة عامة</small>
+        <p>${overview}</p>
+      </div>
+      <div>
+        <small>القرار الذكي القادم</small>
+        <p>${nextMove}</p>
+      </div>
+      <div>
+        <small>قراءة أسبوعية</small>
+        <p>${last7.length?`متوسط السعرات آخر ${last7.length} أيام: ${avgCal}، ومتوسط البروتين: ${avgP}g.`:"سجل عدة أيام حتى تظهر قراءة أسبوعية دقيقة."}</p>
+      </div>
+      <div>
+        <small>نمط التكرار</small>
+        <p>${most!=="--"?`أكثر أكلة تكررت عندك: ${most}. راقب تأثيرها على السعرات والبروتين.`:"بعد تسجيل أكثر من وجبة سيظهر أكثر طعام يتكرر عندك."}</p>
+      </div>
+    </div>
+
+    <div class="niStrategyList">
+      <div>✅ اجعل كل وجبة رئيسية تحتوي على بروتين واضح.</div>
+      <div>💧 الماء جزء من الخطة، وليس مجرد إضافة جانبية.</div>
+      <div>🌾 إذا ثبت الوزن، راقب الألياف والصوديوم قبل تقليل السعرات.</div>
+      <div>📊 أفضل تحليل يظهر بعد 7 أيام من التسجيل المستمر.</div>
+    </div>
+  `;
 }
 
 function reportsTab(){
@@ -360,10 +448,18 @@ function drawOverviewCharts(){
   let s=nSum();
   destroyCharts();
   if(s.cal&&document.getElementById("calChart")){
-    nutritionCharts.cal=new Chart(calChart,{type:"doughnut",data:{labels:["مستهلك","متبقي"],datasets:[{data:[s.cal,Math.max(0,NS.calories-s.cal)]}]},options:{plugins:{legend:{position:"bottom"}}}});
+    nutritionCharts.cal=new Chart(calChart,{
+      type:"doughnut",
+      data:{labels:["مستهلك","متبقي"],datasets:[{data:[s.cal,Math.max(0,NS.calories-s.cal)]}]},
+      options:{plugins:{legend:{position:"bottom"}}}
+    });
   }
   if((s.p+s.c+s.f)&&document.getElementById("macroChart")){
-    nutritionCharts.macro=new Chart(macroChart,{type:"bar",data:{labels:["P","C","F"],datasets:[{data:[s.p,s.c,s.f]}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+    nutritionCharts.macro=new Chart(macroChart,{
+      type:"bar",
+      data:{labels:["P","C","F"],datasets:[{data:[s.p,s.c,s.f]}]},
+      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    });
   }
 }
 
@@ -371,10 +467,14 @@ function drawReportChart(){
   let dates=[...new Set(N.map(x=>x.date))].sort().slice(-7);
   if(!dates.length||!document.getElementById("weekChart"))return;
   destroyCharts();
-  nutritionCharts.week=new Chart(weekChart,{type:"line",data:{labels:dates.map(x=>x.slice(5)),datasets:[
-    {label:"السعرات",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).cal),tension:.35},
-    {label:"البروتين",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).p),tension:.35}
-  ]},options:{responsive:true,scales:{y:{beginAtZero:true}}}});
+  nutritionCharts.week=new Chart(weekChart,{
+    type:"line",
+    data:{labels:dates.map(x=>x.slice(5)),datasets:[
+      {label:"السعرات",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).cal),tension:.35},
+      {label:"البروتين",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).p),tension:.35}
+    ]},
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}
+  });
 }
 
 function renderSmartFoodSearch(){
@@ -415,9 +515,27 @@ function field(label,id,val,ph,type="text"){return `<div><label>${label}</label>
 function closeMealModal(){mealModal.innerHTML="";editingMealId=null}
 
 function saveMealFromModal(){
-  let item={id:editingMealId||Date.now(),date:nDate(),name:nName.value||"وجبة",meal:nMeal.value,amount:+nAmount.value||0,cal:+nCal.value||0,p:+nP.value||0,c:+nC.value||0,f:+nF.value||0,fiber:+nFiber.value||0,sugar:+nSugar.value||0,sodium:+nSodium.value||0,water:+nWater.value||0};
-  if(editingMealId)N=N.map(x=>x.id===editingMealId?item:x);else N.push(item);
-  nSave();closeMealModal();nTab="meals";renderNutrition();
+  let item={
+    id:editingMealId||Date.now(),
+    date:nDate(),
+    name:nName.value||"وجبة",
+    meal:nMeal.value,
+    amount:+nAmount.value||0,
+    cal:+nCal.value||0,
+    p:+nP.value||0,
+    c:+nC.value||0,
+    f:+nF.value||0,
+    fiber:+nFiber.value||0,
+    sugar:+nSugar.value||0,
+    sodium:+nSodium.value||0,
+    water:+nWater.value||0
+  };
+  if(editingMealId)N=N.map(x=>x.id===editingMealId?item:x);
+  else N.push(item);
+  nSave();
+  closeMealModal();
+  nTab="meals";
+  renderNutrition();
 }
 
 function editNutritionMeal(id){openMealModal(id)}
@@ -431,7 +549,9 @@ function quickAddWithAmount(i){
   if(amount===null)return;
   let scaled=scaleFood(x,amount);
   N.push({id:Date.now(),date:nDate(),name:x.name,meal:x.meal,amount:+amount||x.grams,...scaled,water:0});
-  nSave();nTab="meals";renderNutrition();
+  nSave();
+  nTab="meals";
+  renderNutrition();
 }
 
 function saveTodayAsTemplate(){let today=nToday();if(!today.length)return alert("سجل وجبات اليوم أولاً.");let name=prompt("اسم القالب","غداء 1");if(!name)return;NT.push({id:Date.now(),name,items:today.map(x=>({...x}))});nSave();renderNutrition()}
@@ -440,8 +560,18 @@ function renderTemplatesInline(){return NT.length?NT.map(t=>`<div class="niTempl
 function useTemplate(id){let t=NT.find(x=>x.id===id);if(!t)return;t.items.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();nTab="meals";renderNutrition()}
 
 function saveNutritionSettings(){
-  NS={calories:+setCal.value||2200,protein:+setP.value||140,carbs:+setC.value||200,fat:+setF.value||70,fiber:+setFiber.value||25,sugar:+setSugar.value||50,sodium:+setSodium.value||2300,water:+setWater.value||8};
-  nSave();renderNutrition();
+  NS={
+    calories:+setCal.value||2200,
+    protein:+setP.value||140,
+    carbs:+setC.value||200,
+    fat:+setF.value||70,
+    fiber:+setFiber.value||25,
+    sugar:+setSugar.value||50,
+    sodium:+setSodium.value||2300,
+    water:+setWater.value||8
+  };
+  nSave();
+  renderNutrition();
 }
 
 function mostFood(){let m={};N.forEach(x=>m[x.name]=(m[x.name]||0)+1);let a=Object.entries(m).sort((a,b)=>b[1]-a[1]);return a.length?a[0][0]:"--"}
@@ -452,87 +582,102 @@ function injectNutritionStyle(){
   if(document.getElementById("nutritionStyle"))return;
   let s=document.createElement("style");s.id="nutritionStyle";
   s.innerHTML=`
-  .ni{display:grid;gap:14px;font-size:14px}
-  .niHero{background:linear-gradient(135deg,#0f766e,#14b8a6);border-radius:26px;padding:18px;color:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center;box-shadow:0 16px 34px rgba(15,118,110,.22)}
-  .niEyebrow{font-size:12px;color:#dffdf8;font-weight:700}
-  .niHero h2{font-size:25px;margin:4px 0;white-space:nowrap;font-weight:900}
-  .niHero p{font-size:13px;line-height:1.6;margin:0;color:#e6fffb;font-weight:600}
-  .niScore{min-width:92px;background:#ffffff20;border:1px solid #ffffff44;border-radius:20px;padding:12px;text-align:center}
-  .niScore small,.niScore span{display:block;color:#e6fffb;font-size:11px;font-weight:800}
-  .niScore b{display:block;font-size:28px;color:#fff;margin:4px 0}
-  .niSummary,.niAi,.niSearch,.niCard{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 8px 20px #00000010}
+  .ni{display:grid;gap:12px;font-size:13px;padding-bottom:28px}
+  .niHero{background:linear-gradient(135deg,#0f766e,#14b8a6);border-radius:24px;padding:16px;color:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center;box-shadow:0 14px 30px rgba(15,118,110,.20)}
+  .niEyebrow{font-size:11px;color:#dffdf8;font-weight:700}
+  .niHero h2{font-size:21px;margin:4px 0;white-space:nowrap;font-weight:900}
+  .niHero p{font-size:12px;line-height:1.6;margin:0;color:#e6fffb;font-weight:600}
+  .niScore{min-width:82px;background:#ffffff20;border:1px solid #ffffff44;border-radius:18px;padding:10px;text-align:center}
+  .niScore small,.niScore span{display:block;color:#e6fffb;font-size:10px;font-weight:800}
+  .niScore b{display:block;font-size:23px;color:#fff;margin:4px 0}
+  .niSummary,.niAi,.niSearch,.niCard,.niStrategic{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px;box-shadow:0 8px 18px #0000000f;overflow:hidden}
   .niCalories{display:flex;justify-content:space-between;gap:12px}
-  .niCalories small,.niMini small,.niKpis span{color:var(--muted);font-size:12px;font-weight:800}
-  .niCalories b{display:block;font-size:25px;color:var(--pri);margin-top:3px}
-  .niProgress{height:13px;background:#dff3ef;border-radius:99px;margin:13px 0;overflow:hidden}
+  .niCalories small,.niMini small,.niKpis span{color:var(--muted);font-size:11px;font-weight:800}
+  .niCalories b{display:block;font-size:20px;color:var(--pri);margin-top:3px;line-height:1.2;white-space:nowrap}
+  .niProgress{height:12px;background:#dff3ef;border-radius:99px;margin:12px 0;overflow:hidden}
   .niProgress i{display:block;height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6)}
-  .niMini,.niKpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  .niMini div,.niKpis div{background:#f8faf9;border:1px solid var(--line);border-radius:16px;padding:10px;text-align:center}
+  .niMini,.niKpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .niMini div,.niKpis div{background:#f8faf9;border:1px solid var(--line);border-radius:15px;padding:9px 6px;text-align:center;min-width:0}
   body.dark .niMini div,body.dark .niKpis div{background:#0b1b18}
-  .niMini b,.niKpis b{display:block;font-size:17px;color:var(--pri);margin-top:4px}
+  .niMini b,.niKpis b{display:block;font-size:15px;color:var(--pri);margin-top:4px}
   .niAi{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .niAi h3,.niCard h3{font-size:20px;margin:0 0 7px;font-weight:900}
-  .niAi p{font-size:13px;line-height:1.7;color:var(--muted);font-weight:700;margin:0}
-  .niAi button,.niMainBtn{border:0;border-radius:16px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:12px 16px;font-weight:900;font-size:15px}
-  .niSearch label{font-weight:900;font-size:14px;color:var(--txt)}
+  .niAi h3,.niCard h3{font-size:18px;margin:0 0 7px;font-weight:900}
+  .niAi p{font-size:12.5px;line-height:1.7;color:var(--muted);font-weight:700;margin:0}
+  .niAi button,.niMainBtn{border:0;border-radius:15px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:11px 14px;font-weight:900;font-size:14px}
+  .niSearch label{font-weight:900;font-size:13px;color:var(--txt)}
   .niSearch>div:first-of-type{display:flex;gap:8px;margin-top:10px}
-  .niSearch input,.niForm input,.niForm select,.niSettings input{width:100%;height:50px;border-radius:16px;border:1px solid var(--line);background:#fafbfc;color:var(--txt);font-weight:800;padding:0 12px;font-size:14px}
+  .niSearch input,.niForm input,.niForm select,.niSettings input{width:100%;height:48px;border-radius:15px;border:1px solid var(--line);background:#fafbfc;color:var(--txt);font-weight:800;padding:0 12px;font-size:13px}
   body.dark .niSearch input,body.dark .niForm input,body.dark .niForm select,body.dark .niSettings input{background:#0b1b18}
-  .niSearch button{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:0 12px;font-weight:900;color:var(--txt);white-space:nowrap}
-  .niTabs{display:flex;gap:6px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:7px;position:sticky;top:0;z-index:20}
-  .niTabs button{border:0;background:transparent;color:var(--muted);border-radius:14px;padding:9px 13px;font-weight:900;font-size:13px;white-space:nowrap}
+  .niSearch button{border:1px solid var(--line);background:var(--card);border-radius:15px;padding:0 12px;font-weight:900;color:var(--txt);white-space:nowrap;font-size:13px}
+  .niTabs{display:flex;gap:4px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:6px;position:sticky;top:0;z-index:20;scrollbar-width:none}
+  .niTabs::-webkit-scrollbar{display:none}
+  .niTabs button{border:0;background:transparent;color:var(--muted);border-radius:13px;padding:8px 12px;font-weight:900;font-size:12px;white-space:nowrap}
   .niTabs button.on{background:var(--pri);color:#fff}
-  .niGrid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .niEmpty{padding:28px 10px;text-align:center;color:var(--muted);font-weight:900;background:#f8faf9;border:1px dashed var(--line);border-radius:18px;font-size:15px}
-  .niEmpty.small{margin-top:10px;padding:14px;font-size:13px}
+  .niGrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .niEmpty{padding:26px 10px;text-align:center;color:var(--muted);font-weight:900;background:#f8faf9;border:1px dashed var(--line);border-radius:17px;font-size:14px}
+  .niEmpty.small{margin-top:10px;padding:14px;font-size:12px}
   body.dark .niEmpty{background:#0b1b18}
-  .niGoal{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:9px;background:#f8faf9}
+  .niGoal{border:1px solid var(--line);border-radius:15px;padding:11px;margin-top:8px;background:#f8faf9}
   body.dark .niGoal{background:#0b1b18}
-  .niGoal div{display:flex;justify-content:space-between;font-weight:900;font-size:14px}
-  .niGoal span{color:var(--muted);direction:ltr}
-  .niGoal p{height:10px;background:#dff3ef;border-radius:99px;overflow:hidden;margin:9px 0 0}
+  .niGoal div{display:flex;justify-content:space-between;font-weight:900;font-size:13px;align-items:center;gap:8px}
+  .niGoal span{color:var(--muted);direction:ltr;white-space:nowrap;font-size:13px}
+  .niGoal p{height:10px;background:#dff3ef;border-radius:99px;overflow:hidden;margin:8px 0 0}
   .niGoal i{display:block;height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6)}
   .niAction{display:flex;justify-content:space-between;align-items:center}
-  .niAction p{color:var(--muted);font-size:13px;margin:0}
-  .niAction button,.niSoftBtn{border:1px solid var(--line);background:var(--card);border-radius:15px;padding:10px 13px;font-weight:900;color:var(--txt)}
+  .niAction p{color:var(--muted);font-size:12px;margin:0}
+  .niAction button,.niSoftBtn{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:9px 12px;font-weight:900;color:var(--txt);font-size:12px}
   .niQuick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-  .niQuick button{border:1px solid var(--line);background:var(--card);border-radius:15px;padding:12px;font-weight:900;color:var(--txt)}
-  .niMeal{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-top:10px}
-  .niMealHead{display:flex;justify-content:space-between;background:#eefaf7;color:#0f766e;padding:12px;font-weight:900;font-size:14px}
+  .niQuick button{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:11px;font-weight:900;color:var(--txt);font-size:12px}
+  .niMeal{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:10px}
+  .niMealHead{display:flex;justify-content:space-between;background:#eefaf7;color:#0f766e;padding:11px;font-weight:900;font-size:13px}
   body.dark .niMealHead{background:#0b1b18}
-  .niMealItem{display:flex;justify-content:space-between;gap:8px;padding:12px;border-top:1px solid var(--line)}
-  .niMealItem span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
-  .niMealItem button{border:0;border-radius:10px;padding:7px 8px;font-weight:900;margin:2px;font-size:12px}
-  .niCoach,.niRecommend{background:linear-gradient(135deg,#eefaf7,#fff);border:1px solid #d8eee9;border-radius:20px;padding:14px;line-height:1.7;font-weight:800}
+  .niMealItem{display:flex;justify-content:space-between;gap:8px;padding:11px;border-top:1px solid var(--line)}
+  .niMealItem span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+  .niMealItem button{border:0;border-radius:10px;padding:7px 8px;font-weight:900;margin:2px;font-size:11px}
+  .niCoach,.niRecommend{background:linear-gradient(135deg,#eefaf7,#fff);border:1px solid #d8eee9;border-radius:18px;padding:13px;line-height:1.7;font-weight:800;font-size:13px}
   body.dark .niCoach,body.dark .niRecommend{background:linear-gradient(135deg,#0b1b18,#10201d)}
-  .niCoach h4{font-size:18px;margin:0 0 10px}
-  .niCoach div{background:#ffffffcc;border:1px solid #d8eee9;border-radius:14px;padding:10px;margin-top:8px}
+  .niCoach h4{font-size:17px;margin:0 0 9px}
+  .niCoach div{background:#ffffffcc;border:1px solid #d8eee9;border-radius:13px;padding:9px;margin-top:8px}
   body.dark .niCoach div{background:#10201d}
   .niSettings{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-  .niSettings label,.niForm label{display:block;color:var(--muted);font-weight:900;font-size:12px;margin-bottom:5px}
+  .niSettings label,.niForm label{display:block;color:var(--muted);font-weight:900;font-size:11px;margin-bottom:5px}
   .niMainBtn{width:100%;margin-top:12px}
   .niFoodResults{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
-  .niFoodResults button{border:1px solid var(--line);background:var(--card);border-radius:15px;padding:10px;text-align:start;color:var(--txt)}
-  .niFoodResults span,.niTemplate span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
-  .niTemplate{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:8px}
-  .niTemplate button{margin-top:8px;border:0;border-radius:12px;padding:8px 10px;background:var(--pri);color:#fff;font-weight:900}
-  .niFloat{position:fixed;right:18px;bottom:100px;width:52px;height:52px;border:0;border-radius:50%;background:var(--pri);color:#fff;font-size:30px;font-weight:900;z-index:9998;box-shadow:0 10px 24px #0003}
+  .niFoodResults button{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:10px;text-align:start;color:var(--txt)}
+  .niFoodResults span,.niTemplate span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+  .niTemplate{border:1px solid var(--line);border-radius:15px;padding:11px;margin-top:8px}
+  .niTemplate button{margin-top:8px;border:0;border-radius:11px;padding:8px 10px;background:var(--pri);color:#fff;font-weight:900}
+  .niFloat{position:fixed;right:20px;bottom:112px;width:48px;height:48px;border:0;border-radius:50%;background:var(--pri);color:#fff;font-size:28px;font-weight:900;z-index:9998;box-shadow:0 10px 24px #0003;opacity:.96}
   .niModalBg{position:fixed;inset:0;background:#0006;z-index:10000;display:flex;align-items:flex-end}
-  .niModal{background:var(--card);border-radius:26px 26px 0 0;padding:16px;width:100%;max-height:88vh;overflow:auto}
+  .niModal{background:var(--card);border-radius:24px 24px 0 0;padding:16px;width:100%;max-height:88vh;overflow:auto}
   .niModalHead{display:flex;justify-content:space-between;align-items:center}
-  .niModalHead h3{font-size:22px;margin:0}
-  .niModalHead button{border:0;background:#f1f5f9;border-radius:14px;font-size:26px;width:44px;height:44px}
+  .niModalHead h3{font-size:21px;margin:0}
+  .niModalHead button{border:0;background:#f1f5f9;border-radius:13px;font-size:25px;width:42px;height:42px}
   .niForm{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+
+  .niStrategic{background:linear-gradient(135deg,#0f766e,#111827);color:#fff;border:0}
+  .niStrategicHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+  .niStrategicHead span{font-size:11px;color:#bffaf2;font-weight:800}
+  .niStrategicHead h3{font-size:18px;margin:4px 0 0}
+  .niStrategicHead b{font-size:26px;background:#ffffff1f;border:1px solid #ffffff33;border-radius:16px;padding:10px 12px}
+  .niStrategyGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+  .niStrategyGrid div,.niStrategyList div{background:#ffffff12;border:1px solid #ffffff20;border-radius:15px;padding:11px}
+  .niStrategyGrid small{display:block;color:#bffaf2;font-weight:900;margin-bottom:5px}
+  .niStrategyGrid p{margin:0;color:#f8fafc;line-height:1.7;font-size:12.5px;font-weight:700}
+  .niStrategyList{display:grid;gap:8px;margin-top:10px;color:#fff;font-size:12.5px;font-weight:800}
+
   @media(max-width:600px){
-    .niHero h2{font-size:22px}
-    .niHero p{font-size:12px}
-    .niScore{min-width:86px}
-    .niScore b{font-size:24px}
+    .niHero{display:grid;grid-template-columns:1fr auto}
+    .niHero h2{font-size:20px;white-space:normal}
+    .niHero p{font-size:11.5px}
+    .niScore{min-width:78px}
+    .niScore b{font-size:22px}
     .niMini,.niKpis{grid-template-columns:repeat(2,1fr)}
     .niGrid2{grid-template-columns:1fr}
     .niAi,.niAction{display:block}
     .niAi button,.niAction button{width:100%;margin-top:10px}
-    .niForm,.niSettings{grid-template-columns:1fr}
+    .niForm,.niSettings,.niStrategyGrid{grid-template-columns:1fr}
+    .niCalories b{font-size:19px}
   }`;
   document.head.appendChild(s);
 }
