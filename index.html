@@ -1231,10 +1231,7 @@ function goalSummary(cur,loss,rem){
   let valid=D.filter(x=>x.w).sort((a,b)=>a.d.localeCompare(b.d));
 
   if(valid.length<2){
-    return `<div class="coachBox">
-      <div class="coachTitle">💡 ملخص ذكي</div>
-      <div class="coachText">سجل وزنك يومين على الأقل حتى يبدأ المدرب الذكي.</div>
-    </div>`;
+    return '<div class="coachBox"><div class="coachTitle">💡 ملخص ذكي</div><div class="coachText">سجل وزنك يومين على الأقل حتى يبدأ المدرب الذكي.</div></div>';
   }
 
   let first=valid[0];
@@ -1248,7 +1245,6 @@ function goalSummary(cur,loss,rem){
   let startW=+S.start||+first.w;
   let goalW=+S.goal||75;
   let target=startW-goalW;
-
   let diff=cur-(+prev.w);
   let progress=target?Math.max(0,Math.min(100,(loss/target)*100)):0;
 
@@ -1257,51 +1253,30 @@ function goalSummary(cur,loss,rem){
   let weeks=weeklyRate>0&&rem>0?rem/weeklyRate:null;
 
   let avgSteps=Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
-  let avgCal=Math.round(valid.reduce((a,x)=>a+(+x.cal||0),0)/valid.length);
   let best=Math.min(...valid.map(x=>+x.w));
-  let daysSinceLast=Math.max(0,Math.floor((new Date()-new Date(last.d))/(1000*60*60*24)));
 
-  let status=
-    weeklyRate>=0.7?"🔥 ممتاز جداً":
-    weeklyRate>=0.3?"🟢 ممتاز":
-    weeklyRate>0?"🟡 جيد":
-    diff===0?"🟠 ثابت":
-    "🔴 يحتاج انتباه";
+  let status=weeklyRate>=0.7?"🔥 ممتاز جداً":weeklyRate>=0.3?"🟢 ممتاز":weeklyRate>0?"🟡 جيد":diff===0?"🟠 ثابت":"🔴 يحتاج انتباه";
 
-  let alerts=[];
+  let advice="استمر بنفس الأداء.";
+  if(diff<0) advice="آخر تسجيل عندك أفضل من السابق، استمر.";
+  if(diff>0) advice="وزنك ارتفع عن آخر تسجيل، غالباً سوائل أو وجبة ثقيلة.";
+  if(avgSteps<6000) advice="خطواتك قليلة، حاول ترفعها تدريجياً إلى 8000 خطوة.";
+  if(weeklyRate>1.2) advice="نزولك سريع جداً، تأكد أنه صحي وبدون حرمان شديد.";
 
-  if(diff<0) alerts.push("📉 آخر تسجيل عندك أفضل من السابق، استمر.");
-  if(diff>0) alerts.push("⚠️ وزنك ارتفع عن آخر تسجيل، غالباً سوائل أو وجبة ثقيلة.");
-  if(daysSinceLast>=3) alerts.push("📅 آخر تسجيل قديم، سجل وزنك اليوم حتى يبقى التحليل دقيق.");
-  if(weeklyRate>1.2) alerts.push("🚨 نزولك سريع جداً، تأكد أنه صحي وبدون حرمان شديد.");
-  if(avgSteps<6000) alerts.push("🚶 خطواتك قليلة، حاول ترفعها تدريجياً إلى 8000 خطوة.");
-  if(avgSteps>=8000) alerts.push("🔥 نشاطك ممتاز ويدعم هدفك.");
-  if(avgCal>0&&avgCal<1200) alerts.push("🍽️ سعراتك منخفضة، تأكد أنك تأكل كفايتك بشكل صحي.");
-  if(cur===best) alerts.push("🥇 وصلت لأفضل وزن مسجل عندك.");
+  let etaText=weeks?("متوقع الوصول خلال "+weeks.toFixed(1)+" أسبوع إذا استمريت بنفس الأداء."):"نحتاج بيانات أكثر لحساب موعد الوصول.";
 
-  let plan=
-    avgSteps<6000 ? "خطة اليوم: امشِ 20-30 دقيقة وحاول توصل 8000 خطوة." :
-    weeklyRate>1.2 ? "خطة اليوم: حافظ على الأكل المتوازن ولا تزيد الحرمان." :
-    diff>0 ? "خطة اليوم: ركز على الماء والمشي وارجع للقياس بعد يومين." :
-    "خطة اليوم: استمر بنفس النظام وحافظ على نشاطك.";
-
-  let etaText=weeks?`متوقع الوصول خلال ${weeks.toFixed(1)} أسبوع إذا استمريت بنفس الأداء.`:"نحتاج بيانات أكثر لحساب موعد الوصول.";
-
-  return `
-  <div class="coachBox">
-    <div class="coachTitle">💡 ملخص ذكي</div>
-    <div class="coachText">${status}</div>
-    <div class="coachList">
-      <div class="coachItem">🎯 أنجزت ${progress.toFixed(0)}% من هدفك.</div>
-      <div class="coachItem">⚖️ المتبقي ${rem.toFixed(1)} كجم.</div>
-      <div class="coachItem">⏳ ${etaText}</div>
-      <div class="coachItem">🏆 أفضل وزن ${best.toFixed(1)} كجم.</div>
-      <div class="coachItem">🚶 متوسط خطواتك ${avgSteps||0} خطوة.</div>
-      ${alerts.slice(0,4).map(x=>`<div class="coachItem">${x}</div>`).join("")}
-      <div class="coachItem">🧭 ${plan}</div>
-    </div>
-  </div>`;
-}
+  return '<div class="coachBox">'+
+    '<div class="coachTitle">💡 ملخص ذكي</div>'+
+    '<div class="coachText">'+status+'</div>'+
+    '<div class="coachList">'+
+      '<div class="coachItem">🎯 أنجزت '+progress.toFixed(0)+'% من هدفك.</div>'+
+      '<div class="coachItem">⚖️ المتبقي '+rem.toFixed(1)+' كجم.</div>'+
+      '<div class="coachItem">⏳ '+etaText+'</div>'+
+      '<div class="coachItem">🏆 أفضل وزن '+best.toFixed(1)+' كجم.</div>'+
+      '<div class="coachItem">🚶 متوسط خطواتك '+(avgSteps||0)+' خطوة.</div>'+
+      '<div class="coachItem">💬 '+advice+'</div>'+
+    '</div>'+
+  '</div>';
 }
 function changeMonth(n){
 calDate.setMonth(calDate.getMonth()+n);
