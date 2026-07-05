@@ -2019,7 +2019,7 @@ if(item.minutes>=30){
   );
 }
   AD.sort((a,b)=>a.d.localeCompare(b.d));
-  localStorage.wazniActivities=JSON.stringify(AD);
+  saveActivities(AD);
 
   if(steps>0){
     let today=isoDate();
