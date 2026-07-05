@@ -1,19 +1,19 @@
-/* Liyaqti Nutrition Center Pro - Polished UI */
-console.log("Liyaqti Nutrition Pro loaded");
+/* Liyaqti Nutrition Intelligence Center - Premium Rebuild */
+console.log("Liyaqti Nutrition Intelligence loaded");
 
 const NKEY="liyaqtiNutritionData";
 const NSET="liyaqtiNutritionSettings";
 const NTPL="liyaqtiNutritionTemplates";
 
-let nutritionCharts={};
-let editingMealId=null;
 let N=JSON.parse(localStorage.getItem(NKEY)||"[]");
 let NT=JSON.parse(localStorage.getItem(NTPL)||"[]");
-
 let NS=JSON.parse(localStorage.getItem(NSET)||"null")||{
-  calories:2200, protein:140, carbs:200, fat:70,
-  fiber:25, sugar:50, sodium:2300, water:8
+  calories:2200,protein:140,carbs:200,fat:70,fiber:25,sugar:50,sodium:2300,water:8
 };
+
+let nTab="today";
+let editingMealId=null;
+let nutritionCharts={};
 
 const foodLibrary=[
 {name:"نسكافيه المعتاد",meal:"breakfast",unit:"كوب",grams:250,cal:80,p:2,c:12,f:2,fiber:0,sugar:8,sodium:50},
@@ -40,12 +40,12 @@ const foodLibrary=[
 
 function nDate(){return new Date().toISOString().slice(0,10)}
 function nYesterday(){let d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10)}
-function nSave(){
-  localStorage.setItem(NKEY,JSON.stringify(N));
-  localStorage.setItem(NSET,JSON.stringify(NS));
-  localStorage.setItem(NTPL,JSON.stringify(NT));
-}
+function nSave(){localStorage.setItem(NKEY,JSON.stringify(N));localStorage.setItem(NSET,JSON.stringify(NS));localStorage.setItem(NTPL,JSON.stringify(NT))}
 function nToday(){return N.filter(x=>x.date===nDate())}
+function pct(v,t){return t?Math.max(0,Math.min(100,Math.round((v/t)*100))):0}
+function fmt(a,b,unit=""){return `<span dir="ltr">${a} / ${b}${unit?(" "+unit):""}</span>`}
+function mealName(k){return {breakfast:"🍳 الفطور",lunch:"🍛 الغداء",dinner:"🌙 العشاء",snack:"🍫 سناك"}[k]||"وجبة"}
+
 function nSum(list=nToday()){
   return {
     cal:Math.round(list.reduce((a,x)=>a+(+x.cal||0),0)),
@@ -58,9 +58,7 @@ function nSum(list=nToday()){
     water:Math.round(list.reduce((a,x)=>a+(+x.water||0),0))
   }
 }
-function pct(v,t){return t?Math.max(0,Math.min(100,Math.round(v/t*100))):0}
-function nMealName(k){return {breakfast:"🍳 الفطور",lunch:"🍛 الغداء",dinner:"🌙 العشاء",snack:"🍫 سناك"}[k]||"وجبة"}
-function nKpi(label,value){return `<div class="statCard"><div class="statLabel">${label}</div><div class="statValue">${value}</div></div>`}
+
 function scaleFood(x,amount){
   let base=+x.grams||100, qty=+amount||base, r=qty/base;
   return {
@@ -71,223 +69,440 @@ function scaleFood(x,amount){
   }
 }
 
-function renderNutrition(){
-  let page=document.getElementById("dash");
-  if(!page)return;
-
-  page.innerHTML=`
-  <div class="nutritionWrap">
-
-    <div class="card nutritionHero">
-      <div>
-        <div class="muted">Liyaqti Nutrition Intelligence</div>
-        <h2>🍎 مركز التغذية الذكي</h2>
-        <p class="muted">تسجيل وجبات، سعرات، ماكروز، ماء، مكتبة أكل، تحليل ذكي وربط مباشر مع الوزن والخطوات.</p>
-      </div>
-      <div id="nutritionHeroStatus"></div>
-    </div>
-
-    <div id="nutritionKPIs" class="statsGrid nutritionSection"></div>
-
-    <div class="card nutritionSection">
-      <h3>⚡ تسجيل سريع</h3>
-      <div class="quickActions">
-        <button class="btn btn2" onclick="copyYesterdayMeals()">كرر أكل أمس</button>
-        <button class="btn btn2" onclick="copyYesterdayMealType('breakfast')">كرر فطور أمس</button>
-        <button class="btn btn2" onclick="copyYesterdayMealType('lunch')">كرر غداء أمس</button>
-        <button class="btn btn2" onclick="saveTodayAsTemplate()">احفظ يومي كقالب</button>
-      </div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>${editingMealId?"✏️ تعديل وجبة":"➕ إضافة وجبة"}</h3>
-      <div class="grid form entryForm">
-        <div class="field"><label>اسم الأكلة</label><input id="nName" placeholder="مثال: دجاج ورز"></div>
-        <div class="field"><label>نوع الوجبة</label><select id="nMeal" class="nInput"><option value="breakfast">الفطور</option><option value="lunch">الغداء</option><option value="dinner">العشاء</option><option value="snack">سناك</option></select></div>
-        <div class="field"><label>الكمية / جرام أو حصة</label><input id="nAmount" type="number" placeholder="مثال 200"></div>
-        <div class="field"><label>السعرات</label><input id="nCal" type="number" placeholder="500"></div>
-        <div class="field"><label>البروتين g</label><input id="nP" type="number" placeholder="35"></div>
-        <div class="field"><label>الكارب g</label><input id="nC" type="number" placeholder="50"></div>
-        <div class="field"><label>الدهون g</label><input id="nF" type="number" placeholder="15"></div>
-        <div class="field"><label>الألياف g</label><input id="nFiber" type="number" placeholder="5"></div>
-        <div class="field"><label>السكر g</label><input id="nSugar" type="number" placeholder="8"></div>
-        <div class="field"><label>الصوديوم mg</label><input id="nSodium" type="number" placeholder="400"></div>
-        <div class="field"><label>الماء / أكواب</label><input id="nWater" type="number" placeholder="0"></div>
-      </div>
-      <button class="btn saveBtn" onclick="addNutritionMeal()">${editingMealId?"حفظ التعديل":"حفظ الوجبة"}</button>
-      ${editingMealId?`<button class="btn btn2 fullBtn" onclick="cancelMealEdit()">إلغاء التعديل</button>`:""}
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>🔍 مكتبة الأكل الذكية</h3>
-      <input id="foodSearch" class="nSearch" placeholder="ابحث: رز، دجاج، مكبوس، نسكافيه..." oninput="renderFoodLibrary()">
-      <div id="foodLibraryBox" class="quickFoodGrid"></div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>🎙️ تسجيل ذكي بالجملة</h3>
-      <input id="voiceText" class="nSearch" placeholder="مثال: أكلت 200 غرام رز و5 ستريبس وصحن سلطة">
-      <button class="btn saveBtn" onclick="parseSmartMealText()">حلل وأضف الوجبة</button>
-      <div class="muted smallNote">نسخة مبدئية للتسجيل بالجملة، ولاحقاً نربطها بصوت عربي فعلي.</div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>⭐ القوالب والوجبات المحفوظة</h3>
-      <div id="templatesBox" class="quickFoodGrid"></div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>🍽️ وجبات اليوم</h3>
-      <div id="todayMealsBox"></div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>🤖 مدرب التغذية الذكي</h3>
-      <div id="nutritionCoach"></div>
-    </div>
-
-    <div class="grid hero nutritionSection">
-      <div class="card"><h3>🔥 السعرات اليومية</h3><div id="calChartBox"><canvas id="nutritionCalChart"></canvas></div></div>
-      <div class="card"><h3>🥩 الماكروز</h3><div id="macroChartBox"><canvas id="nutritionMacroChart"></canvas></div></div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>📊 تقدم الأهداف الغذائية</h3>
-      <div id="macroBars"></div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>📈 داشبورد التغذية</h3>
-      <div id="nutritionReports" class="statsGrid"></div>
-      <div id="weekChartBox" class="chartBox"><canvas id="nutritionWeekChart"></canvas></div>
-    </div>
-
-    <div class="card nutritionSection">
-      <h3>⚖️ تحليل علاقة التغذية بالوزن والخطوات</h3>
-      <div id="nutritionCorrelation" class="coachBox"></div>
-    </div>
-
-    <div class="card nutritionSection">
-      <button class="btn fullBtn" onclick="toggleNutritionSettings()">🎯 إعدادات أهداف التغذية</button>
-      <div id="nutritionSettingsPanel" style="display:none;margin-top:16px">
-        <div class="grid form entryForm">
-          <div class="field"><label>السعرات</label><input id="setCal" type="number" value="${NS.calories}"></div>
-          <div class="field"><label>البروتين</label><input id="setP" type="number" value="${NS.protein}"></div>
-          <div class="field"><label>الكارب</label><input id="setC" type="number" value="${NS.carbs}"></div>
-          <div class="field"><label>الدهون</label><input id="setF" type="number" value="${NS.fat}"></div>
-          <div class="field"><label>الألياف</label><input id="setFiber" type="number" value="${NS.fiber}"></div>
-          <div class="field"><label>السكر</label><input id="setSugar" type="number" value="${NS.sugar}"></div>
-          <div class="field"><label>الصوديوم</label><input id="setSodium" type="number" value="${NS.sodium}"></div>
-          <div class="field"><label>الماء</label><input id="setWater" type="number" value="${NS.water}"></div>
-        </div>
-        <button class="btn saveBtn" onclick="saveNutritionSettings()">حفظ أهداف التغذية</button>
-      </div>
-    </div>
-
-    <div class="card nutritionSection">
-      <button class="btn btn2 fullBtn" onclick="toggleNutritionRoadmap()">🚀 ميزات مستقبلية</button>
-      <div id="nutritionRoadmapPanel" style="display:none;margin-top:16px">
-        <div class="coachList">
-          <div class="coachItem">📷 تصوير الوجبة وحساب السعرات بالذكاء الاصطناعي.</div>
-          <div class="coachItem">📦 قارئ باركود حقيقي وربطه بقاعدة بيانات منتجات.</div>
-          <div class="coachItem">🎙️ Voice Logging عربي كامل.</div>
-          <div class="coachItem">🍽️ خطة وجبات أسبوعية حسب هدفك.</div>
-          <div class="coachItem">🏥 ربط Apple Health وApple Watch مستقبلاً.</div>
-        </div>
-      </div>
-    </div>
-
-  </div>`;
-
-  injectNutritionStyle();
-  renderNutritionData();
-}
-
-function injectNutritionStyle(){
-  if(document.getElementById("nutritionStyle"))return;
-  let s=document.createElement("style");
-  s.id="nutritionStyle";
-  s.innerHTML=`
-    .nutritionSection{margin-top:16px}
-    .nutritionHero{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:center}
-    .nutritionHero h2{margin:8px 0 6px;font-size:28px}
-    .nutritionHero .muted{color:#e6fffb}
-    .nInput,.nSearch{width:100%;min-height:58px;border-radius:20px;border:1px solid var(--line);background:#fafbfc;color:var(--txt);font-size:17px;font-weight:800;padding:0 14px}
-    body.dark .nInput,body.dark .nSearch{background:#0b1b18}
-    .quickActions{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-    .quickFoodGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
-    .quickFood{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;font-weight:900;cursor:pointer;box-shadow:0 6px 14px #0001;line-height:1.5}
-    .macroBar{margin:12px 0;background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:12px}
-    body.dark .macroBar{background:#0b1b18}
-    .mealGroup{margin-top:12px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
-    .mealHead{padding:12px;font-weight:900;background:#eefaf7;color:#0f766e;display:flex;justify-content:space-between}
-    body.dark .mealHead{background:#0b1b18}
-    .mealItem{padding:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .mealBtns{display:flex;gap:6px;flex-wrap:wrap}
-    .smallMealBtn{border:0;border-radius:12px;padding:8px 10px;font-weight:900}
-    .editMeal{background:#dff3ef;color:#0f766e}
-    .copyMeal{background:#e0f2fe;color:#0369a1}
-    .deleteMeal{background:#fee2e2;color:#b91c1c}
-    .fullBtn{width:100%;margin-top:10px}
-    .smallNote{margin-top:10px}
-    .emptyChart{padding:36px 12px;text-align:center;color:var(--muted);font-weight:900;background:#f8faf9;border:1px dashed var(--line);border-radius:18px}
-    body.dark .emptyChart{background:#0b1b18}
-    .chartBox{margin-top:18px}
-  `;
-  document.head.appendChild(s);
-}
-
 function nutritionScore(s){
+  let calScore=s.cal?Math.max(0,100-Math.abs(NS.calories-s.cal)/NS.calories*100):20;
   return Math.round(
-    pct(Math.min(s.cal,NS.calories),NS.calories)*.25+
+    calScore*.25+
     pct(s.p,NS.protein)*.25+
-    pct(s.water,NS.water)*.20+
-    Math.max(0,100-Math.max(0,pct(s.sugar,NS.sugar)-100))*.15+
-    Math.max(0,100-Math.max(0,pct(s.sodium,NS.sodium)-100))*.15
+    pct(s.water,NS.water)*.18+
+    Math.max(0,100-Math.max(0,pct(s.sugar,NS.sugar)-100))*.12+
+    Math.max(0,100-Math.max(0,pct(s.sodium,NS.sodium)-100))*.12+
+    pct(s.fiber,NS.fiber)*.08
   );
 }
 
-function renderNutritionData(){
-  let today=nToday(), s=nSum(today), score=nutritionScore(s);
-  let status=score>=85?"ممتاز 🟢":score>=70?"جيد 🟡":"يحتاج تحسين 🔴";
+function renderNutrition(){
+  let page=document.getElementById("dash");
+  if(!page)return;
+  injectNutritionStyle();
 
-  nutritionHeroStatus.innerHTML=`
-    <div class="statCard" style="background:#ffffff22;color:#fff;border-color:#ffffff44">
-      <div class="statLabel" style="color:#e6fffb">درجة اليوم</div>
-      <div class="statValue" style="color:#fff">${score}%</div>
-      <div>${status}</div>
-    </div>`;
+  let s=nSum(), score=nutritionScore(s), meals=nToday();
+  let remain=Math.max(0,NS.calories-s.cal);
+  let status=score>=85?"ممتاز":score>=70?"جيد":"يحتاج تحسين";
 
-  nutritionKPIs.innerHTML=`
-    ${nKpi("🔥 السعرات",`${s.cal} / ${NS.calories}`)}
-    ${nKpi("⏳ المتبقي",Math.max(0,NS.calories-s.cal))}
-    ${nKpi("🥩 البروتين",`${s.p}g`)}
-    ${nKpi("🍚 الكارب",`${s.c}g`)}
-    ${nKpi("🥑 الدهون",`${s.f}g`)}
-    ${nKpi("💧 الماء",`${s.water} / ${NS.water}`)}
-    ${nKpi("🍽️ الوجبات",today.length)}
-    ${nKpi("📊 الالتزام",`${score}%`)}`;
+  page.innerHTML=`
+  <div class="nWrap">
 
-  renderFoodLibrary();
-  renderTemplates();
-  renderTodayMeals(today);
-  renderNutritionCoach(s,score);
-  renderMacroBars(s);
-  renderNutritionReports();
-  renderNutritionCharts(s);
-  renderNutritionCorrelation();
+    <div class="nHero">
+      <div class="nHeroMain">
+        <div class="nHeroTag">Liyaqti Nutrition Intelligence</div>
+        <h2>🍎 مركز التغذية الذكي</h2>
+        <p>لوحة تغذية ذكية تربط السعرات والماكروز والماء بالوزن والخطوات والهدف.</p>
+      </div>
+      <div class="nScore">
+        <span>درجة اليوم</span>
+        <b>${score}%</b>
+        <small>${status}</small>
+      </div>
+    </div>
+
+    <div class="nDecision">
+      <div>
+        <h3>قرار اليوم</h3>
+        <p>${nutritionDecision(s,score)}</p>
+      </div>
+      <button onclick="openMealModal()" class="nAddBtn">+ إضافة وجبة</button>
+    </div>
+
+    <div class="nCaloriesPanel">
+      <div class="nCalTop">
+        <div>
+          <span>🔥 السعرات اليوم</span>
+          <strong>${fmt(s.cal,NS.calories,"سعرة")}</strong>
+        </div>
+        <div>
+          <span>المتبقي</span>
+          <strong>${remain}</strong>
+        </div>
+      </div>
+      <div class="nBigBar"><div style="width:${pct(s.cal,NS.calories)}%"></div></div>
+      <div class="nMiniGrid">
+        <div><span>🥩 بروتين</span><b>${fmt(s.p,NS.protein,"g")}</b></div>
+        <div><span>🍚 كارب</span><b>${fmt(s.c,NS.carbs,"g")}</b></div>
+        <div><span>🥑 دهون</span><b>${fmt(s.f,NS.fat,"g")}</b></div>
+        <div><span>💧 ماء</span><b>${fmt(s.water,NS.water,"كوب")}</b></div>
+      </div>
+    </div>
+
+    <div class="nTabs">
+      <button class="${nTab==="today"?"on":""}" onclick="setNutritionTab('today')">اليوم</button>
+      <button class="${nTab==="meals"?"on":""}" onclick="setNutritionTab('meals')">الوجبات</button>
+      <button class="${nTab==="library"?"on":""}" onclick="setNutritionTab('library')">المكتبة</button>
+      <button class="${nTab==="coach"?"on":""}" onclick="setNutritionTab('coach')">المدرب</button>
+      <button class="${nTab==="reports"?"on":""}" onclick="setNutritionTab('reports')">التقارير</button>
+      <button class="${nTab==="settings"?"on":""}" onclick="setNutritionTab('settings')">الأهداف</button>
+    </div>
+
+    <div id="nutritionContent"></div>
+
+    <button class="nFloatAdd" onclick="openMealModal()">+</button>
+    <div id="mealModal"></div>
+
+  </div>`;
+
+  renderNutritionTab();
 }
 
-function renderFoodLibrary(){
+function nutritionDecision(s,score){
+  if(!nToday().length)return "ابدأ بتسجيل أول وجبة اليوم. الأفضل تبدأ بوجبة فيها بروتين عالي حتى يرتفع تقييم يومك.";
+  if(s.cal>NS.calories)return "السعرات تعدت هدفك. خل الوجبة القادمة خفيفة وارفع المشي اليوم.";
+  if(s.p<NS.protein*.7)return "البروتين ناقص. أضف دجاج، تونة، بيض، روب يوناني أو بروتين خفيف.";
+  if(s.sodium>NS.sodium)return "الصوديوم مرتفع، لا تستعجل بالحكم على الوزن اليوم. ركز على الماء.";
+  if(score>=85)return "يومك ممتاز. حافظ على نفس التوازن ولا تضيف وجبات عالية آخر اليوم.";
+  return "وضعك جيد، ركز على إكمال الماء والبروتين قبل نهاية اليوم.";
+}
+
+function setNutritionTab(t){nTab=t;renderNutrition()}
+
+function renderNutritionTab(){
+  let box=document.getElementById("nutritionContent");
+  if(!box)return;
+
+  if(nTab==="today")box.innerHTML=renderTodayOverview();
+  if(nTab==="meals")box.innerHTML=renderMealsTab();
+  if(nTab==="library")box.innerHTML=renderLibraryTab();
+  if(nTab==="coach")box.innerHTML=renderCoachTab();
+  if(nTab==="reports")box.innerHTML=renderReportsTab();
+  if(nTab==="settings")box.innerHTML=renderSettingsTab();
+
+  setTimeout(()=>{
+    if(nTab==="today")drawTodayCharts();
+    if(nTab==="reports")drawReportsChart();
+  },80);
+}
+
+function renderTodayOverview(){
+  let s=nSum(), meals=nToday();
+  return `
+  <div class="nCard">
+    <h3>📊 ملخص اليوم الذكي</h3>
+    <div class="nInsightGrid">
+      <div><span>السعرات</span><b>${fmt(s.cal,NS.calories)}</b></div>
+      <div><span>الوجبات</span><b>${meals.length}</b></div>
+      <div><span>البروتين</span><b>${fmt(s.p,NS.protein,"g")}</b></div>
+      <div><span>الماء</span><b>${fmt(s.water,NS.water,"كوب")}</b></div>
+    </div>
+  </div>
+
+  <div class="nCard">
+    <h3>🔥 السعرات اليومية</h3>
+    <div id="nCalChartBox">${s.cal?`<canvas id="nCalChart"></canvas>`:`<div class="nEmpty">سجل وجبة حتى يظهر رسم السعرات</div>`}</div>
+  </div>
+
+  <div class="nCard">
+    <h3>🥩 الماكروز</h3>
+    <div id="nMacroChartBox">${(s.p+s.c+s.f)?`<canvas id="nMacroChart"></canvas>`:`<div class="nEmpty">سجل بروتين/كارب/دهون حتى يظهر الرسم</div>`}</div>
+  </div>
+
+  <div class="nCard">
+    <h3>📈 تقدم الأهداف الغذائية</h3>
+    ${macroBars()}
+  </div>`;
+}
+
+function renderMealsTab(){
+  let meals=nToday();
+  return `
+  <div class="nCard nActionCard">
+    <div>
+      <h3>🍽️ وجبات اليوم</h3>
+      <p>أضف وجباتك وعدّلها أو انسخها بسرعة.</p>
+    </div>
+    <button onclick="openMealModal()" class="nAddBtn">+ إضافة وجبة</button>
+  </div>
+  ${!meals.length?`<div class="nCard"><div class="nEmpty">لا توجد وجبات مسجلة اليوم.</div></div>`:renderMealsList(meals)}
+
+  <div class="nCard">
+    <h3>⚡ تسجيل سريع</h3>
+    <div class="nQuick">
+      <button onclick="copyYesterdayMeals()">كرر أكل أمس</button>
+      <button onclick="copyYesterdayMealType('breakfast')">كرر فطور أمس</button>
+      <button onclick="copyYesterdayMealType('lunch')">كرر غداء أمس</button>
+      <button onclick="saveTodayAsTemplate()">احفظ اليوم كقالب</button>
+    </div>
+  </div>`;
+}
+
+function renderMealsList(meals){
+  return ["breakfast","lunch","dinner","snack"].map(g=>{
+    let list=meals.filter(x=>x.meal===g); if(!list.length)return "";
+    let total=nSum(list);
+    return `<div class="nMealGroup">
+      <div class="nMealHead"><b>${mealName(g)}</b><span>${total.cal} سعرة</span></div>
+      ${list.map(x=>`<div class="nMealItem">
+        <div><b>${x.name}</b><span>${x.cal} kcal • P ${x.p}g • C ${x.c}g • F ${x.f}g ${x.amount?`• كمية ${x.amount}`:""}</span></div>
+        <div>
+          <button onclick="editNutritionMeal(${x.id})">تعديل</button>
+          <button onclick="copyMealToToday(${x.id})">نسخ</button>
+          <button onclick="deleteNutritionMeal(${x.id})">حذف</button>
+        </div>
+      </div>`).join("")}
+    </div>`;
+  }).join("");
+}
+
+function renderLibraryTab(){
+  return `
+  <div class="nCard">
+    <h3>🔍 مكتبة الأكل الذكية</h3>
+    <p class="muted">اكتب أول حرف أو اسم الأكلة، وتظهر النتائج فقط عند البحث.</p>
+    <input id="foodSearch" class="nSearch" placeholder="مثال: رز، دجاج، مكبوس، نسكافيه..." oninput="renderFoodResults()">
+    <div id="foodResults"></div>
+  </div>
+
+  <div class="nCard">
+    <h3>⭐ القوالب والوجبات المحفوظة</h3>
+    <div id="templatesBox">${renderTemplatesInline()}</div>
+    <button class="nSecondaryBtn" onclick="createTemplateFromLibrary()">+ إنشاء قالب جديد</button>
+  </div>
+
+  <div class="nCard">
+    <h3>🎙️ تسجيل ذكي بالجملة</h3>
+    <input id="voiceText" class="nSearch" placeholder="مثال: أكلت 200 غرام رز و5 ستريبس وصحن سلطة">
+    <button class="nAddBtn full" onclick="parseSmartMealText()">حلل وأضف الوجبة</button>
+  </div>`;
+}
+
+function renderFoodResults(){
   let q=(document.getElementById("foodSearch")?.value||"").trim().toLowerCase();
-  let list=foodLibrary.filter(x=>!q||x.name.toLowerCase().includes(q));
-  foodLibraryBox.innerHTML=list.map(x=>{
+  let box=document.getElementById("foodResults");
+  if(!box)return;
+  if(!q){box.innerHTML=`<div class="nEmpty small">ابدأ بالكتابة لعرض النتائج.</div>`;return}
+  let list=foodLibrary.filter(x=>x.name.toLowerCase().includes(q)).slice(0,12);
+  box.innerHTML=list.length?`<div class="nFoodGrid">${list.map(x=>{
     let i=foodLibrary.indexOf(x);
-    return `<div class="quickFood" onclick="quickAddWithAmount(${i})">
-      ${x.name}<br><span class="muted">${x.cal} سعرة • P ${x.p}g • ${x.unit}</span>
+    return `<div class="nFoodItem" onclick="quickAddWithAmount(${i})">
+      <b>${x.name}</b><span>${x.cal} سعرة • P ${x.p}g • ${x.unit}</span>
     </div>`;
-  }).join("")||`<div class="muted">ما حصلنا نتيجة.</div>`;
+  }).join("")}</div>`:`<div class="nEmpty small">ما حصلنا نتيجة. تقدر تضيفها يدوياً من زر إضافة وجبة.</div>`;
 }
+
+function renderCoachTab(){
+  let s=nSum(), score=nutritionScore(s);
+  return `
+  <div class="nCard">
+    <h3>🤖 مدرب التغذية الذكي</h3>
+    <div class="nCoachBox">
+      <h4>${score>=85?"🟢 يوم غذائي ممتاز":score>=70?"🟡 يوم جيد":"🔴 يوم يحتاج انتباه"}</h4>
+      ${coachAdvice(s).map(x=>`<div class="nCoachItem">${x}</div>`).join("")}
+    </div>
+  </div>
+
+  <div class="nCard">
+    <h3>🍽️ اقتراح وجبة ذكي</h3>
+    <div class="nSmartMeal">${smartMealSuggestion(s)}</div>
+  </div>`;
+}
+
+function coachAdvice(s){
+  let a=[];
+  if(!nToday().length)a.push("ابدأ بتسجيل أول وجبة حتى يبدأ التحليل الحقيقي.");
+  if(s.cal<=NS.calories)a.push("✅ السعرات تحت السيطرة اليوم.");
+  else a.push("⚠️ السعرات تعدت الهدف. حاول تعوض بالمشي أو عشاء خفيف.");
+  if(s.p<NS.protein*.75)a.push("🥩 البروتين ناقص. أضف دجاج، تونة، بيض، روب يوناني أو بروتين.");
+  if(s.water<NS.water*.7)a.push("💧 الماء ناقص. كمل أكواب الماء قبل نهاية اليوم.");
+  if(s.fiber<NS.fiber*.6)a.push("🌾 الألياف قليلة. زيد سلطة، خضار، شوفان أو فواكه.");
+  if(s.sodium>NS.sodium)a.push("🧂 الصوديوم مرتفع. قد يرفع الوزن مؤقتاً بسبب السوائل.");
+  return a;
+}
+
+function smartMealSuggestion(s){
+  if(s.p<NS.protein*.7)return "اقتراح: صدر دجاج + سلطة + روب قليل الدسم. بروتين عالي وسعرات متوسطة.";
+  if(s.cal>NS.calories)return "اقتراح: تونة ماء + خيار/سلطة فقط. خفيف ويساعدك تكمل اليوم بدون زيادة.";
+  if(s.water<NS.water*.7)return "قبل أي وجبة جديدة: اشرب كوبين ماء ثم اختار وجبة بروتين خفيفة.";
+  return "اقتراح متوازن: رز أبيض كمية صغيرة + دجاج + سلطة.";
+}
+
+function renderReportsTab(){
+  let dates=[...new Set(N.map(x=>x.date))].sort().slice(-7);
+  let days=dates.map(d=>nSum(N.filter(x=>x.date===d)));
+  let avgCal=days.length?Math.round(days.reduce((a,x)=>a+x.cal,0)/days.length):0;
+  let avgP=days.length?Math.round(days.reduce((a,x)=>a+x.p,0)/days.length):0;
+  let good=days.filter(x=>x.cal<=NS.calories&&x.p>=NS.protein*.75).length;
+  let high=days.length?Math.max(...days.map(x=>x.cal)):0;
+
+  return `
+  <div class="nCard">
+    <h3>📈 داشبورد التغذية</h3>
+    <div class="nInsightGrid">
+      <div><span>📅 أيام التسجيل</span><b>${dates.length}</b></div>
+      <div><span>🔥 متوسط السعرات</span><b>${avgCal}</b></div>
+      <div><span>🥩 متوسط البروتين</span><b>${avgP}g</b></div>
+      <div><span>✅ أيام الالتزام</span><b>${good}</b></div>
+      <div><span>📈 أعلى يوم</span><b>${high}</b></div>
+      <div><span>🔁 أكثر أكلة</span><b>${mostFood()}</b></div>
+    </div>
+    <div id="nWeekChartBox">${dates.length?`<canvas id="nWeekChart"></canvas>`:`<div class="nEmpty">سجل عدة أيام حتى يظهر التقرير الأسبوعي</div>`}</div>
+  </div>
+
+  <div class="nCard">
+    <h3>⚖️ علاقة التغذية بالوزن والخطوات</h3>
+    <div class="nCorrelation">${nutritionCorrelationText()}</div>
+  </div>`;
+}
+
+function renderSettingsTab(){
+  return `
+  <div class="nCard">
+    <h3>🎯 أهداف التغذية</h3>
+    <div class="nSettingsGrid">
+      ${settingsInput("السعرات","setCal",NS.calories)}
+      ${settingsInput("البروتين","setP",NS.protein)}
+      ${settingsInput("الكارب","setC",NS.carbs)}
+      ${settingsInput("الدهون","setF",NS.fat)}
+      ${settingsInput("الألياف","setFiber",NS.fiber)}
+      ${settingsInput("السكر","setSugar",NS.sugar)}
+      ${settingsInput("الصوديوم","setSodium",NS.sodium)}
+      ${settingsInput("الماء","setWater",NS.water)}
+    </div>
+    <button class="nAddBtn full" onclick="saveNutritionSettings()">حفظ أهداف التغذية</button>
+  </div>
+
+  <div class="nCard">
+    <h3>🚀 ميزات مستقبلية</h3>
+    <div class="nCoachBox">
+      <div class="nCoachItem">📷 تصوير الوجبة وحساب السعرات بالذكاء الاصطناعي.</div>
+      <div class="nCoachItem">📦 قارئ باركود حقيقي.</div>
+      <div class="nCoachItem">🎙️ Voice Logging عربي كامل.</div>
+      <div class="nCoachItem">🍽️ خطة وجبات أسبوعية.</div>
+    </div>
+  </div>`;
+}
+
+function settingsInput(label,id,val){
+  return `<div><label>${label}</label><input id="${id}" type="number" value="${val}"></div>`;
+}
+
+function macroBars(){
+  let s=nSum();
+  let items=[
+    ["🔥 السعرات",s.cal,NS.calories,"سعرة"],
+    ["🥩 البروتين",s.p,NS.protein,"g"],
+    ["🍚 الكارب",s.c,NS.carbs,"g"],
+    ["🥑 الدهون",s.f,NS.fat,"g"],
+    ["🌾 الألياف",s.fiber,NS.fiber,"g"],
+    ["🍬 السكر",s.sugar,NS.sugar,"g"],
+    ["🧂 الصوديوم",s.sodium,NS.sodium,"mg"],
+    ["💧 الماء",s.water,NS.water,"كوب"]
+  ];
+  return items.map(x=>`
+    <div class="nGoalBar">
+      <div><b>${x[0]}</b><span>${fmt(x[1],x[2],x[3])}</span></div>
+      <div><i style="width:${pct(x[1],x[2])}%"></i></div>
+    </div>`).join("");
+}
+
+function drawTodayCharts(){
+  let s=nSum();
+  destroyCharts();
+
+  if(s.cal&&document.getElementById("nCalChart")){
+    nutritionCharts.cal=new Chart(document.getElementById("nCalChart"),{
+      type:"doughnut",
+      data:{labels:["المستهلك","المتبقي"],datasets:[{data:[s.cal,Math.max(0,NS.calories-s.cal)]}]},
+      options:{plugins:{legend:{position:"bottom"}}}
+    });
+  }
+
+  if((s.p+s.c+s.f)&&document.getElementById("nMacroChart")){
+    nutritionCharts.macro=new Chart(document.getElementById("nMacroChart"),{
+      type:"bar",
+      data:{labels:["بروتين","كارب","دهون"],datasets:[{data:[s.p,s.c,s.f]}]},
+      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    });
+  }
+}
+
+function drawReportsChart(){
+  let dates=[...new Set(N.map(x=>x.date))].sort().slice(-7);
+  if(!dates.length||!document.getElementById("nWeekChart"))return;
+  destroyCharts();
+  nutritionCharts.week=new Chart(document.getElementById("nWeekChart"),{
+    type:"line",
+    data:{
+      labels:dates.map(x=>x.slice(5)),
+      datasets:[
+        {label:"السعرات",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).cal),tension:.35},
+        {label:"البروتين",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).p),tension:.35}
+      ]
+    },
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function destroyCharts(){Object.values(nutritionCharts).forEach(c=>{try{c.destroy()}catch(e){}});nutritionCharts={}}
+
+function openMealModal(id=null){
+  editingMealId=id;
+  let x=id?N.find(a=>a.id===id):null;
+  let modal=document.getElementById("mealModal");
+  if(!modal)return;
+
+  modal.innerHTML=`
+  <div class="nModalShade">
+    <div class="nModal">
+      <div class="nModalHead">
+        <h3>${x?"✏️ تعديل وجبة":"➕ إضافة وجبة"}</h3>
+        <button onclick="closeMealModal()">×</button>
+      </div>
+      <div class="nForm">
+        ${field("اسم الأكلة","nName",x?.name||"مثال: دجاج ورز")}
+        <div><label>نوع الوجبة</label><select id="nMeal"><option value="breakfast">الفطور</option><option value="lunch">الغداء</option><option value="dinner">العشاء</option><option value="snack">سناك</option></select></div>
+        ${field("الكمية / جرام أو حصة","nAmount",x?.amount||"200","number")}
+        ${field("السعرات","nCal",x?.cal||"500","number")}
+        ${field("البروتين g","nP",x?.p||"35","number")}
+        ${field("الكارب g","nC",x?.c||"50","number")}
+        ${field("الدهون g","nF",x?.f||"15","number")}
+        ${field("الألياف g","nFiber",x?.fiber||"5","number")}
+        ${field("السكر g","nSugar",x?.sugar||"8","number")}
+        ${field("الصوديوم mg","nSodium",x?.sodium||"400","number")}
+        ${field("الماء / أكواب","nWater",x?.water||"0","number")}
+      </div>
+      <button class="nAddBtn full" onclick="saveMealFromModal()">${x?"حفظ التعديل":"إضافة الوجبة"}</button>
+    </div>
+  </div>`;
+
+  if(x){
+    nMeal.value=x.meal||"breakfast";
+    ["nName","nAmount","nCal","nP","nC","nF","nFiber","nSugar","nSodium","nWater"].forEach(id=>{
+      let el=document.getElementById(id); if(el&&x[id.replace("n","").toLowerCase()]!==undefined){}
+    });
+  }
+}
+
+function field(label,id,val,type="text"){
+  let isRealVal=typeof val==="number";
+  return `<div><label>${label}</label><input id="${id}" type="${type}" ${isRealVal?`value="${val}"`:`placeholder="${val}"`}></div>`;
+}
+
+function closeMealModal(){document.getElementById("mealModal").innerHTML="";editingMealId=null}
+
+function saveMealFromModal(){
+  let item={
+    id:editingMealId||Date.now(),date:nDate(),
+    name:nName.value||"وجبة",meal:nMeal.value,
+    amount:+nAmount.value||0,cal:+nCal.value||0,p:+nP.value||0,c:+nC.value||0,f:+nF.value||0,
+    fiber:+nFiber.value||0,sugar:+nSugar.value||0,sodium:+nSodium.value||0,water:+nWater.value||0
+  };
+  if(editingMealId)N=N.map(x=>x.id===editingMealId?item:x);else N.push(item);
+  nSave();closeMealModal();nTab="meals";renderNutrition();
+}
+
+function editNutritionMeal(id){openMealModal(id)}
+function deleteNutritionMeal(id){N=N.filter(x=>x.id!==id);nSave();renderNutrition()}
+function copyMealToToday(id){let x=N.find(a=>a.id===id);if(!x)return;N.push({...x,id:Date.now(),date:nDate()});nSave();renderNutrition()}
+function copyYesterdayMeals(){let y=N.filter(x=>x.date===nYesterday());if(!y.length)return alert("مافي وجبات أمس.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutrition()}
+function copyYesterdayMealType(type){let y=N.filter(x=>x.date===nYesterday()&&x.meal===type);if(!y.length)return alert("مافي وجبات من هذا النوع أمس.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutrition()}
 
 function quickAddWithAmount(i){
   let x=foodLibrary[i];
@@ -295,177 +510,11 @@ function quickAddWithAmount(i){
   if(amount===null)return;
   let scaled=scaleFood(x,amount);
   N.push({id:Date.now(),date:nDate(),name:x.name,meal:x.meal,amount:+amount||x.grams,...scaled,water:0});
-  nSave();renderNutritionData();
+  nSave();nTab="meals";renderNutrition();
 }
-
-function renderTodayMeals(today){
-  if(!today.length){todayMealsBox.innerHTML=`<div class="muted">لا توجد وجبات مسجلة اليوم.</div>`;return}
-  todayMealsBox.innerHTML=["breakfast","lunch","dinner","snack"].map(g=>{
-    let list=today.filter(x=>x.meal===g); if(!list.length)return "";
-    let total=nSum(list);
-    return `<div class="mealGroup">
-      <div class="mealHead"><span>${nMealName(g)}</span><span>${total.cal} سعرة</span></div>
-      ${list.map(x=>`<div class="mealItem">
-        <div><b>${x.name}</b><div class="muted">${x.cal} kcal • P ${x.p}g • C ${x.c}g • F ${x.f}g ${x.amount?`• كمية ${x.amount}`:""}</div></div>
-        <div class="mealBtns">
-          <button class="smallMealBtn editMeal" onclick="editNutritionMeal(${x.id})">تعديل</button>
-          <button class="smallMealBtn copyMeal" onclick="copyMealToToday(${x.id})">نسخ</button>
-          <button class="smallMealBtn deleteMeal" onclick="deleteNutritionMeal(${x.id})">حذف</button>
-        </div>
-      </div>`).join("")}
-    </div>`;
-  }).join("");
-}
-
-function renderNutritionCoach(s,score){
-  let advice=[];
-  advice.push(s.cal>NS.calories?"⚠️ السعرات تعدت هدف اليوم. خل العشاء خفيف أو زيد المشي.":"✅ السعرات تحت السيطرة اليوم.");
-  advice.push(s.p<NS.protein*.75?"🥩 البروتين ناقص. أضف دجاج، بيض، تونة، روب يوناني أو بروتين.":"💪 البروتين جيد ويدعم الحفاظ على العضلات.");
-  if(s.water<NS.water*.7)advice.push("💧 الماء ناقص. كمل أكواب الماء قبل نهاية اليوم.");
-  if(s.sugar>NS.sugar)advice.push("🍬 السكر مرتفع، انتبه من المشروبات والحلويات.");
-  if(s.sodium>NS.sodium)advice.push("🧂 الصوديوم مرتفع، ممكن يسبب احتباس سوائل وارتفاع مؤقت بالوزن.");
-  if(s.fiber<NS.fiber*.6)advice.push("🌾 الألياف قليلة. زيد سلطة، خضار، شوفان أو فواكه.");
-
-  nutritionCoach.innerHTML=`<div class="coachBox">
-    <div class="coachTitle">${score>=85?"🟢 يوم غذائي ممتاز":score>=70?"🟡 يوم جيد يحتاج تعديل بسيط":"🔴 يوم يحتاج انتباه"}</div>
-    <div class="coachText">تحليل مبني على سعراتك وماكروزك وماء اليوم.</div>
-    <div class="coachList">${advice.map(a=>`<div class="coachItem">${a}</div>`).join("")}</div>
-  </div>`;
-}
-
-function renderMacroBars(s){
-  let items=[
-    ["🔥 السعرات",s.cal,NS.calories,"سعرة"],["🥩 البروتين",s.p,NS.protein,"g"],
-    ["🍚 الكارب",s.c,NS.carbs,"g"],["🥑 الدهون",s.f,NS.fat,"g"],
-    ["🌾 الألياف",s.fiber,NS.fiber,"g"],["🍬 السكر",s.sugar,NS.sugar,"g"],
-    ["🧂 الصوديوم",s.sodium,NS.sodium,"mg"],["💧 الماء",s.water,NS.water,"كوب"]
-  ];
-  macroBars.innerHTML=items.map(x=>`
-    <div class="macroBar">
-      <div style="display:flex;justify-content:space-between;font-weight:900">
-        <span>${x[0]}</span><span>${x[1]} / ${x[2]} ${x[3]}</span>
-      </div>
-      <div class="bar" style="margin-top:10px"><div class="fill" style="width:${Math.min(100,pct(x[1],x[2]))}%"></div></div>
-    </div>`).join("");
-}
-
-function renderNutritionReports(){
-  let dates=[...new Set(N.map(x=>x.date))].sort().slice(-7);
-  let days=dates.map(d=>nSum(N.filter(x=>x.date===d)));
-  let avgCal=days.length?Math.round(days.reduce((a,x)=>a+x.cal,0)/days.length):0;
-  let avgP=days.length?Math.round(days.reduce((a,x)=>a+x.p,0)/days.length):0;
-  let goodDays=days.filter(x=>x.cal<=NS.calories&&x.p>=NS.protein*.75).length;
-  let highDay=days.length?Math.max(...days.map(x=>x.cal)):0;
-
-  nutritionReports.innerHTML=`
-    ${nKpi("📅 أيام التسجيل",dates.length)}
-    ${nKpi("🔥 متوسط السعرات",avgCal)}
-    ${nKpi("🥩 متوسط البروتين",avgP+"g")}
-    ${nKpi("✅ أيام الالتزام",goodDays)}
-    ${nKpi("📈 أعلى يوم سعرات",highDay)}
-    ${nKpi("🔁 أكثر أكلة",mostRepeatedFood())}`;
-}
-
-function mostRepeatedFood(){
-  let m={};N.forEach(x=>m[x.name]=(m[x.name]||0)+1);
-  let arr=Object.entries(m).sort((a,b)=>b[1]-a[1]);
-  return arr.length?arr[0][0]:"--";
-}
-
-function renderNutritionCharts(s){
-  if(typeof Chart==="undefined")return;
-  Object.values(nutritionCharts).forEach(c=>{try{c.destroy()}catch(e){}});
-  nutritionCharts={};
-
-  if(s.cal===0){
-    calChartBox.innerHTML=`<div class="emptyChart">سجل وجبة حتى يظهر رسم السعرات</div>`;
-  }else{
-    nutritionCharts.cal=new Chart(document.getElementById("nutritionCalChart"),{
-      type:"doughnut",
-      data:{labels:["المستهلك","المتبقي"],datasets:[{data:[s.cal,Math.max(0,NS.calories-s.cal)]}]},
-      options:{plugins:{legend:{position:"bottom"}}}
-    });
-  }
-
-  if(s.p+s.c+s.f===0){
-    macroChartBox.innerHTML=`<div class="emptyChart">سجل بروتين/كارب/دهون حتى يظهر الرسم</div>`;
-  }else{
-    nutritionCharts.macro=new Chart(document.getElementById("nutritionMacroChart"),{
-      type:"bar",
-      data:{labels:["بروتين","كارب","دهون"],datasets:[{label:"g",data:[s.p,s.c,s.f]}]},
-      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-    });
-  }
-
-  let dates=[...new Set(N.map(x=>x.date))].sort().slice(-7);
-  if(!dates.length){
-    weekChartBox.innerHTML=`<div class="emptyChart">سجل عدة أيام حتى يظهر التقرير الأسبوعي</div>`;
-  }else{
-    nutritionCharts.week=new Chart(document.getElementById("nutritionWeekChart"),{
-      type:"line",
-      data:{
-        labels:dates.map(x=>x.slice(5)),
-        datasets:[
-          {label:"السعرات",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).cal),tension:.35},
-          {label:"البروتين",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).p),tension:.35},
-          {label:"الصوديوم",data:dates.map(d=>Math.round(nSum(N.filter(x=>x.date===d)).sodium/10)),tension:.35}
-        ]
-      },
-      options:{responsive:true,scales:{y:{beginAtZero:true}}}
-    });
-  }
-}
-
-function renderNutritionCorrelation(){
-  let msg="سجل وجباتك مع الوزن والخطوات عدة أيام حتى يظهر تحليل العلاقة بين التغذية والوزن.";
-  try{
-    if(typeof D!=="undefined"&&D.length){
-      let joined=D.map(w=>{let day=nSum(N.filter(x=>x.date===w.d));return {...w,ncal:day.cal,np:day.p,nsodium:day.sodium}}).filter(x=>x.ncal>0);
-      if(joined.length>=2){
-        let last=joined[joined.length-1],prev=joined[joined.length-2],diff=last.w-prev.w;
-        let reason=diff>0&&last.nsodium>NS.sodium?"الارتفاع الأخير قد يكون من الصوديوم واحتباس السوائل.":diff>0&&last.ncal>NS.calories?"الارتفاع الأخير قد يكون من زيادة السعرات.":diff<0&&last.ncal<=NS.calories?"النزول الأخير متوافق مع التزامك بالسعرات.":"العلاقة تحتاج بيانات أكثر.";
-        msg=`عندك <b>${joined.length}</b> أيام فيها وزن وتغذية معاً.<br><br>🧠 <b>${reason}</b>`;
-      }
-    }
-  }catch(e){}
-  nutritionCorrelation.innerHTML=msg;
-}
-
-function addNutritionMeal(){
-  let item={id:editingMealId||Date.now(),date:nDate(),name:nName.value||"وجبة",meal:nMeal.value,amount:+nAmount.value||0,cal:+nCal.value||0,p:+nP.value||0,c:+nC.value||0,f:+nF.value||0,fiber:+nFiber.value||0,sugar:+nSugar.value||0,sodium:+nSodium.value||0,water:+nWater.value||0};
-  if(editingMealId){N=N.map(x=>x.id===editingMealId?item:x);editingMealId=null}else N.push(item);
-  nSave();renderNutrition();
-}
-
-function editNutritionMeal(id){
-  let x=N.find(a=>a.id===id);if(!x)return;
-  editingMealId=id;renderNutrition();
-  setTimeout(()=>{
-    nName.value=x.name||"";nMeal.value=x.meal||"breakfast";nAmount.value=x.amount||"";nCal.value=x.cal||0;nP.value=x.p||0;nC.value=x.c||0;nF.value=x.f||0;nFiber.value=x.fiber||0;nSugar.value=x.sugar||0;nSodium.value=x.sodium||0;nWater.value=x.water||0;
-    nName.scrollIntoView({behavior:"smooth",block:"center"});
-  },100);
-}
-function cancelMealEdit(){editingMealId=null;renderNutrition()}
-function deleteNutritionMeal(id){N=N.filter(x=>x.id!==id);nSave();renderNutritionData()}
-function copyMealToToday(id){let x=N.find(a=>a.id===id);if(!x)return;N.push({...x,id:Date.now(),date:nDate()});nSave();renderNutritionData()}
-function copyYesterdayMeals(){let y=N.filter(x=>x.date===nYesterday());if(!y.length)return alert("مافي وجبات أمس.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutritionData()}
-function copyYesterdayMealType(type){let y=N.filter(x=>x.date===nYesterday()&&x.meal===type);if(!y.length)return alert("مافي وجبات من هذا النوع أمس.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutritionData()}
-
-function saveTodayAsTemplate(){
-  let today=nToday();if(!today.length)return alert("سجل وجبات اليوم أولاً.");
-  let name=prompt("اسم القالب:","يومي المعتاد");if(!name)return;
-  NT.push({id:Date.now(),name,items:today.map(x=>({...x}))});nSave();renderTemplates();
-}
-function renderTemplates(){
-  if(!templatesBox)return;
-  if(!NT.length){templatesBox.innerHTML=`<div class="muted">لا توجد قوالب محفوظة بعد.</div>`;return}
-  templatesBox.innerHTML=NT.map(t=>`<div class="quickFood">⭐ ${t.name}<br><span class="muted">${t.items.length} وجبات</span><br><button class="miniBtn" onclick="useTemplate(${t.id})">استخدام</button> <button class="miniBtn" onclick="deleteTemplate(${t.id})">حذف</button></div>`).join("");
-}
-function useTemplate(id){let t=NT.find(x=>x.id===id);if(!t)return;t.items.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutritionData()}
-function deleteTemplate(id){NT=NT.filter(x=>x.id!==id);nSave();renderTemplates()}
 
 function parseSmartMealText(){
-  let text=(voiceText.value||"").toLowerCase();if(!text)return;
+  let text=(voiceText.value||"").toLowerCase(); if(!text)return;
   let added=0;
   foodLibrary.forEach(f=>{
     if(text.includes(f.name.toLowerCase().split(" ")[0])){
@@ -477,16 +526,137 @@ function parseSmartMealText(){
       added++;
     }
   });
-  if(!added)return alert("ما قدرت أتعرف على الأكل. جرب كلمات مثل رز، دجاج، ستريبس، سلطة.");
-  voiceText.value="";nSave();renderNutritionData();
+  if(!added)return alert("ما قدرت أتعرف على الأكل. جرب رز، دجاج، ستريبس، سلطة.");
+  nSave();nTab="meals";renderNutrition();
+}
+
+function saveTodayAsTemplate(){
+  let today=nToday(); if(!today.length)return alert("سجل وجبات اليوم أولاً.");
+  let name=prompt("اسم القالب:","غداء 1"); if(!name)return;
+  NT.push({id:Date.now(),name,items:today.map(x=>({...x}))}); nSave(); renderNutrition();
+}
+
+function createTemplateFromLibrary(){
+  let name=prompt("اسم القالب الجديد:","غداء 1"); if(!name)return;
+  alert("الخطوة القادمة: بنسوي شاشة اختيار أكثر من أكلة للقالب. حالياً احفظ يومك كقالب بعد تسجيل الوجبات.");
+}
+
+function renderTemplatesInline(){
+  if(!NT.length)return `<div class="nEmpty small">لا توجد قوالب محفوظة بعد.</div>`;
+  return NT.map(t=>`<div class="nTemplate"><b>${t.name}</b><span>${t.items.length} وجبات</span><button onclick="useTemplate(${t.id})">استخدام</button></div>`).join("");
+}
+
+function useTemplate(id){
+  let t=NT.find(x=>x.id===id); if(!t)return;
+  t.items.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));
+  nSave();nTab="meals";renderNutrition();
 }
 
 function saveNutritionSettings(){
-  NS={calories:+setCal.value||2200,protein:+setP.value||140,carbs:+setC.value||200,fat:+setF.value||70,fiber:+setFiber.value||25,sugar:+setSugar.value||50,sodium:+setSodium.value||2300,water:+setWater.value||8};
-  nSave();renderNutritionData();alert("تم حفظ أهداف التغذية");
+  NS={
+    calories:+setCal.value||2200,protein:+setP.value||140,carbs:+setC.value||200,fat:+setF.value||70,
+    fiber:+setFiber.value||25,sugar:+setSugar.value||50,sodium:+setSodium.value||2300,water:+setWater.value||8
+  };
+  nSave();alert("تم حفظ أهداف التغذية");renderNutrition();
 }
-function toggleNutritionSettings(){let p=document.getElementById("nutritionSettingsPanel");p.style.display=p.style.display==="none"?"block":"none"}
-function toggleNutritionRoadmap(){let p=document.getElementById("nutritionRoadmapPanel");p.style.display=p.style.display==="none"?"block":"none"}
+
+function mostFood(){
+  let m={};N.forEach(x=>m[x.name]=(m[x.name]||0)+1);
+  let arr=Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  return arr.length?arr[0][0]:"--";
+}
+
+function nutritionCorrelationText(){
+  let msg="سجل وجباتك مع الوزن والخطوات عدة أيام حتى يظهر تحليل العلاقة بين التغذية والوزن.";
+  try{
+    if(typeof D!=="undefined"&&D.length){
+      let joined=D.map(w=>{let day=nSum(N.filter(x=>x.date===w.d));return {...w,ncal:day.cal,np:day.p,nsodium:day.sodium}}).filter(x=>x.ncal>0);
+      if(joined.length>=2)msg=`عندك <b>${joined.length}</b> أيام فيها وزن وتغذية معاً. كلما زادت البيانات صار التحليل أقوى.`;
+    }
+  }catch(e){}
+  return msg;
+}
+
+function injectNutritionStyle(){
+  if(document.getElementById("nutritionStyle"))return;
+  let s=document.createElement("style");s.id="nutritionStyle";
+  s.innerHTML=`
+  .nWrap{display:grid;gap:16px}
+  .nHero{background:linear-gradient(135deg,#0f766e,#14b8a6);border-radius:28px;padding:22px;color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:center;box-shadow:0 18px 40px rgba(15,118,110,.25)}
+  .nHero h2{margin:6px 0;font-size:32px;white-space:nowrap}
+  .nHero p,.nHeroTag{color:#e6fffb;margin:0;line-height:1.6}
+  .nScore{min-width:120px;background:#ffffff22;border:1px solid #ffffff44;border-radius:22px;padding:16px;text-align:center}
+  .nScore span,.nScore small{display:block;color:#e6fffb;font-weight:800}
+  .nScore b{display:block;font-size:34px;margin:6px 0;color:#fff}
+  .nDecision,.nCaloriesPanel,.nCard{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:18px;box-shadow:0 10px 24px #0001}
+  .nDecision{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .nDecision h3,.nCard h3{margin:0 0 8px;font-size:24px}
+  .nDecision p{margin:0;color:var(--muted);font-weight:800;line-height:1.7}
+  .nAddBtn{border:0;border-radius:18px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font-size:18px;font-weight:900;padding:14px 18px;white-space:nowrap}
+  .nAddBtn.full,.nSecondaryBtn.full{width:100%;margin-top:14px}
+  .nSecondaryBtn{border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--txt);font-size:16px;font-weight:900;padding:12px 16px}
+  .nCalTop{display:flex;justify-content:space-between;gap:12px}
+  .nCalTop span,.nMiniGrid span{display:block;color:var(--muted);font-weight:800}
+  .nCalTop strong{font-size:30px;color:var(--pri)}
+  .nBigBar{height:18px;background:#dff3ef;border-radius:99px;overflow:hidden;margin:16px 0}
+  .nBigBar div{height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px}
+  .nMiniGrid,.nInsightGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .nMiniGrid div,.nInsightGrid div{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:12px;text-align:center}
+  body.dark .nMiniGrid div,body.dark .nInsightGrid div{background:#0b1b18}
+  .nMiniGrid b,.nInsightGrid b{display:block;font-size:22px;color:var(--pri);margin-top:6px}
+  .nTabs{display:flex;gap:8px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:8px;position:sticky;top:0;z-index:20}
+  .nTabs button{border:0;background:transparent;color:var(--muted);border-radius:16px;padding:10px 14px;font-weight:900;white-space:nowrap}
+  .nTabs button.on{background:var(--pri);color:#fff}
+  .nEmpty{padding:34px 14px;text-align:center;color:var(--muted);font-weight:900;background:#f8faf9;border:1px dashed var(--line);border-radius:20px;font-size:18px}
+  .nEmpty.small{margin-top:12px;padding:18px;font-size:15px}
+  body.dark .nEmpty{background:#0b1b18}
+  .nActionCard{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .nActionCard p{margin:0;color:var(--muted)}
+  .nQuick{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .nQuick button{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:14px;font-weight:900;color:var(--txt)}
+  .nMealGroup{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-top:12px}
+  .nMealHead{display:flex;justify-content:space-between;background:#eefaf7;color:#0f766e;padding:14px;font-weight:900}
+  body.dark .nMealHead{background:#0b1b18}
+  .nMealItem{display:flex;justify-content:space-between;gap:10px;padding:14px;border-top:1px solid var(--line)}
+  .nMealItem span{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+  .nMealItem button{border:0;border-radius:12px;padding:8px 10px;font-weight:900;margin:2px}
+  .nSearch,.nForm input,.nForm select,.nSettingsGrid input{width:100%;height:58px;border-radius:18px;border:1px solid var(--line);background:#fafbfc;color:var(--txt);font-weight:900;font-size:17px;padding:0 14px}
+  body.dark .nSearch,body.dark .nForm input,body.dark .nForm select,body.dark .nSettingsGrid input{background:#0b1b18}
+  .nFoodGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+  .nFoodItem,.nTemplate{border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--card);font-weight:900}
+  .nFoodItem span,.nTemplate span{display:block;color:var(--muted);margin-top:6px;font-size:13px}
+  .nCoachBox{background:linear-gradient(135deg,#eefaf7,#fff);border:1px solid #d8eee9;border-radius:22px;padding:16px}
+  body.dark .nCoachBox{background:linear-gradient(135deg,#0b1b18,#10201d)}
+  .nCoachBox h4{font-size:22px;margin:0 0 12px}
+  .nCoachItem{background:#ffffffcc;border:1px solid #d8eee9;border-radius:16px;padding:12px;margin-top:10px;font-weight:900;line-height:1.7}
+  body.dark .nCoachItem{background:#10201d}
+  .nSmartMeal,.nCorrelation{background:#eefaf7;border:1px solid #d8eee9;border-radius:20px;padding:18px;font-weight:900;line-height:1.8}
+  .nGoalBar{border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:10px;background:#f8faf9}
+  body.dark .nGoalBar{background:#0b1b18}
+  .nGoalBar div:first-child{display:flex;justify-content:space-between;font-weight:900}
+  .nGoalBar div:last-child{height:14px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:10px}
+  .nGoalBar i{display:block;height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6)}
+  .nSettingsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .nSettingsGrid label{font-weight:900;color:var(--muted)}
+  .nFloatAdd{position:fixed;right:18px;bottom:95px;width:56px;height:56px;border:0;border-radius:50%;background:var(--pri);color:#fff;font-size:34px;font-weight:900;z-index:9998;box-shadow:0 10px 24px #0003}
+  .nModalShade{position:fixed;inset:0;background:#0006;z-index:10000;display:flex;align-items:flex-end}
+  .nModal{background:var(--card);border-radius:28px 28px 0 0;padding:18px;width:100%;max-height:88vh;overflow:auto}
+  .nModalHead{display:flex;justify-content:space-between;align-items:center}
+  .nModalHead h3{font-size:26px;margin:0}
+  .nModalHead button{border:0;background:#f1f5f9;border-radius:14px;font-size:28px;width:48px;height:48px}
+  .nForm{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  .nForm label{font-weight:900;color:var(--muted)}
+  @media(max-width:600px){
+    .nHero{align-items:flex-start}
+    .nHero h2{font-size:25px}
+    .nScore{min-width:105px}
+    .nMiniGrid,.nInsightGrid{grid-template-columns:repeat(2,1fr)}
+    .nDecision,.nActionCard{display:block}
+    .nDecision .nAddBtn,.nActionCard .nAddBtn{width:100%;margin-top:12px}
+    .nForm,.nSettingsGrid{grid-template-columns:1fr}
+  }`;
+  document.head.appendChild(s);
+}
 
 const oldPgNutrition=window.pg;
 window.pg=function(id,b){
