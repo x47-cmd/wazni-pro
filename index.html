@@ -1234,9 +1234,7 @@ function goalSummary(cur,loss,rem){
     return '<div class="coachBox"><div class="coachTitle">💡 ملخص ذكي</div><div class="coachText">سجل وزنك يومين على الأقل حتى يبدأ المدرب الذكي.</div></div>';
   }
 
-  let first=valid[0];
-  let last=valid[valid.length-1];
-  let prev=valid[valid.length-2];
+  let first=valid[0], last=valid[valid.length-1], prev=valid[valid.length-2];
 
   cur=+cur||+last.w;
   loss=+loss||((+S.start||+first.w)-cur);
@@ -1249,6 +1247,7 @@ function goalSummary(cur,loss,rem){
   let progress=target?Math.max(0,Math.min(100,(loss/target)*100)):0;
 
   let days=Math.max(1,Math.ceil((new Date(last.d)-new Date(first.d))/(1000*60*60*24)));
+  let daysSinceLast=Math.max(0,Math.floor((new Date()-new Date(last.d))/(1000*60*60*24)));
   let weeklyRate=(loss/days)*7;
   let weeks=weeklyRate>0&&rem>0?rem/weeklyRate:null;
 
@@ -1256,26 +1255,22 @@ function goalSummary(cur,loss,rem){
   let best=Math.min(...valid.map(x=>+x.w));
 
   let status=weeklyRate>=0.7?"🔥 ممتاز جداً":weeklyRate>=0.3?"🟢 ممتاز":weeklyRate>0?"🟡 جيد":diff===0?"🟠 ثابت":"🔴 يحتاج انتباه";
-let successScore=50;
 
-if(weeklyRate>0) successScore+=20;
-if(weeklyRate>=0.3&&weeklyRate<=1.0) successScore+=20;
-if(weeklyRate>1.2) successScore-=10;
-if(avgSteps>=8000) successScore+=10;
-if(avgSteps>0&&avgSteps<5000) successScore-=10;
-if(valid.length>=7) successScore+=10;
-if(daysSinceLast>=3) successScore-=15;
-if(diff>0) successScore-=5;
-if(progress>=20) successScore+=10;
-if(progress>=50) successScore+=10;
+  let successScore=50;
+  if(weeklyRate>0) successScore+=20;
+  if(weeklyRate>=0.3&&weeklyRate<=1.0) successScore+=20;
+  if(weeklyRate>1.2) successScore-=10;
+  if(avgSteps>=8000) successScore+=10;
+  if(avgSteps>0&&avgSteps<5000) successScore-=10;
+  if(valid.length>=7) successScore+=10;
+  if(daysSinceLast>=3) successScore-=15;
+  if(diff>0) successScore-=5;
+  if(progress>=20) successScore+=10;
+  if(progress>=50) successScore+=10;
+  successScore=Math.max(0,Math.min(100,successScore));
 
-successScore=Math.max(0,Math.min(100,successScore));
+  let successLabel=successScore>=85?"🟢 مرتفع جداً":successScore>=70?"🟢 مرتفع":successScore>=50?"🟡 متوسط":"🔴 منخفض";
 
-let successLabel=
-successScore>=85?"🟢 مرتفع جداً":
-successScore>=70?"🟢 مرتفع":
-successScore>=50?"🟡 متوسط":
-"🔴 منخفض";
   let advice="استمر بنفس الأداء.";
   if(diff<0) advice="آخر تسجيل عندك أفضل من السابق، استمر.";
   if(diff>0) advice="وزنك ارتفع عن آخر تسجيل، غالباً سوائل أو وجبة ثقيلة.";
@@ -1283,39 +1278,20 @@ successScore>=50?"🟡 متوسط":
   if(weeklyRate>1.2) advice="نزولك سريع جداً، تأكد أنه صحي وبدون حرمان شديد.";
 
   let etaDate="";
-if(weeks){
-  let d=new Date();
-  d.setDate(d.getDate()+Math.round(weeks*7));
-  etaDate=d.toLocaleDateString(S.lang==="ar"?"ar-AE":"en-US",{day:"numeric",month:"long",year:"numeric"});
-}
-let successChance = Math.max(
-  5,
-  Math.min(
-    99,
-    Math.round(
-      progress*0.5 +
-      Math.min(30, avgSteps/300) +
-      Math.min(20, weeklyRate*20)
-    )
-  )
-);
+  if(weeks){
+    let d=new Date();
+    d.setDate(d.getDate()+Math.round(weeks*7));
+    etaDate=d.toLocaleDateString(S.lang==="ar"?"ar-AE":"en-US",{day:"numeric",month:"long",year:"numeric"});
+  }
 
-let successText =
-successChance>=90 ? "مرتفع جداً" :
-successChance>=75 ? "مرتفع" :
-successChance>=60 ? "جيد" :
-successChance>=40 ? "متوسط" :
-"منخفض";
-let etaText=weeks?
-("متوقع الوصول خلال "+weeks.toFixed(1)+" أسبوع تقريباً، حوالي "+etaDate+"."):
-"نحتاج بيانات أكثر لحساب موعد الوصول.";
+  let etaText=weeks?("متوقع الوصول خلال "+weeks.toFixed(1)+" أسبوع تقريباً، حوالي "+etaDate+"."):"نحتاج بيانات أكثر لحساب موعد الوصول.";
 
   return '<div class="coachBox">'+
     '<div class="coachTitle">💡 ملخص ذكي</div>'+
     '<div class="coachText">'+status+'</div>'+
     '<div class="coachList">'+
       '<div class="coachItem">🎯 أنجزت '+progress.toFixed(0)+'% من هدفك.</div>'+
-    '<div class="coachItem">⚡ احتمال نجاحك '+successScore+'% - '+successLabel+'.</div>'+
+      '<div class="coachItem">⚡ احتمال نجاحك '+successScore+'% - '+successLabel+'.</div>'+
       '<div class="coachItem">⚖️ المتبقي '+rem.toFixed(1)+' كجم.</div>'+
       '<div class="coachItem">⏳ '+etaText+'</div>'+
       '<div class="coachItem">🏆 أفضل وزن '+best.toFixed(1)+' كجم.</div>'+
