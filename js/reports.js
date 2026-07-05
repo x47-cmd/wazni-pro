@@ -711,7 +711,61 @@ function kpi(icon,label,value){
 function emptyBox(txt){
   return `<div class="rp-empty">${txt}</div>`;
 }
+function getAIReportInsights(s){
+  let tips = [];
 
+  const weightCount = s.weights.length;
+  const stepsCount = s.steps.length;
+  const lastWeight = s.current;
+  const firstWeight = s.weights.length ? s.weights[0].w : 0;
+  const weightChange = weightCount >= 2 ? lastWeight - firstWeight : 0;
+  const stepCommit = Math.round((s.avgSteps / (s.stepGoal || 8000)) * 100);
+
+  if(weightCount < 3){
+    tips.push("📌 سجّل وزنك 3 مرات على الأقل للحصول على تحليل أدق.");
+  }else{
+    if(weightChange < -0.3) tips.push("🟢 وزنك نازل بشكل ممتاز خلال الفترة.");
+    else if(weightChange > 0.3) tips.push("⚠️ وزنك ارتفع خلال الفترة، راجع السعرات والحركة.");
+    else tips.push("🟡 وزنك شبه ثابت، تحتاج زيادة النشاط أو ضبط الأكل.");
+  }
+
+  if(stepCommit >= 100) tips.push("🔥 التزامك بالخطوات ممتاز وتجاوزت هدفك اليومي.");
+  else if(stepCommit >= 70) tips.push("👍 التزامك بالخطوات جيد، قريب من الهدف.");
+  else tips.push("🚶 خطواتك أقل من المطلوب، ارفع الحركة تدريجياً.");
+
+  if(s.activities.length >= 10) tips.push("🏃 نشاطك الرياضي ممتاز وعدد التمارين قوي.");
+  else if(s.activities.length >= 3) tips.push("💪 عندك نشاط جيد، حاول تثبته أسبوعياً.");
+  else tips.push("⚠️ النشاط الرياضي قليل، أضف مشي أو تمرين خفيف.");
+
+  if(s.progress >= 70) tips.push("🏆 أنت قريب جداً من هدفك، استمر بنفس النسق.");
+  else if(s.progress >= 30) tips.push("🎯 تقدمك جيد، تحتاج ثبات أكثر للوصول أسرع.");
+  else tips.push("🚀 البداية موجودة، أهم شيء الاستمرارية اليومية.");
+
+  if(s.avgCal > 0){
+    if(s.avgCal > 2200) tips.push("🍽️ متوسط السعرات مرتفع نسبياً، حاول تخفيف الوجبات الثقيلة.");
+    else if(s.avgCal < 1200) tips.push("⚠️ السعرات منخفضة جداً، تأكد أن أكلك كافي وصحي.");
+    else tips.push("🥗 متوسط السعرات يبدو مناسباً كبداية.");
+  }else{
+    tips.push("🍽️ لا توجد بيانات سعرات كافية للتحليل الغذائي.");
+  }
+
+  const aiScore = Math.max(5, Math.min(100,
+    Math.round(
+      (s.progress * 0.35) +
+      (Math.min(100, stepCommit) * 0.30) +
+      (Math.min(100, s.activities.length * 6) * 0.20) +
+      (Math.min(100, weightCount * 10) * 0.15)
+    )
+  ));
+
+  let status = "تحتاج بيانات أكثر";
+  if(aiScore >= 80) status = "ممتاز";
+  else if(aiScore >= 60) status = "جيد جداً";
+  else if(aiScore >= 40) status = "متوسط";
+  else status = "يحتاج تحسين";
+
+  return {tips, aiScore, status, stepCommit, weightChange};
+}
 // ---------- Render ----------
 function renderAdvancedReports(){
   injectReportsCSS();
@@ -875,35 +929,38 @@ function renderAdvancedReports(){
       </div>
     `;
   }
+}
+if(liyaqtiReportTab === "ai"){
+  const ai = getAIReportInsights(s);
 
-  if(liyaqtiReportTab === "ai"){
-    c.innerHTML = `
-      <div class="rp-card">
-        <h2>🧠 قراءة ذكية</h2>
-        <div class="rp-note">✅ التطبيق يملك ${s.weights.length} تسجيل وزن ضمن الفترة.</div>
-        <div class="rp-note">🚶 لديك ${s.steps.length} يوم خطوات ضمن الفترة.</div>
-        <div class="rp-note">🔥 سجلت ${s.activities.length} نشاط رياضي.</div>
-        <div class="rp-note">🎯 مؤشر الالتزام بالخطوات: ${s.stepScore}% من هدف ${rFmt(s.stepGoal)} خطوة يومياً.</div>
-        <div class="rp-note">📊 التقرير جاهز للتصدير والتحليل الخارجي.</div>
-      </div>
-
-      <div class="rp-card">
-        <h2>🤖 مساعدك الذكي</h2>
-        <div class="rp-ai">
-          <div class="rp-note">
-            ${s.progress >= 50
-              ? "أداؤك ممتاز. حافظ على ثبات التسجيل والنشاط."
-              : "أداؤك الحالي مبشر. ركّز على ثبات تسجيل الوزن والخطوات وابدأ برفع الحركة اليومية تدريجياً."}
+  c.innerHTML = `
+    <div class="rp-card">
+      <h2>🧠 تقييم AI</h2>
+      <div class="rp-ringBox">
+        <div class="rp-ring" style="--p:${ai.aiScore}%">
+          <div class="rp-ring-inner">
+            <b>${ai.aiScore}</b>
+            <span>${ai.status}</span>
           </div>
-          <div class="rp-bot">🤖</div>
         </div>
       </div>
+      <div class="rp-note">📊 التغير بالوزن: ${ai.weightChange.toFixed(1)} كجم.</div>
+      <div class="rp-note">🎯 التزام الخطوات: ${ai.stepCommit}%.</div>
+    </div>
 
-      <div class="rp-card">
-        <h2>Power BI Ready</h2>
-        <p class="rp-sub">CSV مناسب لـ Power BI و Excel و Numbers. JSON مناسب للنسخ الاحتياطي واسترجاع البيانات لاحقاً.</p>
-      </div>
-    `;
+    <div class="rp-card">
+      <h2>🤖 توصيات المدرب الذكي</h2>
+      ${ai.tips.map(t=>`<div class="rp-note">${t}</div>`).join("")}
+    </div>
+
+    <div class="rp-card">
+      <h2>خطة مختصرة</h2>
+      <div class="rp-note">1️⃣ ثبت تسجيل الوزن 3 مرات بالأسبوع.</div>
+      <div class="rp-note">2️⃣ حاول توصل متوسط خطواتك إلى ${rFmt(s.stepGoal)} يومياً.</div>
+      <div class="rp-note">3️⃣ زِد النشاط تدريجياً بدون استعجال.</div>
+    </div>
+  `;
+}
   }
 
   destroyReportCharts();
@@ -952,6 +1009,3 @@ bootReports();
 window.renderAdvancedReports = renderAdvancedReports;
 window.setLiyaqtiReportRange = setLiyaqtiReportRange;
 window.setLiyaqtiReportTab = setLiyaqtiReportTab;
-window.exportCSV = exportCSV;
-window.exportJSON = exportJSON;
-window.exportExcel = exportExcel;
