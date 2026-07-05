@@ -39,13 +39,58 @@ function safeParse(key, fallback){
     return fallback;
   }
 }
-
+function readGlobal(name){
+  try{
+    return Function(`
+      return (typeof ${name} !== "undefined") ? ${name} : undefined;
+    `)();
+  }catch(e){
+    return undefined;
+  }
+}
 function getLiyaqtiData(){
-  const D1 = window.D || safeParse("D", null) || safeParse("wazni_data", null) || safeParse("liyaqti_data", null) || [];
-  const SD1 = window.SD || safeParse("SD", null) || safeParse("steps_data", null) || safeParse("liyaqti_steps", null) || [];
-  const AD1 = window.AD || safeParse("AD", null) || safeParse("activity_data", null) || safeParse("liyaqti_activities", null) || [];
-  const S1 = window.S || safeParse("S", null) || safeParse("wazni_settings", null) || safeParse("liyaqti_settings", null) || {};
-  return {D:rArr(D1), SD:rArr(SD1), AD:rArr(AD1), S:S1 || {}};
+  const D1 =
+    readGlobal("D") ||
+    window.D ||
+    safeParse("D", null) ||
+    safeParse("wazniData", null) ||
+    safeParse("wazni_data", null) ||
+    safeParse("liyaqti_data", null) ||
+    [];
+
+  const SD1 =
+    readGlobal("SD") ||
+    window.SD ||
+    safeParse("SD", null) ||
+    safeParse("stepsData", null) ||
+    safeParse("steps_data", null) ||
+    safeParse("liyaqti_steps", null) ||
+    [];
+
+  const AD1 =
+    readGlobal("AD") ||
+    window.AD ||
+    safeParse("AD", null) ||
+    safeParse("activityData", null) ||
+    safeParse("activity_data", null) ||
+    safeParse("liyaqti_activities", null) ||
+    [];
+
+  const S1 =
+    readGlobal("S") ||
+    window.S ||
+    safeParse("S", null) ||
+    safeParse("settings", null) ||
+    safeParse("wazni_settings", null) ||
+    safeParse("liyaqti_settings", null) ||
+    {};
+
+  return {
+    D: rArr(D1),
+    SD: rArr(SD1),
+    AD: rArr(AD1),
+    S: S1 || {}
+  };
 }
 
 // ---------- Data ----------
@@ -486,5 +531,18 @@ function kpi(icon,label,value){
 }
 
 // ---------- Auto Render ----------
-setTimeout(renderAdvancedReports,1200);
+function bootReports(){
+  let tries = 0;
+  const timer = setInterval(()=>{
+    tries++;
+    renderAdvancedReports();
+
+    const s = rStats();
+    if(s.allWeights.length || tries >= 10){
+      clearInterval(timer);
+    }
+  },500);
+}
+
+bootReports();
 window.renderAdvancedReports = renderAdvancedReports;
