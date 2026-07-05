@@ -1254,6 +1254,14 @@ let weeks = safeWeeklyRate > 0 && rem > 0 ? rem / safeWeeklyRate : null;
 
   let avgSteps=Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
   let best=Math.min(...valid.map(x=>+x.w));
+let lastWeights=valid.slice(-4).map(x=>+x.w);
+let plateau=false;
+
+if(lastWeights.length>=4){
+  let maxW=Math.max(...lastWeights);
+  let minW=Math.min(...lastWeights);
+  plateau=(maxW-minW)<=0.2;
+}
 
   let status=weeklyRate>=0.7?"🔥 ممتاز جداً":weeklyRate>=0.3?"🟢 ممتاز":weeklyRate>0?"🟡 جيد":diff===0?"🟠 ثابت":"🔴 يحتاج انتباه";
 
@@ -1273,7 +1281,9 @@ let weeks = safeWeeklyRate > 0 && rem > 0 ? rem / safeWeeklyRate : null;
   let successLabel=successScore>=85?"🟢 مرتفع جداً":successScore>=70?"🟢 مرتفع":successScore>=50?"🟡 متوسط":"🔴 منخفض";
 
   let advice="استمر بنفس الأداء وحافظ على تسجيل وزنك وخطواتك بانتظام.";
-
+if(plateau){
+  advice="وزنك ثابت تقريباً في آخر عدة تسجيلات. هذا ممكن يكون Plateau طبيعي. خطة 3 أيام: ارفع المشي 2000 خطوة، ثبّت أكلك، واشرب ماء أكثر قبل ما تغيّر النظام.";
+}else if(daysSinceLast>=3){
 if(daysSinceLast>=3){
   advice="آخر تسجيل كان قبل "+daysSinceLast+" أيام. سجّل وزنك اليوم حتى تبقى التوقعات دقيقة.";
 }else if(diff===0){
