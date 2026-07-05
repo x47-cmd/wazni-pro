@@ -1288,7 +1288,24 @@ if(weeks){
   d.setDate(d.getDate()+Math.round(weeks*7));
   etaDate=d.toLocaleDateString(S.lang==="ar"?"ar-AE":"en-US",{day:"numeric",month:"long",year:"numeric"});
 }
+let successChance = Math.max(
+  5,
+  Math.min(
+    99,
+    Math.round(
+      progress*0.5 +
+      Math.min(30, avgSteps/300) +
+      Math.min(20, weeklyRate*20)
+    )
+  )
+);
 
+let successText =
+successChance>=90 ? "مرتفع جداً" :
+successChance>=75 ? "مرتفع" :
+successChance>=60 ? "جيد" :
+successChance>=40 ? "متوسط" :
+"منخفض";
 let etaText=weeks?
 ("متوقع الوصول خلال "+weeks.toFixed(1)+" أسبوع تقريباً، حوالي "+etaDate+"."):
 "نحتاج بيانات أكثر لحساب موعد الوصول.";
