@@ -1,6 +1,6 @@
 // =====================================================
-// Liyaqti Intelligence Center - Premium Light Shell
-// مركز التحليل الذكي - تقارير + تحليل + تقويم في مكان واحد
+// Liyaqti Intelligence Center - Premium Final
+// مركز التحليل الذكي - Hero Card + تقارير + تحليل + تقويم
 // =====================================================
 
 let liyaqtiReportRange = 30;
@@ -295,6 +295,7 @@ function buildReportCalendar(s){
   return `
     <div class="rp-card">
       <h2>📅 التقويم الذكي</h2>
+
       <div class="rp-cal-head">
         <div>
           <strong>${monthNameAr(month)} ${year}</strong>
@@ -343,54 +344,104 @@ function injectReportsCSS(){
 
     .rp-wrap{
       direction:rtl;
-      padding:24px 18px 90px;
+      padding:22px 18px 90px;
     }
 
-    .rp-title{
+    .rp-smartHero{
+      background:
+        radial-gradient(circle at top left,rgba(53,211,192,.36),transparent 35%),
+        linear-gradient(145deg,#101927,#0b1622);
+      border:1px solid #22c7b8;
+      border-radius:30px;
+      padding:28px 22px;
+      margin:24px 0 18px;
+      color:#fff;
+      box-shadow:0 18px 42px rgba(15,23,42,.20);
       text-align:center;
-      font-size:34px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .rp-smartHero:before{
+      content:"";
+      position:absolute;
+      inset:-60px;
+      background:radial-gradient(circle at 75% 20%,rgba(53,211,192,.16),transparent 32%);
+      pointer-events:none;
+    }
+
+    .rp-smartHero > *{
+      position:relative;
+      z-index:1;
+    }
+
+    .rp-smartHero .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(53,211,192,.14);
+      border:1px solid rgba(53,211,192,.45);
+      color:#bffaf2;
+      border-radius:999px;
+      padding:8px 16px;
+      font-size:14px;
       font-weight:900;
-      margin:24px 0 8px;
+      margin-bottom:16px;
+    }
+
+    .rp-smartHero h1{
+      font-size:38px;
+      font-weight:900;
+      margin:0 0 12px;
       line-height:1.25;
-      color:#0f172a;
     }
 
-    .rp-sub{
-      text-align:center;
-      color:#64748b;
-      font-size:15px;
-      margin-bottom:22px;
-      line-height:1.7;
+    .rp-smartHero p{
+      color:#cbd5e1;
+      font-size:18px;
+      line-height:1.8;
+      margin:0 0 20px;
     }
 
-    .rp-hero,.rp-card{
+    .rp-smartStats{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+      margin-top:18px;
+    }
+
+    .rp-smartStat{
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:14px 8px;
+      min-height:76px;
+    }
+
+    .rp-smartStat b{
+      display:block;
+      font-size:23px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.2;
+    }
+
+    .rp-smartStat span{
+      display:block;
+      color:#94a3b8;
+      font-size:12px;
+      margin-top:5px;
+      font-weight:800;
+    }
+
+    .rp-card{
       background:linear-gradient(145deg,#101927,#0b1622);
       border:1px solid #253449;
       border-radius:28px;
-      padding:24px;
+      padding:22px;
       margin-bottom:18px;
       box-shadow:0 14px 35px rgba(15,23,42,.16);
       color:#fff;
-    }
-
-    .rp-hero{
-      text-align:center;
-      background:radial-gradient(circle at top left,#22c7b8,#10202d 52%,#0b1320);
-      border-color:#22c7b8;
-    }
-
-    .rp-hero h2{
-      font-size:30px;
-      font-weight:900;
-      margin:0 0 14px;
-      line-height:1.25;
-    }
-
-    .rp-hero p{
-      color:#d7eeee;
-      line-height:1.9;
-      font-size:18px;
-      margin:0;
     }
 
     .rp-tabs{
@@ -399,7 +450,7 @@ function injectReportsCSS(){
       overflow-x:auto;
       flex-wrap:nowrap;
       justify-content:flex-start;
-      margin:22px -4px 18px;
+      margin:20px -4px 18px;
       padding:0 4px 8px;
       position:relative;
       z-index:1;
@@ -432,7 +483,7 @@ function injectReportsCSS(){
 
     .rp-card h2{
       font-size:30px;
-      margin:0 0 22px;
+      margin:0 0 20px;
       font-weight:900;
       line-height:1.25;
     }
@@ -440,12 +491,12 @@ function injectReportsCSS(){
     .rp-ringBox{
       display:grid;
       place-items:center;
-      margin:8px 0 22px;
+      margin:6px 0 20px;
     }
 
     .rp-ring{
-      width:230px;
-      height:230px;
+      width:210px;
+      height:210px;
       border-radius:50%;
       background:conic-gradient(#35d3c0 var(--p),#213044 0);
       display:grid;
@@ -453,8 +504,8 @@ function injectReportsCSS(){
     }
 
     .rp-ring-inner{
-      width:150px;
-      height:150px;
+      width:136px;
+      height:136px;
       background:#061015;
       border-radius:50%;
       display:grid;
@@ -463,13 +514,13 @@ function injectReportsCSS(){
     }
 
     .rp-ring-inner b{
-      font-size:46px;
+      font-size:42px;
       line-height:1;
     }
 
     .rp-ring-inner span{
       color:#98a8bb;
-      font-size:15px;
+      font-size:14px;
     }
 
     .rp-row{
@@ -478,12 +529,12 @@ function injectReportsCSS(){
       align-items:center;
       gap:12px;
       border-bottom:1px solid rgba(255,255,255,.08);
-      padding:16px 0;
-      font-size:22px;
+      padding:15px 0;
+      font-size:21px;
     }
 
     .rp-row b{
-      font-size:28px;
+      font-size:27px;
       white-space:nowrap;
     }
 
@@ -492,7 +543,7 @@ function injectReportsCSS(){
       background:#124642;
       border-radius:20px;
       overflow:hidden;
-      margin-top:22px;
+      margin-top:20px;
     }
 
     .rp-bar i{
@@ -517,36 +568,38 @@ function injectReportsCSS(){
       background:#101927;
       border:1px solid #253449;
       border-radius:24px;
-      padding:22px 10px;
+      padding:20px 10px;
       text-align:center;
-      min-height:160px;
+      min-height:145px;
     }
 
     .rp-ico{
-      width:72px;
-      height:72px;
-      border-radius:22px;
+      width:66px;
+      height:66px;
+      border-radius:21px;
       background:linear-gradient(145deg,#35d3c0,#168f7f);
       display:grid;
       place-items:center;
       margin:0 auto 12px;
-      font-size:28px;
+      font-size:27px;
     }
 
     .rp-kpi .lab{
       color:#9fb0bf;
       font-size:16px;
       margin-bottom:6px;
+      font-weight:800;
     }
 
     .rp-kpi .val{
-      font-size:32px;
+      color:#ffffff;
+      font-size:31px;
       font-weight:900;
-      line-height:1.2;
+      line-height:1.25;
     }
 
     .rp-chart{
-      height:300px;
+      height:280px;
       position:relative;
     }
 
@@ -554,7 +607,7 @@ function injectReportsCSS(){
       background:#082b35;
       border:1px solid #0c6270;
       border-radius:20px;
-      padding:18px;
+      padding:17px;
       margin:12px 0;
       color:#e8fbff;
       line-height:1.8;
@@ -562,7 +615,7 @@ function injectReportsCSS(){
     }
 
     .rp-empty{
-      min-height:180px;
+      min-height:170px;
       display:grid;
       place-items:center;
       color:#93a4b8;
@@ -613,7 +666,7 @@ function injectReportsCSS(){
     }
 
     .rp-day{
-      min-height:76px;
+      min-height:74px;
       border-radius:18px;
       background:#0f172a;
       border:1px solid #253449;
@@ -666,34 +719,61 @@ function injectReportsCSS(){
         padding:20px 12px 85px;
       }
 
-      .rp-title{
-        font-size:31px;
-        margin-top:30px;
+      .rp-smartHero{
+        border-radius:28px;
+        padding:25px 17px;
+        margin-top:22px;
       }
 
-      .rp-hero,.rp-card{
+      .rp-smartHero h1{
+        font-size:34px;
+      }
+
+      .rp-smartHero p{
+        font-size:17px;
+      }
+
+      .rp-smartStats{
+        gap:8px;
+      }
+
+      .rp-smartStat{
+        min-height:72px;
+        padding:13px 6px;
+      }
+
+      .rp-smartStat b{
+        font-size:20px;
+      }
+
+      .rp-card{
         border-radius:26px;
-        padding:22px 18px;
+        padding:20px 17px;
       }
 
-      .rp-hero h2{font-size:28px}
-      .rp-hero p{font-size:17px}
-      .rp-card h2{font-size:29px}
+      .rp-card h2{
+        font-size:28px;
+      }
 
       .rp-ring{
-        width:220px;
-        height:220px;
+        width:205px;
+        height:205px;
+      }
+
+      .rp-ring-inner{
+        width:132px;
+        height:132px;
       }
 
       .rp-grid{gap:12px}
 
       .rp-kpi{
-        min-height:150px;
-        padding:18px 8px;
+        min-height:138px;
+        padding:17px 8px;
       }
 
-      .rp-kpi .val{font-size:30px}
-      .rp-chart{height:280px}
+      .rp-kpi .val{font-size:28px}
+      .rp-chart{height:270px}
 
       .rp-calendar{gap:6px}
       .rp-weekdays{gap:6px}
@@ -875,22 +955,43 @@ function renderAdvancedReports(){
 
   page.innerHTML = `
     <div class="rp-wrap">
-      <div class="rp-title">🧠 مركز التحليل الذكي</div>
-      <div class="rp-sub">رؤى، مؤشرات، قرارات وتحليلات صحية في مكان واحد</div>
 
-      <div class="rp-hero">
-        <h2>Liyaqti Intelligence Center</h2>
-        <p>🟢 مركز موحد يجمع الوزن، الهدف، الخطوات، النشاط، السعرات والتقويم بتصميم Premium ذكي.</p>
+      <div class="rp-smartHero">
+        <div class="badge">🟢 النظام نشط • Liyaqti Intelligence</div>
+
+        <h1>🧠 مركز التحليل الذكي</h1>
+
+        <p>
+          مركزك التنفيذي للصحة واللياقة، يجمع الوزن، الهدف، الخطوات،
+          النشاط، السعرات والتقويم في لوحة Premium واحدة.
+        </p>
+
+        <div class="rp-smartStats">
+          <div class="rp-smartStat">
+            <b>${s.progress}%</b>
+            <span>إنجاز الهدف</span>
+          </div>
+
+          <div class="rp-smartStat">
+            <b>${s.healthScore}</b>
+            <span>مؤشر الصحة</span>
+          </div>
+
+          <div class="rp-smartStat">
+            <b>${s.weights.length}</b>
+            <span>تسجيلات</span>
+          </div>
+        </div>
       </div>
 
       <div class="rp-tabs">
-        ${tabBtn("summary","الملخص")}
+        ${tabBtn("summary","نظرة عامة")}
         ${tabBtn("weight","الوزن")}
         ${tabBtn("steps","الخطوات")}
         ${tabBtn("calories","السعرات")}
         ${tabBtn("goal","الهدف")}
         ${tabBtn("calendar","التقويم")}
-        ${tabBtn("ai","AI")}
+        ${tabBtn("ai","المدرب الذكي")}
       </div>
 
       <div id="rpContent"></div>
@@ -1013,7 +1114,7 @@ function renderAdvancedReports(){
 
     c.innerHTML = `
       <div class="rp-card">
-        <h2>🧠 تقييم AI</h2>
+        <h2>🧠 تقييم المدرب</h2>
         <div class="rp-ringBox">
           <div class="rp-ring" style="--p:${ai.aiScore}%">
             <div class="rp-ring-inner">
