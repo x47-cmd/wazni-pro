@@ -929,7 +929,6 @@ function renderAdvancedReports(){
       </div>
     `;
   }
-}
 if(liyaqtiReportTab === "ai"){
   const ai = getAIReportInsights(s);
 
@@ -960,7 +959,6 @@ if(liyaqtiReportTab === "ai"){
       <div class="rp-note">3️⃣ زِد النشاط تدريجياً بدون استعجال.</div>
     </div>
   `;
-}
   }
 
   destroyReportCharts();
