@@ -696,7 +696,7 @@ name.value=S.name;
 
 D=D.map(x=>({...x,d:normDate(x.d)})).sort((a,b)=>a.d.localeCompare(b.d));
 SD=SD.map(x=>({...x,d:normDate(x.d),steps:+x.steps||0})).sort((a,b)=>a.d.localeCompare(b.d));
-localStorage.wazni=JSON.stringify(D);
+saveWeights(D);
 localStorage.wazniSteps=JSON.stringify(SD);
 
 const T={
