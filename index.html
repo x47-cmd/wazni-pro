@@ -1249,7 +1249,8 @@ function goalSummary(cur,loss,rem){
   let days=Math.max(1,Math.ceil((new Date(last.d)-new Date(first.d))/(1000*60*60*24)));
   let daysSinceLast=Math.max(0,Math.floor((new Date()-new Date(last.d))/(1000*60*60*24)));
   let weeklyRate=(loss/days)*7;
-  let weeks=weeklyRate>0&&rem>0?rem/weeklyRate:null;
+  let safeWeeklyRate = weeklyRate > 0 ? Math.min(Math.max(weeklyRate,0.3),1.0) : 0;
+let weeks = safeWeeklyRate > 0 && rem > 0 ? rem / safeWeeklyRate : null;
 
   let avgSteps=Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
   let best=Math.min(...valid.map(x=>+x.w));
