@@ -1,17 +1,32 @@
-function unlockAchievement(id,title,icon){
+function unlockAchievement(id, title, icon) {
+  let achievements = [];
 
-  let achievements=JSON.parse(localStorage.getItem("achievements")||"[]");
+  try {
+    achievements = JSON.parse(localStorage.getItem("achievements") || "[]");
+  } catch (e) {
+    achievements = [];
+  }
 
-  if(achievements.includes(id)) return;
+  if (achievements.includes(id)) return;
 
-  if(navigator.vibrate){
-    navigator.vibrate([150,80,150]);
+  achievements.push(id);
+  localStorage.setItem("achievements", JSON.stringify(achievements));
+
+  if (navigator.vibrate) {
+    navigator.vibrate([150, 80, 150]);
+  }
+
+  alert(
+    "\n\nإنجاز جديد! 🏆🎉\n" +
+    icon + " " + title +
+    "\n\nتم حفظ الإنجاز بنجاح 🎊"
+  );
 }
 
-alert(
-"🎉🏆 إنجاز جديد!\n\n"
-+icon+" "+title+
-"\n\nتم فتح الإنجاز بنجاح 🎊"
-);
-
+function getAchievements() {
+  try {
+    return JSON.parse(localStorage.getItem("achievements") || "[]");
+  } catch (e) {
+    return [];
+  }
 }
