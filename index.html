@@ -1077,14 +1077,19 @@ fill.style.width=p+"%";
 tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i?(x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st||0}</td><td>${x.cal||0}</td></tr>`).join("");
 
 if(S.goalType==="run"){
-    coach.innerHTML=sportCoach();
+  coach.innerHTML=sportCoach();
 }else{
+  try{
     coach.innerHTML=goalSummary(cur,loss,rem);
+  }catch(e){
+    console.error("goalSummary error:", e);
+    coach.innerHTML=`<div class="coachBox"><div class="coachTitle">💡 ملخص ذكي</div><div class="coachText">جاري تجهيز الملخص الذكي...</div></div>`;
+  }
 
-    let smartBox=document.getElementById("smartInsights");
-    if(smartBox){
-        smartBox.innerHTML=insights(cur,loss,rem);
-    }
+  let smartBox=document.getElementById("smartInsights");
+  if(smartBox){
+    smartBox.innerHTML=insights(cur,loss,rem);
+  }
 }
 dashboardStats(cur,loss,rem);
 renderCalendar();
