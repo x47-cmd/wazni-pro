@@ -1217,7 +1217,41 @@ function insights(cur,loss,rem){
 
   let avgSteps = Math.round(valid.reduce((a,x)=>a+(+x.st||0),0)/valid.length);
   let avgCal = Math.round(valid.reduce((a,x)=>a+(+x.cal||0),0)/valid.length);
+let messages=[];
 
+// النشاط
+if(avgSteps<4000){
+messages.push("🚶 حاول ترفع متوسط خطواتك إلى 7000-10000 خطوة يومياً.");
+}else if(avgSteps<8000){
+messages.push("👍 نشاطك جيد، وزيادة بسيطة بالخطوات ستسرع النتائج.");
+}else{
+messages.push("🔥 نشاطك ممتاز، استمر بنفس المعدل.");
+}
+
+// سرعة النزول
+if(weeklyRate>1){
+messages.push("⚠️ نزولك سريع، تأكد أن غذاءك متوازن ولا يوجد حرمان.");
+}else if(weeklyRate>=0.5){
+messages.push("✅ معدل نزولك مثالي وصحي.");
+}else if(weeklyRate>0){
+messages.push("📈 النزول بطيء قليلاً، جرّب زيادة النشاط أو تقليل السعرات.");
+}else{
+messages.push("⚖️ لا يوجد نزول حالياً، راجع نظامك الغذائي.");
+}
+
+// قرب الهدف
+if(rem<=2){
+messages.push("🎯 بقي أقل من 2 كجم للوصول لهدفك.");
+}else if(progress>=75){
+messages.push("🏆 أنجزت معظم رحلتك، استمر.");
+}
+
+// آخر تسجيل
+if(diff>0){
+messages.push("⚠️ آخر تسجيل كان زيادة بالوزن، راقب الأيام القادمة.");
+}else if(diff<0){
+messages.push("🎉 آخر تسجيل كان نزولاً ممتازاً.");
+}
   let status =
     diff < 0 && rate >= 0.7 ? "🔥 ممتاز جداً" :
     diff < 0 && rate >= 0.3 ? "🟢 ممتاز" :
@@ -1225,11 +1259,7 @@ function insights(cur,loss,rem){
     diff > 0 ? "🔴 انتبه" :
     "🟢 تقدم جيد";
 
-  let advice =
-    rate >= 0.7 ? "نزولك قوي، تأكد أنه صحي وثابت بدون حرمان." :
-    rate >= 0.3 ? "أداؤك ممتاز، استمر على نفس النظام." :
-    rate > 0 ? "في تقدم، حاول تثبت الأكل وترفع خطواتك شوي." :
-    "حالياً النزول غير واضح، راجع السعرات والخطوات خلال الأيام القادمة.";
+  let advice = messages[0] || "استمر على نفس النظام.";
 
   return `
   <div class="coachBox">
