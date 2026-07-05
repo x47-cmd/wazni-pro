@@ -1,6 +1,6 @@
 // =====================================================
-// Liyaqti Reports Center - Premium Dark Clean Final
-// استبدل ملف js/reports.js بالكامل بهذا الكود
+// Liyaqti Intelligence Center - Premium Light Shell
+// مركز التحليل الذكي - تقارير + تحليل + تقويم في مكان واحد
 // =====================================================
 
 let liyaqtiReportRange = 30;
@@ -50,6 +50,13 @@ function readGlobal(name){
   }catch(e){
     return undefined;
   }
+}
+
+function monthNameAr(m){
+  return [
+    "يناير","فبراير","مارس","أبريل","مايو","يونيو",
+    "يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"
+  ][m] || "";
 }
 
 // ---------- Read App Data ----------
@@ -128,7 +135,7 @@ function rActivitiesAll(){
     km:rNum(x.km ?? x.distance ?? x.dist),
     burn:rNum(x.burn ?? x.calories ?? x.cals),
     minutes:rNum(x.minutes ?? x.min ?? x.duration)
-  }));
+  })).filter(x=>x.d);
 }
 
 function rFilter(arr){
@@ -208,6 +215,113 @@ function rStats(){
   };
 }
 
+// ---------- Calendar ----------
+function buildReportCalendar(s){
+  const source = s.allWeights.length ? s.allWeights : s.weights;
+  const base = source.length ? source[source.length - 1].d : new Date().toISOString().slice(0,10);
+  const dt = new Date(base + "T00:00:00");
+  const year = dt.getFullYear();
+  const month = dt.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+
+  const weightMap = {};
+  const stepsMap = {};
+  const calMap = {};
+
+  s.allWeights.forEach(x=>{
+    weightMap[x.d] = x.w;
+    if(rNum(x.cal)>0) calMap[x.d] = x.cal;
+    if(rNum(x.st)>0) stepsMap[x.d] = x.st;
+  });
+
+  s.allSteps.forEach(x=>{
+    if(x.d && rNum(x.steps)>0) stepsMap[x.d] = x.steps;
+  });
+
+  const monthWeights = s.allWeights.filter(x=>{
+    const d = new Date(x.d + "T00:00:00");
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
+
+  const monthSteps = s.allSteps.filter(x=>{
+    const d = new Date(x.d + "T00:00:00");
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
+
+  const avgWeight = monthWeights.length
+    ? (monthWeights.reduce((a,x)=>a+x.w,0)/monthWeights.length).toFixed(1)
+    : "--";
+
+  const bestWeight = monthWeights.length
+    ? Math.min(...monthWeights.map(x=>x.w)).toFixed(1)
+    : "--";
+
+  const change = monthWeights.length >= 2
+    ? (monthWeights[monthWeights.length-1].w - monthWeights[0].w).toFixed(1)
+    : "--";
+
+  const avgSteps = monthSteps.length
+    ? Math.round(monthSteps.reduce((a,x)=>a+x.steps,0)/monthSteps.length)
+    : 0;
+
+  let cells = "";
+
+  for(let i=0;i<firstDay;i++){
+    cells += `<div class="rp-day blank"></div>`;
+  }
+
+  for(let day=1; day<=daysInMonth; day++){
+    const key = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const w = weightMap[key];
+    const st = stepsMap[key];
+    const cal = calMap[key];
+
+    let cls = "rp-day";
+    if(w) cls += " hasWeight";
+    if(st) cls += " hasSteps";
+
+    cells += `
+      <div class="${cls}">
+        <b>${day}</b>
+        ${w ? `<small>${w.toFixed(1)}kg</small>` : ""}
+        ${st ? `<em>${rFmt(st)}</em>` : ""}
+        ${cal ? `<i>${rFmt(cal)} cal</i>` : ""}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="rp-card">
+      <h2>📅 التقويم الذكي</h2>
+      <div class="rp-cal-head">
+        <div>
+          <strong>${monthNameAr(month)} ${year}</strong>
+          <span>قراءة شهرية لتسجيلات الوزن والخطوات والسعرات</span>
+        </div>
+      </div>
+
+      <div class="rp-grid rp-grid-light">
+        ${kpi("📝","أيام التسجيل",monthWeights.length)}
+        ${kpi("⚖️","متوسط الوزن",avgWeight + " كجم")}
+        ${kpi("🏆","أفضل وزن",bestWeight + " كجم")}
+        ${kpi("📉","التغير",change + " كجم")}
+      </div>
+
+      <div class="rp-weekdays">
+        <span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span><span>س</span>
+      </div>
+
+      <div class="rp-calendar">
+        ${cells}
+      </div>
+
+      <div class="rp-note">👣 متوسط خطوات الشهر: ${rFmt(avgSteps)} خطوة.</div>
+    </div>
+  `;
+}
+
 // ---------- CSS ----------
 function injectReportsCSS(){
   const old = document.getElementById("liyaqtiReportsCSS");
@@ -218,8 +332,8 @@ function injectReportsCSS(){
 
   style.innerHTML = `
     #reports{
-      background:#061015!important;
-      color:#fff;
+      background:#f8fafc!important;
+      color:#0f172a!important;
       padding-bottom:90px!important;
       overflow-x:hidden!important;
       min-height:auto!important;
@@ -238,11 +352,12 @@ function injectReportsCSS(){
       font-weight:900;
       margin:24px 0 8px;
       line-height:1.25;
+      color:#0f172a;
     }
 
     .rp-sub{
       text-align:center;
-      color:#9fb0bf;
+      color:#64748b;
       font-size:15px;
       margin-bottom:22px;
       line-height:1.7;
@@ -254,13 +369,14 @@ function injectReportsCSS(){
       border-radius:28px;
       padding:24px;
       margin-bottom:18px;
-      box-shadow:0 12px 35px rgba(0,0,0,.22);
+      box-shadow:0 14px 35px rgba(15,23,42,.16);
+      color:#fff;
     }
 
     .rp-hero{
       text-align:center;
-      background:radial-gradient(circle at top left,#168f7f,#10202d 52%,#0b1320);
-      border-color:#168f7f;
+      background:radial-gradient(circle at top left,#22c7b8,#10202d 52%,#0b1320);
+      border-color:#22c7b8;
     }
 
     .rp-hero h2{
@@ -295,20 +411,21 @@ function injectReportsCSS(){
     .rp-tabs::-webkit-scrollbar{display:none}
 
     .rp-btn{
-      border:1px solid #2b394d;
-      background:#101827;
-      color:#fff;
+      border:1px solid #dbe4ee;
+      background:#ffffff;
+      color:#0f172a;
       border-radius:18px;
       padding:13px 22px;
       font-weight:900;
       font-size:16px;
       min-height:50px;
+      box-shadow:0 8px 20px rgba(15,23,42,.08);
     }
 
     .rp-btn.on{
-      background:#35d3c0;
-      color:#061015;
-      border-color:#35d3c0;
+      background:#0f8f83;
+      color:#fff;
+      border-color:#0f8f83;
     }
 
     .rp-tab{min-width:max-content}
@@ -392,6 +509,10 @@ function injectReportsCSS(){
       margin-bottom:0;
     }
 
+    .rp-grid-light{
+      margin-bottom:20px;
+    }
+
     .rp-kpi{
       background:#101927;
       border:1px solid #253449;
@@ -454,6 +575,92 @@ function injectReportsCSS(){
       margin-bottom:15px!important;
     }
 
+    .rp-cal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .rp-cal-head strong{
+      display:block;
+      font-size:28px;
+      font-weight:900;
+    }
+
+    .rp-cal-head span{
+      display:block;
+      color:#9fb0bf;
+      margin-top:8px;
+      line-height:1.6;
+    }
+
+    .rp-weekdays{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      text-align:center;
+      color:#9fb0bf;
+      font-weight:900;
+      margin:14px 0 8px;
+      gap:8px;
+    }
+
+    .rp-calendar{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:8px;
+      margin-bottom:18px;
+    }
+
+    .rp-day{
+      min-height:76px;
+      border-radius:18px;
+      background:#0f172a;
+      border:1px solid #253449;
+      padding:8px 4px;
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:3px;
+    }
+
+    .rp-day.blank{
+      opacity:.22;
+    }
+
+    .rp-day.hasWeight{
+      border-color:#35d3c0;
+      background:#0b3a31;
+    }
+
+    .rp-day.hasSteps{
+      box-shadow:inset 0 -3px 0 rgba(56,189,248,.75);
+    }
+
+    .rp-day b{
+      font-size:18px;
+      color:#fff;
+    }
+
+    .rp-day small{
+      font-size:11px;
+      color:#a7fff0;
+      font-weight:900;
+    }
+
+    .rp-day em{
+      font-size:10px;
+      color:#bae6fd;
+      font-style:normal;
+    }
+
+    .rp-day i{
+      font-size:10px;
+      color:#fde68a;
+      font-style:normal;
+    }
+
     @media(max-width:430px){
       .rp-wrap{
         padding:20px 12px 85px;
@@ -487,6 +694,17 @@ function injectReportsCSS(){
 
       .rp-kpi .val{font-size:30px}
       .rp-chart{height:280px}
+
+      .rp-calendar{gap:6px}
+      .rp-weekdays{gap:6px}
+
+      .rp-day{
+        min-height:64px;
+        border-radius:15px;
+      }
+
+      .rp-day b{font-size:16px}
+      .rp-day small,.rp-day em,.rp-day i{font-size:9px}
     }
   `;
 
@@ -657,12 +875,12 @@ function renderAdvancedReports(){
 
   page.innerHTML = `
     <div class="rp-wrap">
-      <div class="rp-title">📊 مركز التقارير الذكي</div>
-      <div class="rp-sub">تقارير، رؤى، قياسات، وإنجازاتك في لوحة واحدة</div>
+      <div class="rp-title">🧠 مركز التحليل الذكي</div>
+      <div class="rp-sub">رؤى، مؤشرات، قرارات وتحليلات صحية في مكان واحد</div>
 
       <div class="rp-hero">
-        <h2>Liyaqti Command Center</h2>
-        <p>🟢 لوحة تنفيذية تجمع الوزن، الهدف، الخطوات، النشاط والسعرات بتصميم Premium نظيف.</p>
+        <h2>Liyaqti Intelligence Center</h2>
+        <p>🟢 مركز موحد يجمع الوزن، الهدف، الخطوات، النشاط، السعرات والتقويم بتصميم Premium ذكي.</p>
       </div>
 
       <div class="rp-tabs">
@@ -671,6 +889,7 @@ function renderAdvancedReports(){
         ${tabBtn("steps","الخطوات")}
         ${tabBtn("calories","السعرات")}
         ${tabBtn("goal","الهدف")}
+        ${tabBtn("calendar","التقويم")}
         ${tabBtn("ai","AI")}
       </div>
 
@@ -780,8 +999,13 @@ function renderAdvancedReports(){
         <div class="rp-note">أنجزت ${s.progress}% من هدفك.</div>
         <div class="rp-note">المفقود: ${rKg(s.lost)} كجم.</div>
         <div class="rp-note">المتبقي: ${rKg(s.remaining)} كجم.</div>
+        <div class="rp-note">قد تصل لهدفك خلال ${s.etaWeeks} أسبوع بإذن الله.</div>
       </div>
     `;
+  }
+
+  if(liyaqtiReportTab === "calendar"){
+    c.innerHTML = buildReportCalendar(s);
   }
 
   if(liyaqtiReportTab === "ai"){
