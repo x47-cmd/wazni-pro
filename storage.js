@@ -125,3 +125,46 @@ function importBackup(file){
   reader.readAsText(file);
 
 }
+
+// ========================================
+// Liyaqti App Data Helpers
+// ========================================
+
+function loadWeights() {
+  return Storage.get("wazni", []);
+}
+
+function saveWeights(data) {
+  return Storage.set("wazni", data);
+}
+
+function loadSettings() {
+  return Storage.get("wazniS", {
+    start: 93,
+    goal: 75,
+    height: 162,
+    name: "",
+    lang: "ar",
+    goalType: "loss"
+  });
+}
+
+function saveSettings(settings) {
+  return Storage.set("wazniS", settings);
+}
+
+function loadSteps() {
+  return Storage.get("wazniSteps", []);
+}
+
+function saveStepsData(data) {
+  return Storage.set("wazniSteps", data);
+}
+
+function loadActivities() {
+  return Storage.get("wazniActivities", []);
+}
+
+function saveActivities(data) {
+  return Storage.set("wazniActivities", data);
+}
