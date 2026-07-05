@@ -1077,13 +1077,14 @@ fill.style.width=p+"%";
 tbody.innerHTML=D.map((x,i)=>`<tr><td>${x.d}</td><td>${x.w}</td><td>${i?(x.w-D[i-1].w).toFixed(1):"--"}</td><td>${x.st||0}</td><td>${x.cal||0}</td></tr>`).join("");
 
 if(S.goalType==="run"){
-  coach.innerHTML=sportCoach();
+    coach.innerHTML=sportCoach();
 }else{
-  coach.innerHTML=insights(cur,loss,rem);
-let smartBox=document.getElementById("smartInsights");
-if(smartBox){
-  smartBox.innerHTML=insights(cur,loss,rem);
-}
+    coach.innerHTML=goalSummary(cur,loss,rem);
+
+    let smartBox=document.getElementById("smartInsights");
+    if(smartBox){
+        smartBox.innerHTML=insights(cur,loss,rem);
+    }
 }
 dashboardStats(cur,loss,rem);
 renderCalendar();
@@ -1249,7 +1250,60 @@ function insights(cur,loss,rem){
     </div>
   </div>`;
 }
+function goalSummary(cur,loss,rem){
 
+let rate=loss/Math.max(1,D.length/7);
+let weeks=rate>0?rem/rate:null;
+
+let status=
+rate>=0.7?"🔥 ممتاز جداً":
+rate>=0.3?"🟢 ممتاز":
+rate>0?"🟡 جيد":
+"🔴 يحتاج تحسين";
+
+let msg=
+rate>=0.7?"استمر بنفس الأداء.":
+rate>=0.3?"أنت على الطريق الصحيح.":
+rate>0?"زد نشاطك قليلاً لتحقق نتائج أفضل.":
+"راجع أكلك ونشاطك اليومي.";
+
+return `
+<div class="coachBox">
+
+<div class="coachTitle">
+💡 ملخص ذكي
+</div>
+
+<div class="coachText">
+${status}
+</div>
+
+<div class="coachList">
+
+<div class="coachItem">
+🎯 أنجزت ${((loss/(S.start-S.goal))*100).toFixed(0)}% من هدفك.
+</div>
+
+<div class="coachItem">
+⚖️ المتبقي ${rem.toFixed(1)} كجم.
+</div>
+
+<div class="coachItem">
+⏳ ${weeks?
+`متوقع الوصول خلال ${weeks.toFixed(1)} أسبوع إذا استمريت بنفس الأداء.`
+:
+"نحتاج بيانات أكثر لحساب موعد الوصول."
+}
+</div>
+
+<div class="coachItem">
+💬 ${msg}
+</div>
+
+</div>
+
+</div>`;
+}
 function changeMonth(n){
 calDate.setMonth(calDate.getMonth()+n);
 renderCalendar();
