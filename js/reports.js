@@ -243,6 +243,61 @@ function injectReportsCSS(){
       .rp-kpi{min-height:150px;padding:18px 10px}
       .rp-kpi .val{font-size:30px}
     }
+    #reports{
+  padding-top: 18px !important;
+  padding-bottom: 160px !important;
+  overflow-x: hidden !important;
+}
+
+.rp-wrap{
+  padding-bottom: 180px !important;
+}
+
+.rp-tabs{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: linear-gradient(180deg,#061015 70%,rgba(6,16,21,0));
+  padding-top: 12px;
+  margin-top: 20px;
+}
+
+.rp-card:last-child{
+  margin-bottom: 120px !important;
+}
+
+.rp-chart{
+  height: 280px !important;
+}
+
+@media(max-width:430px){
+  .rp-title{
+    margin-top: 48px !important;
+  }
+
+  .rp-tabs{
+    top: 0;
+    padding-top: 14px;
+    padding-bottom: 12px;
+  }
+
+  .rp-card{
+    border-radius: 26px;
+  }
+
+  .rp-card h2{
+    line-height: 1.25;
+  }
+
+  .rp-ai{
+    grid-template-columns: 1fr !important;
+  }
+
+  .rp-bot{
+    width: 110px;
+    margin: auto;
+  }
+}
   `;
   document.head.appendChild(style);
 }
