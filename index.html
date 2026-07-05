@@ -660,17 +660,21 @@ box-shadow:0 8px 20px rgba(0,0,0,.08);
 <button class="tab" onclick="pg('reports',this)">التقارير</button>
 <button class="tab" onclick="pg('settings',this)">الإعدادات</button>
 </div>
+
 <script src="js/storage.js"></script>
 <script>
-let D=JSON.parse(localStorage.wazni||'[]');
-let S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar","goalType":"loss"}');
-if(!S.goalType)S.goalType="loss";
-let SD=JSON.parse(localStorage.wazniSteps||'[]');
+let D = loadWeights();
+
+let S = loadSettings();
+if(!S.goalType) S.goalType = "loss";
+
+let SD = loadSteps();
+
 let C,W,P,stepsChartObj;
-let stepsRange="7";
-let range="all";
-let selectedDay="";
-let calDate=new Date();
+let stepsRange = "7";
+let range = "all";
+let selectedDay = "";
+let calDate = new Date();
 
 function isoDate(d=new Date()){
 return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
