@@ -1259,3 +1259,168 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(d&&d.classList.contains("on"))renderNutrition();
   },300);
 });
+
+/* Liyaqti Nutrition Intelligence Pro - V21 Massive Food Expansion */
+console.log("Liyaqti Nutrition V21 Food Expansion loaded");
+
+(function installV21FoodExpansion(){
+  const V21FLAG="liyaqtiNutritionV21FoodExpansionInstalled";
+
+  const v21Foods=[
+    // McDonald's UAE / تقديري + رسمي لبعض العناصر
+    ["McDonald's Big Mac","McDonald's","dinner","حبة",220,564,26,46,30,3,9,1000,"high_fat","McDonald's UAE","medium"],
+    ["McDonald's Chicken Burger","McDonald's","dinner","حبة",160,286,13,36,10,2,5,650,"medium","McDonald's UAE","medium"],
+    ["McDonald's Cheeseburger","McDonald's","dinner","حبة",115,300,15,33,12,2,7,720,"medium","تقديري/مطعم","medium"],
+    ["McDonald's McChicken","McDonald's","dinner","حبة",190,400,14,44,18,2,6,850,"medium","تقديري/مطعم","medium"],
+    ["McDonald's Filet-O-Fish","McDonald's","dinner","حبة",140,390,16,39,19,2,5,580,"medium","تقديري/مطعم","medium"],
+    ["McDonald's 6 Nuggets","McDonald's","snack","6 قطع",100,260,15,15,16,1,0,540,"medium","تقديري/مطعم","medium"],
+    ["McDonald's Fries Small","McDonald's","snack","صغير",80,230,3,30,11,3,0,160,"high_fat","تقديري/مطعم","medium"],
+    ["McDonald's Fries Medium","McDonald's","snack","وسط",115,340,4,44,16,4,0,230,"high_fat","تقديري/مطعم","medium"],
+    ["McDonald's Apple Pie","McDonald's","snack","حبة",80,240,2,35,11,2,13,170,"high_sugar","تقديري/مطعم","medium"],
+    ["McDonald's Vanilla Cone","McDonald's","snack","حبة",110,200,5,32,5,0,24,80,"high_sugar","تقديري/مطعم","medium"],
+
+    // KFC UAE
+    ["KFC Zinger Burger","KFC","dinner","ساندويتش",260,480,28,45,22,2,5,1150,"high_sodium","KFC/تقديري","medium"],
+    ["KFC Twister","KFC","dinner","راب",220,440,24,42,19,3,4,950,"high_sodium","KFC/تقديري","medium"],
+    ["KFC Mighty Zinger","KFC","dinner","ساندويتش",330,720,45,55,38,3,7,1500,"high_sodium","تقديري/مطعم","medium"],
+    ["KFC 1 Piece Chicken","KFC","lunch","قطعة",120,280,22,8,18,0,0,700,"high_sodium","تقديري/مطعم","medium"],
+    ["KFC 2 Pieces Chicken","KFC","lunch","وجبة",250,600,45,18,38,0,1,1400,"high_sodium","تقديري/مطعم","medium"],
+    ["KFC 3 Pieces Meal","KFC","lunch","وجبة",420,900,60,55,52,4,5,2100,"high_sodium","تقديري/مطعم","low"],
+    ["KFC Fries Regular","KFC","snack","عادي",110,310,4,42,14,4,1,420,"high_fat","تقديري/مطعم","medium"],
+    ["KFC Coleslaw","KFC","snack","علبة",120,180,2,18,11,2,14,260,"high_sugar","تقديري/مطعم","medium"],
+    ["KFC Rice Bowl","KFC","lunch","طبق",350,520,25,65,17,3,4,1050,"high_sodium","تقديري/مطعم","medium"],
+
+    // Subway UAE
+    ["Subway Chicken Teriyaki 6 inch","Subway","dinner","ساندويتش",250,430,28,55,10,5,10,900,"medium","Subway UAE","medium"],
+    ["Subway Turkey 6 inch","Subway","dinner","ساندويتش",230,320,20,46,6,5,6,850,"medium","Subway UAE/تقديري","medium"],
+    ["Subway Tuna 6 inch","Subway","dinner","ساندويتش",250,480,22,45,24,4,5,720,"medium","Subway UAE/تقديري","medium"],
+    ["Subway Steak & Cheese 6 inch","Subway","dinner","ساندويتش",260,470,28,48,18,4,6,1050,"high_sodium","Subway UAE/تقديري","medium"],
+    ["Subway Veggie Delite 6 inch","Subway","dinner","ساندويتش",200,230,8,44,3,5,6,500,"clean","Subway UAE/تقديري","medium"],
+    ["Subway Chicken Wrap","Subway","dinner","راب",250,430,30,40,15,4,5,950,"medium","Subway UAE/تقديري","medium"],
+    ["Subway Cookie","Subway","snack","حبة",45,210,2,30,10,1,18,150,"high_sugar","Subway/تقديري","medium"],
+
+    // Burger King / Hardee's / Pizza
+    ["Burger King Whopper","Burger King","dinner","حبة",290,660,31,49,40,3,11,980,"high_fat","تقديري/مطعم","medium"],
+    ["Burger King Chicken Royale","Burger King","dinner","ساندويتش",250,610,28,55,30,3,6,1050,"high_sodium","تقديري/مطعم","medium"],
+    ["Burger King Fries Medium","Burger King","snack","وسط",120,360,4,48,16,4,0,430,"high_fat","تقديري/مطعم","medium"],
+    ["Hardee's Mushroom Swiss","Hardee's","dinner","حبة",300,760,38,48,50,3,7,1250,"high_fat","تقديري/مطعم","low"],
+    ["Hardee's Chicken Fillet","Hardee's","dinner","ساندويتش",260,620,30,50,32,3,6,1100,"high_sodium","تقديري/مطعم","low"],
+    ["Pizza Hut Pepperoni Slice","Pizza Hut","dinner","شريحة",120,300,13,35,13,2,3,700,"high_sodium","تقديري/مطعم","medium"],
+    ["Pizza Hut Margherita Slice","Pizza Hut","dinner","شريحة",110,250,11,32,9,2,3,550,"medium","تقديري/مطعم","medium"],
+    ["Pizza Hut Chicken BBQ Slice","Pizza Hut","dinner","شريحة",130,320,15,38,12,2,8,760,"high_sodium","تقديري/مطعم","medium"],
+    ["Papa Johns Pepperoni Slice","Papa Johns","dinner","شريحة",120,310,14,36,13,2,3,720,"high_sodium","تقديري/مطعم","medium"],
+    ["Domino's Cheese Pizza Slice","Domino's","dinner","شريحة",115,270,12,34,10,2,3,620,"medium","تقديري/مطعم","medium"],
+
+    // Coffee shops
+    ["Starbucks Iced Latte Tall","Starbucks","snack","كوب",350,120,8,13,4,0,11,110,"medium","تقديري/مطعم","medium"],
+    ["Starbucks Caramel Macchiato Tall","Starbucks","snack","كوب",350,250,9,35,7,0,28,150,"high_sugar","تقديري/مطعم","medium"],
+    ["Starbucks Mocha Frappuccino Tall","Starbucks","snack","كوب",350,300,5,50,10,1,40,180,"high_sugar","تقديري/مطعم","medium"],
+    ["Starbucks Americano","Starbucks","snack","كوب",350,15,0,3,0,0,0,10,"clean","تقديري/مطعم","medium"],
+    ["Tim Hortons Iced Capp Small","Tim Hortons","snack","كوب",300,250,4,45,8,0,35,120,"high_sugar","تقديري/مطعم","medium"],
+    ["Tim Hortons Turkey Sandwich","Tim Hortons","lunch","ساندويتش",230,390,22,45,11,4,6,850,"medium","تقديري/مطعم","medium"],
+    ["Costa Latte Medium","Costa","snack","كوب",350,180,10,18,7,0,16,150,"medium","تقديري/مطعم","medium"],
+
+    // UAE Cafeteria / Local restaurants
+    ["شاورما عربي دجاج","كافتيريا","dinner","وجبة",350,750,38,70,32,4,6,1400,"high_sodium","تقديري","medium"],
+    ["شاورما صاروخ","كافتيريا","dinner","ساندويتش",300,700,35,62,30,3,6,1250,"high_sodium","تقديري","medium"],
+    ["برجر كافتيريا دجاج","كافتيريا","dinner","حبة",250,580,25,48,30,2,7,900,"high_fat","تقديري","medium"],
+    ["براتا جبن","كافتيريا","breakfast","حبة",140,380,10,45,18,2,4,620,"high_fat","تقديري","medium"],
+    ["براتا بيض","كافتيريا","breakfast","حبة",160,420,16,45,21,2,3,650,"high_fat","تقديري","medium"],
+    ["رقاق جبن","كافتيريا","breakfast","قطعة",120,300,11,38,12,2,3,500,"medium","تقديري","medium"],
+    ["كرك","كافتيريا","snack","كوب",250,180,5,28,6,0,22,120,"high_sugar","تقديري","medium"],
+    ["عصير أفوكادو","كافتيريا","snack","كوب",350,450,7,55,22,7,38,90,"high_sugar","تقديري","medium"],
+    ["عصير مانجو","كافتيريا","snack","كوب",350,260,2,62,1,3,55,20,"high_sugar","تقديري","medium"],
+    ["فلافل ساندويتش","مطاعم عربية","dinner","ساندويتش",220,430,13,55,18,7,5,850,"medium","تقديري","medium"],
+    ["حمص","مطاعم عربية","snack","صحن",150,250,8,25,13,6,3,450,"medium","تقديري","medium"],
+    ["متبل","مطاعم عربية","snack","صحن",150,180,5,15,12,4,4,400,"medium","تقديري","medium"],
+    ["تبولة","مطاعم عربية","snack","صحن",150,160,4,18,8,5,3,350,"clean","تقديري","medium"],
+    ["فتوش","مطاعم عربية","snack","صحن",180,220,5,28,9,5,5,480,"medium","تقديري","medium"],
+
+    // Pasta / Italian
+    ["مكرونة مسلوقة","معكرونة","lunch","100g",100,158,6,31,1,2,1,5,"medium","USDA/تقديري","high"],
+    ["سباغيتي صلصة طماطم","معكرونة","lunch","طبق",350,520,16,85,12,6,10,650,"medium","تقديري","medium"],
+    ["بيني أرابياتا","معكرونة","dinner","طبق",350,560,16,90,14,6,8,700,"medium","تقديري","medium"],
+    ["فيتوتشيني ألفريدو","معكرونة","dinner","طبق",400,900,28,85,48,4,6,1100,"high_fat","تقديري","medium"],
+    ["لازانيا لحم","معكرونة","dinner","قطعة",350,650,35,55,32,4,8,950,"high_sodium","تقديري","medium"],
+    ["باستا دجاج","معكرونة","dinner","طبق",400,750,40,80,28,5,7,950,"medium","تقديري","medium"],
+    ["باستا تونة","معكرونة","dinner","طبق",350,620,35,75,18,5,5,700,"medium","تقديري","medium"],
+
+    // Toast / bread
+    ["توست أبيض","خبز وتوست","breakfast","شريحة",30,80,3,15,1,1,2,130,"medium","ملصق/تقديري","medium"],
+    ["توست أسمر","خبز وتوست","breakfast","شريحة",35,85,4,15,1,2,2,140,"clean","ملصق/تقديري","medium"],
+    ["توست بر","خبز وتوست","breakfast","شريحة",35,90,4,16,1,2,2,150,"clean","ملصق/تقديري","medium"],
+    ["خبز لبناني صغير","خبز وتوست","lunch","رغيف",60,165,5,33,1,2,1,300,"medium","تقديري","medium"],
+    ["خبز صامولي","خبز وتوست","breakfast","حبة",80,220,7,42,3,2,4,350,"medium","تقديري","medium"],
+    ["كرواسون سادة","مخبوزات","breakfast","حبة",70,280,6,30,16,2,6,320,"high_fat","تقديري","medium"],
+    ["كرواسون جبن","مخبوزات","breakfast","حبة",90,360,10,34,22,2,6,520,"high_fat","تقديري","medium"],
+
+    // Cheese / dairy
+    ["جبن شيدر","أجبان","snack","شريحة",20,80,5,1,7,0,0,140,"medium","USDA/تقديري","high"],
+    ["جبن موزاريلا","أجبان","snack","30g",30,85,7,1,6,0,0,180,"medium","USDA/تقديري","high"],
+    ["جبن فيتا","أجبان","snack","30g",30,80,4,1,6,0,0,320,"high_sodium","USDA/تقديري","high"],
+    ["جبن حلوم","أجبان","snack","50g",50,160,11,1,13,0,0,600,"high_sodium","تقديري","medium"],
+    ["لبنة","أجبان","snack","ملعقتين",50,110,5,4,8,0,2,250,"medium","تقديري","medium"],
+    ["جبن كيري","أجبان","breakfast","حبة",18,55,2,1,5,0,1,120,"medium","ملصق/تقديري","medium"],
+    ["جبن قليل الدسم","أجبان","snack","شريحة",20,45,5,1,2,0,0,180,"clean","ملصق/تقديري","medium"],
+
+    // Home meals / UAE
+    ["صالونة دجاج","إماراتي","lunch","طبق",400,520,35,45,20,6,8,850,"medium","تقديري","medium"],
+    ["صالونة لحم","إماراتي","lunch","طبق",400,620,35,45,30,6,8,950,"medium","تقديري","medium"],
+    ["عيش ولحم","إماراتي","lunch","طبق",500,850,42,95,32,4,5,1100,"high_sodium","تقديري","medium"],
+    ["عيش ودجاج","إماراتي","lunch","طبق",480,760,40,90,25,4,5,950,"medium","تقديري","medium"],
+    ["سمك مقلي","إماراتي","lunch","قطعة",180,420,35,10,25,1,1,500,"high_fat","تقديري","medium"],
+    ["سمك مشوي مع رز","إماراتي","lunch","طبق",450,650,42,75,14,4,3,750,"medium","تقديري","medium"],
+    ["دقوس","إضافات","lunch","ملعقة",20,15,0,3,0,0,2,120,"medium","تقديري","medium"],
+
+    // Proteins / clean options
+    ["لحم مفروم قليل الدهن","بروتين","lunch","100g",100,210,26,0,11,0,0,75,"clean","USDA/تقديري","high"],
+    ["ديك رومي شرائح","بروتين","snack","100g",100,110,22,2,2,0,1,900,"high_sodium","ملصق/تقديري","medium"],
+    ["روبيان مشوي","بروتين","dinner","100g",100,100,24,0,1,0,0,180,"clean","USDA/تقديري","high"],
+    ["عدس مطبوخ","بروتين نباتي","lunch","100g",100,116,9,20,0,8,2,2,"clean","USDA/تقديري","high"],
+    ["حمص حب","بروتين نباتي","lunch","100g",100,164,9,27,3,8,5,7,"clean","USDA/تقديري","high"],
+    ["فول مدمس","بروتين نباتي","breakfast","صحن",250,330,20,55,4,14,4,800,"medium","تقديري","medium"],
+
+    // Snacks / sweets
+    ["شيبس صغير","سناك","snack","كيس",45,240,3,24,15,2,1,350,"high_fat","ملصق/تقديري","medium"],
+    ["شوكولاتة صغيرة","حلويات","snack","حبة",45,240,3,28,13,2,24,40,"high_sugar","ملصق/تقديري","medium"],
+    ["بسكويت شاي","حلويات","snack","4 حبات",40,180,3,28,7,1,10,180,"high_sugar","ملصق/تقديري","medium"],
+    ["كيك شوكولاتة","حلويات","snack","قطعة",100,380,5,55,16,2,35,250,"high_sugar","تقديري","medium"],
+    ["دونات","حلويات","snack","حبة",70,300,4,38,15,1,18,280,"high_sugar","تقديري","medium"],
+    ["آيس كريم فانيلا","حلويات","snack","كوب",100,210,4,24,11,0,21,80,"high_sugar","تقديري","medium"],
+
+    // Breakfast combos
+    ["ساندويتش بيض وجبن","فطور","breakfast","ساندويتش",180,420,20,38,22,2,4,700,"medium","تقديري","medium"],
+    ["ساندويتش لبنة وزعتر","فطور","breakfast","ساندويتش",180,380,13,45,16,4,4,650,"medium","تقديري","medium"],
+    ["ساندويتش تونة","فطور","breakfast","ساندويتش",200,420,30,38,14,3,4,700,"medium","تقديري","medium"],
+    ["بان كيك","فطور","breakfast","طبق",220,520,10,85,15,3,30,650,"high_sugar","تقديري","medium"],
+    ["وافل","فطور","breakfast","قطعة",180,430,8,65,16,2,22,500,"high_sugar","تقديري","medium"]
+  ];
+
+  function localNorm(t){
+    return (t||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").trim();
+  }
+
+  function toFood(x,i){
+    return {
+      id:"v21_"+i+"_"+localNorm(x[0]).replace(/\s+/g,"_"),
+      name:x[0],cat:x[1],meal:x[2],unit:x[3],grams:x[4],
+      cal:x[5],p:x[6],c:x[7],f:x[8],fiber:x[9],sugar:x[10],sodium:x[11],
+      quality:x[12],source:x[13],confidence:x[14]
+    };
+  }
+
+  const existing=new Map((foodLibrary||[]).map(f=>[localNorm(f.name),f]));
+  v21Foods.map(toFood).forEach(f=>{
+    const key=localNorm(f.name);
+    if(existing.has(key)){
+      Object.assign(existing.get(key),f);
+    }else{
+      foodLibrary.push(f);
+    }
+  });
+
+  localStorage.setItem(NFLIB,JSON.stringify(foodLibrary));
+  localStorage.setItem(V21FLAG,new Date().toISOString());
+
+  console.log("V21 Food Expansion installed:", foodLibrary.length, "foods");
+})();
