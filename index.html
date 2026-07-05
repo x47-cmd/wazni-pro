@@ -660,7 +660,7 @@ box-shadow:0 8px 20px rgba(0,0,0,.08);
 <button class="tab" onclick="pg('reports',this)">التقارير</button>
 <button class="tab" onclick="pg('settings',this)">الإعدادات</button>
 </div>
-
+<script src="js/storage.js"></script>
 <script>
 let D=JSON.parse(localStorage.wazni||'[]');
 let S=JSON.parse(localStorage.wazniS||'{"start":93,"goal":75,"height":162,"name":"Yousif","lang":"ar","goalType":"loss"}');
@@ -2304,7 +2304,6 @@ updateTodayPreview();
 render();
 </script>
 
-<script src="js/storage.js"></script>
 <script src="js/achievements.js"></script>
 
 </body>
