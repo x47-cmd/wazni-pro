@@ -55,47 +55,34 @@ function readGlobal(name){
 // ---------- Read App Data ----------
 function getLiyaqtiData(){
   const D1 =
-    readGlobal("D") ||
-    window.D ||
+    readGlobal("D") || window.D ||
     safeParse("D", null) ||
     safeParse("wazniData", null) ||
     safeParse("wazni_data", null) ||
-    safeParse("liyaqti_data", null) ||
-    [];
+    safeParse("liyaqti_data", null) || [];
 
   const SD1 =
-    readGlobal("SD") ||
-    window.SD ||
+    readGlobal("SD") || window.SD ||
     safeParse("SD", null) ||
     safeParse("stepsData", null) ||
     safeParse("steps_data", null) ||
-    safeParse("liyaqti_steps", null) ||
-    [];
+    safeParse("liyaqti_steps", null) || [];
 
   const AD1 =
-    readGlobal("AD") ||
-    window.AD ||
+    readGlobal("AD") || window.AD ||
     safeParse("AD", null) ||
     safeParse("activityData", null) ||
     safeParse("activity_data", null) ||
-    safeParse("liyaqti_activities", null) ||
-    [];
+    safeParse("liyaqti_activities", null) || [];
 
   const S1 =
-    readGlobal("S") ||
-    window.S ||
+    readGlobal("S") || window.S ||
     safeParse("S", null) ||
     safeParse("settings", null) ||
     safeParse("wazni_settings", null) ||
-    safeParse("liyaqti_settings", null) ||
-    {};
+    safeParse("liyaqti_settings", null) || {};
 
-  return {
-    D:rArr(D1),
-    SD:rArr(SD1),
-    AD:rArr(AD1),
-    S:S1 || {}
-  };
+  return { D:rArr(D1), SD:rArr(SD1), AD:rArr(AD1), S:S1 || {} };
 }
 
 // ---------- Normalize Data ----------
@@ -168,12 +155,9 @@ function rStats(){
 
   const current = weights.length
     ? rNum(weights[weights.length - 1].w)
-    : allWeights.length
-      ? rNum(allWeights[allWeights.length - 1].w)
-      : 0;
+    : allWeights.length ? rNum(allWeights[allWeights.length - 1].w) : 0;
 
-  const start =
-    rNum(L.S.start ?? L.S.startWeight) ||
+  const start = rNum(L.S.start ?? L.S.startWeight) ||
     (allWeights.length ? rNum(allWeights[0].w) : current);
 
   const goal = rNum(L.S.goal ?? L.S.goalWeight) || 75;
@@ -217,32 +201,10 @@ function rStats(){
   }
 
   return {
-    L,
-    allWeights,
-    allSteps,
-    allActivities,
-    weights,
-    steps,
-    activities,
-    current,
-    start,
-    goal,
-    stepGoal,
-    lost,
-    remaining,
-    progress,
-    totalSteps,
-    avgSteps,
-    bestSteps,
-    totalKm,
-    totalBurn,
-    totalMin,
-    bestWeight,
-    maxWeight,
-    avgCal,
-    healthScore,
-    etaWeeks,
-    stepScore
+    L, allWeights, allSteps, allActivities, weights, steps, activities,
+    current, start, goal, stepGoal, lost, remaining, progress,
+    totalSteps, avgSteps, bestSteps, totalKm, totalBurn, totalMin,
+    bestWeight, maxWeight, avgCal, healthScore, etaWeeks, stepScore
   };
 }
 
@@ -258,24 +220,23 @@ function injectReportsCSS(){
     #reports{
       background:#061015!important;
       color:#fff;
-      padding-bottom:150px!important;
+      padding-bottom:90px!important;
       overflow-x:hidden!important;
+      min-height:auto!important;
     }
 
-    #reports *{
-      box-sizing:border-box;
-    }
+    #reports *{box-sizing:border-box}
 
     .rp-wrap{
       direction:rtl;
-      padding:34px 18px 150px;
+      padding:24px 18px 90px;
     }
 
     .rp-title{
       text-align:center;
       font-size:34px;
       font-weight:900;
-      margin:30px 0 8px;
+      margin:24px 0 8px;
       line-height:1.25;
     }
 
@@ -283,12 +244,11 @@ function injectReportsCSS(){
       text-align:center;
       color:#9fb0bf;
       font-size:15px;
-      margin-bottom:28px;
+      margin-bottom:22px;
       line-height:1.7;
     }
 
-    .rp-hero,
-    .rp-card{
+    .rp-hero,.rp-card{
       background:linear-gradient(145deg,#101927,#0b1622);
       border:1px solid #253449;
       border-radius:28px;
@@ -314,15 +274,25 @@ function injectReportsCSS(){
       color:#d7eeee;
       line-height:1.9;
       font-size:18px;
-      margin:0 0 22px;
+      margin:0;
     }
 
-    .rp-actions{
+    .rp-tabs{
       display:flex;
       gap:12px;
-      justify-content:center;
-      flex-wrap:wrap;
+      overflow-x:auto;
+      flex-wrap:nowrap;
+      justify-content:flex-start;
+      margin:22px -4px 18px;
+      padding:0 4px 8px;
+      position:relative;
+      z-index:1;
+      background:transparent;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
     }
+
+    .rp-tabs::-webkit-scrollbar{display:none}
 
     .rp-btn{
       border:1px solid #2b394d;
@@ -341,32 +311,7 @@ function injectReportsCSS(){
       border-color:#35d3c0;
     }
 
-    .rp-btn.csv{background:#07583e}
-    .rp-btn.json{background:#42359c}
-    .rp-btn.excel{background:#67642d}
-
-    .rp-tabs{
-      display:flex;
-      gap:12px;
-      overflow-x:auto;
-      flex-wrap:nowrap;
-      justify-content:flex-start;
-      margin:22px -4px 20px;
-      padding:0 4px 10px;
-      position:relative;
-      z-index:1;
-      background:transparent;
-      -webkit-overflow-scrolling:touch;
-      scrollbar-width:none;
-    }
-
-    .rp-tabs::-webkit-scrollbar{
-      display:none;
-    }
-
-    .rp-tab{
-      min-width:max-content;
-    }
+    .rp-tab{min-width:max-content}
 
     .rp-card h2{
       font-size:30px;
@@ -378,7 +323,7 @@ function injectReportsCSS(){
     .rp-ringBox{
       display:grid;
       place-items:center;
-      margin:10px 0 24px;
+      margin:8px 0 22px;
     }
 
     .rp-ring{
@@ -444,7 +389,7 @@ function injectReportsCSS(){
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:14px;
-      margin-bottom:18px;
+      margin-bottom:0;
     }
 
     .rp-kpi{
@@ -495,24 +440,8 @@ function injectReportsCSS(){
       font-size:18px;
     }
 
-    .rp-ai{
-      display:grid;
-      grid-template-columns:1fr 110px;
-      gap:15px;
-      align-items:center;
-    }
-
-    .rp-bot{
-      background:linear-gradient(145deg,#4b3be8,#7c35ee);
-      border-radius:24px;
-      height:110px;
-      display:grid;
-      place-items:center;
-      font-size:45px;
-    }
-
     .rp-empty{
-      min-height:220px;
+      min-height:180px;
       display:grid;
       place-items:center;
       color:#93a4b8;
@@ -522,67 +451,42 @@ function injectReportsCSS(){
     }
 
     .rp-card:last-child{
-      margin-bottom:50px!important;
+      margin-bottom:15px!important;
     }
 
     @media(max-width:430px){
       .rp-wrap{
-        padding:28px 12px 145px;
+        padding:20px 12px 85px;
       }
 
       .rp-title{
         font-size:31px;
-        margin-top:42px;
+        margin-top:30px;
       }
 
-      .rp-hero,
-      .rp-card{
+      .rp-hero,.rp-card{
         border-radius:26px;
         padding:22px 18px;
       }
 
-      .rp-hero h2{
-        font-size:28px;
-      }
-
-      .rp-hero p{
-        font-size:17px;
-      }
-
-      .rp-card h2{
-        font-size:29px;
-      }
+      .rp-hero h2{font-size:28px}
+      .rp-hero p{font-size:17px}
+      .rp-card h2{font-size:29px}
 
       .rp-ring{
         width:220px;
         height:220px;
       }
 
-      .rp-grid{
-        gap:12px;
-      }
+      .rp-grid{gap:12px}
 
       .rp-kpi{
         min-height:150px;
         padding:18px 8px;
       }
 
-      .rp-kpi .val{
-        font-size:30px;
-      }
-
-      .rp-chart{
-        height:280px;
-      }
-
-      .rp-ai{
-        grid-template-columns:1fr!important;
-      }
-
-      .rp-bot{
-        width:110px;
-        margin:auto;
-      }
+      .rp-kpi .val{font-size:30px}
+      .rp-chart{height:280px}
     }
   `;
 
@@ -602,23 +506,11 @@ function chartBase(){
     responsive:true,
     maintainAspectRatio:false,
     plugins:{
-      legend:{
-        labels:{
-          color:"#dbeafe",
-          font:{size:14,weight:"bold"}
-        }
-      }
+      legend:{labels:{color:"#dbeafe",font:{size:14,weight:"bold"}}}
     },
     scales:{
-      x:{
-        ticks:{color:"#9fb0bf"},
-        grid:{color:"rgba(255,255,255,.08)"}
-      },
-      y:{
-        beginAtZero:false,
-        ticks:{color:"#9fb0bf"},
-        grid:{color:"rgba(255,255,255,.08)"}
-      }
+      x:{ticks:{color:"#9fb0bf"},grid:{color:"rgba(255,255,255,.08)"}},
+      y:{beginAtZero:false,ticks:{color:"#9fb0bf"},grid:{color:"rgba(255,255,255,.08)"}}
     }
   };
 }
@@ -665,14 +557,7 @@ function makeDoughnut(id,labels,data){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        legend:{
-          labels:{
-            color:"#dbeafe",
-            font:{size:14,weight:"bold"}
-          }
-        }
-      }
+      plugins:{legend:{labels:{color:"#dbeafe",font:{size:14,weight:"bold"}}}}
     }
   });
 
@@ -691,11 +576,7 @@ function setLiyaqtiReportTab(v){
 }
 
 function tabBtn(id,txt){
-  return `
-    <button class="rp-btn rp-tab ${liyaqtiReportTab === id ? "on" : ""}" onclick="setLiyaqtiReportTab('${id}')">
-      ${txt}
-    </button>
-  `;
+  return `<button class="rp-btn rp-tab ${liyaqtiReportTab === id ? "on" : ""}" onclick="setLiyaqtiReportTab('${id}')">${txt}</button>`;
 }
 
 function kpi(icon,label,value){
@@ -711,23 +592,21 @@ function kpi(icon,label,value){
 function emptyBox(txt){
   return `<div class="rp-empty">${txt}</div>`;
 }
+
+// ---------- AI ----------
 function getAIReportInsights(s){
   let tips = [];
 
   const weightCount = s.weights.length;
-  const stepsCount = s.steps.length;
   const lastWeight = s.current;
   const firstWeight = s.weights.length ? s.weights[0].w : 0;
   const weightChange = weightCount >= 2 ? lastWeight - firstWeight : 0;
   const stepCommit = Math.round((s.avgSteps / (s.stepGoal || 8000)) * 100);
 
-  if(weightCount < 3){
-    tips.push("📌 سجّل وزنك 3 مرات على الأقل للحصول على تحليل أدق.");
-  }else{
-    if(weightChange < -0.3) tips.push("🟢 وزنك نازل بشكل ممتاز خلال الفترة.");
-    else if(weightChange > 0.3) tips.push("⚠️ وزنك ارتفع خلال الفترة، راجع السعرات والحركة.");
-    else tips.push("🟡 وزنك شبه ثابت، تحتاج زيادة النشاط أو ضبط الأكل.");
-  }
+  if(weightCount < 3) tips.push("📌 سجّل وزنك 3 مرات على الأقل للحصول على تحليل أدق.");
+  else if(weightChange < -0.3) tips.push("🟢 وزنك نازل بشكل ممتاز خلال الفترة.");
+  else if(weightChange > 0.3) tips.push("⚠️ وزنك ارتفع خلال الفترة، راجع السعرات والحركة.");
+  else tips.push("🟡 وزنك شبه ثابت، تحتاج زيادة النشاط أو ضبط الأكل.");
 
   if(stepCommit >= 100) tips.push("🔥 التزامك بالخطوات ممتاز وتجاوزت هدفك اليومي.");
   else if(stepCommit >= 70) tips.push("👍 التزامك بالخطوات جيد، قريب من الهدف.");
@@ -766,6 +645,7 @@ function getAIReportInsights(s){
 
   return {tips, aiScore, status, stepCommit, weightChange};
 }
+
 // ---------- Render ----------
 function renderAdvancedReports(){
   injectReportsCSS();
@@ -782,10 +662,7 @@ function renderAdvancedReports(){
 
       <div class="rp-hero">
         <h2>Liyaqti Command Center</h2>
-        <p>🟢 لوحة تنفيذية تجمع الوزن، الهدف، الخطوات، النشاط، السعرات والتصدير بتصميم Premium نظيف.</p>
-
-        <div class="rp-actions">
-        </div>
+        <p>🟢 لوحة تنفيذية تجمع الوزن، الهدف، الخطوات، النشاط والسعرات بتصميم Premium نظيف.</p>
       </div>
 
       <div class="rp-tabs">
@@ -808,41 +685,26 @@ function renderAdvancedReports(){
     c.innerHTML = `
       <div class="rp-card" style="background:linear-gradient(160deg,#0b3a31,#101927)">
         <h2>📌 لوحة القرار</h2>
-
         <div class="rp-ringBox">
           <div class="rp-ring" style="--p:${s.progress}%">
-            <div class="rp-ring-inner">
-              <b>${s.progress}%</b>
-              <span>نسبة الإنجاز</span>
-            </div>
+            <div class="rp-ring-inner"><b>${s.progress}%</b><span>نسبة الإنجاز</span></div>
           </div>
         </div>
-
         <div class="rp-row"><span>🎯 الهدف</span><b>${rKg(s.goal)} كجم</b></div>
         <div class="rp-row"><span>⚖️ الحالي</span><b>${s.current ? rKg(s.current) : "--"} كجم</b></div>
         <div class="rp-row"><span>⏳ المتبقي</span><b>${rKg(s.remaining)} كجم</b></div>
         <div class="rp-row"><span>📉 المفقود</span><b>${rKg(s.lost)} كجم</b></div>
-
         <div class="rp-bar" style="--w:${s.progress}%"><i></i></div>
       </div>
 
       <div class="rp-card">
         <h2>💗 مؤشر الصحة العام</h2>
-
         <div class="rp-ringBox">
           <div class="rp-ring" style="--p:${s.healthScore}%">
-            <div class="rp-ring-inner">
-              <b>${s.healthScore}</b>
-              <span>من 100</span>
-            </div>
+            <div class="rp-ring-inner"><b>${s.healthScore}</b><span>من 100</span></div>
           </div>
         </div>
-
-        <div class="rp-note">
-          ${s.healthScore >= 70
-            ? "ممتاز، استمر على نفس النسق."
-            : "تحتاج تسجيل أكثر ورفع النشاط للحصول على قراءة أدق."}
-        </div>
+        <div class="rp-note">${s.healthScore >= 70 ? "ممتاز، استمر على نفس النسق." : "تحتاج تسجيل أكثر ورفع النشاط للحصول على قراءة أدق."}</div>
       </div>
 
       <div class="rp-grid">
@@ -862,9 +724,7 @@ function renderAdvancedReports(){
     c.innerHTML = `
       <div class="rp-card">
         <h2>📉 مسار الوزن</h2>
-        <div class="rp-chart">
-          ${s.weights.length ? `<canvas id="rpWeightChart"></canvas>` : emptyBox("لا توجد بيانات وزن كافية للرسم.")}
-        </div>
+        <div class="rp-chart">${s.weights.length ? `<canvas id="rpWeightChart"></canvas>` : emptyBox("لا توجد بيانات وزن كافية للرسم.")}</div>
       </div>
 
       <div class="rp-card">
@@ -881,9 +741,7 @@ function renderAdvancedReports(){
     c.innerHTML = `
       <div class="rp-card">
         <h2>👣 أداء الخطوات</h2>
-        <div class="rp-chart">
-          ${s.steps.length ? `<canvas id="rpStepsChart"></canvas>` : emptyBox("لا توجد بيانات خطوات كافية للرسم.")}
-        </div>
+        <div class="rp-chart">${s.steps.length ? `<canvas id="rpStepsChart"></canvas>` : emptyBox("لا توجد بيانات خطوات كافية للرسم.")}</div>
       </div>
 
       <div class="rp-card">
@@ -898,9 +756,7 @@ function renderAdvancedReports(){
     c.innerHTML = `
       <div class="rp-card">
         <h2>🍽️ السعرات</h2>
-        <div class="rp-chart">
-          ${s.weights.some(x=>x.cal>0) ? `<canvas id="rpCaloriesChart"></canvas>` : emptyBox("لا توجد بيانات سعرات كافية للرسم.")}
-        </div>
+        <div class="rp-chart">${s.weights.some(x=>x.cal>0) ? `<canvas id="rpCaloriesChart"></canvas>` : emptyBox("لا توجد بيانات سعرات كافية للرسم.")}</div>
       </div>
 
       <div class="rp-card">
@@ -916,9 +772,7 @@ function renderAdvancedReports(){
     c.innerHTML = `
       <div class="rp-card">
         <h2>🎯 خريطة الهدف</h2>
-        <div class="rp-chart">
-          <canvas id="rpGoalChart"></canvas>
-        </div>
+        <div class="rp-chart"><canvas id="rpGoalChart"></canvas></div>
       </div>
 
       <div class="rp-card">
@@ -929,36 +783,37 @@ function renderAdvancedReports(){
       </div>
     `;
   }
-if(liyaqtiReportTab === "ai"){
-  const ai = getAIReportInsights(s);
 
-  c.innerHTML = `
-    <div class="rp-card">
-      <h2>🧠 تقييم AI</h2>
-      <div class="rp-ringBox">
-        <div class="rp-ring" style="--p:${ai.aiScore}%">
-          <div class="rp-ring-inner">
-            <b>${ai.aiScore}</b>
-            <span>${ai.status}</span>
+  if(liyaqtiReportTab === "ai"){
+    const ai = getAIReportInsights(s);
+
+    c.innerHTML = `
+      <div class="rp-card">
+        <h2>🧠 تقييم AI</h2>
+        <div class="rp-ringBox">
+          <div class="rp-ring" style="--p:${ai.aiScore}%">
+            <div class="rp-ring-inner">
+              <b>${ai.aiScore}</b>
+              <span>${ai.status}</span>
+            </div>
           </div>
         </div>
+        <div class="rp-note">📊 التغير بالوزن: ${ai.weightChange.toFixed(1)} كجم.</div>
+        <div class="rp-note">🎯 التزام الخطوات: ${ai.stepCommit}%.</div>
       </div>
-      <div class="rp-note">📊 التغير بالوزن: ${ai.weightChange.toFixed(1)} كجم.</div>
-      <div class="rp-note">🎯 التزام الخطوات: ${ai.stepCommit}%.</div>
-    </div>
 
-    <div class="rp-card">
-      <h2>🤖 توصيات المدرب الذكي</h2>
-      ${ai.tips.map(t=>`<div class="rp-note">${t}</div>`).join("")}
-    </div>
+      <div class="rp-card">
+        <h2>🤖 توصيات المدرب الذكي</h2>
+        ${ai.tips.map(t=>`<div class="rp-note">${t}</div>`).join("")}
+      </div>
 
-    <div class="rp-card">
-      <h2>خطة مختصرة</h2>
-      <div class="rp-note">1️⃣ ثبت تسجيل الوزن 3 مرات بالأسبوع.</div>
-      <div class="rp-note">2️⃣ حاول توصل متوسط خطواتك إلى ${rFmt(s.stepGoal)} يومياً.</div>
-      <div class="rp-note">3️⃣ زِد النشاط تدريجياً بدون استعجال.</div>
-    </div>
-  `;
+      <div class="rp-card">
+        <h2>خطة مختصرة</h2>
+        <div class="rp-note">1️⃣ ثبت تسجيل الوزن 3 مرات بالأسبوع.</div>
+        <div class="rp-note">2️⃣ حاول توصل متوسط خطواتك إلى ${rFmt(s.stepGoal)} يومياً.</div>
+        <div class="rp-note">3️⃣ زِد النشاط تدريجياً بدون استعجال.</div>
+      </div>
+    `;
   }
 
   destroyReportCharts();
@@ -990,9 +845,7 @@ function bootReports(){
     tries++;
 
     const page = document.getElementById("reports");
-    if(page){
-      renderAdvancedReports();
-    }
+    if(page) renderAdvancedReports();
 
     const s = rStats();
     if(s.allWeights.length || tries >= 12){
