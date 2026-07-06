@@ -55,7 +55,21 @@ const META={
 
 function type(){return S.goalType||"loss"}
 function meta(t=type()){return META[t]||META.loss}
-function saveS(){write(K.S,S)}
+function saveS(){
+  write(K.S,S);
+  localStorage.setItem("wazniS", JSON.stringify(S));
+
+  window.dispatchEvent(new Event("liyaqtiGoalUpdated"));
+  window.dispatchEvent(new Event("storage"));
+
+  if(typeof renderHomeDashboard==="function"){
+    setTimeout(renderHomeDashboard,80);
+  }
+
+  if(typeof renderHome==="function"){
+    setTimeout(renderHome,80);
+  }
+}
 function profiles(){return read(K.PRO,{})}
 function saveProfiles(p){write(K.PRO,p)}
 function notes(){return read(K.NOTE,[])}
