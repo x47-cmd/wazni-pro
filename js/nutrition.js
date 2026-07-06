@@ -1852,3 +1852,470 @@ function timingAdvice(by){
 
   return "توزيع الوجبات مقبول.";
 }
+
+
+/* =========================
+   Search / Restaurant / Library
+========================= */
+function renderSmartFoodSearch(){
+  let input=document.getElementById("smartFoodSearch");
+  let box=document.getElementById("smartFoodResults");
+  if(!input||!box)return;
+
+  let q=normalizeArabicText(input.value);
+  if(!q){box.innerHTML="";return;}
+
+  let list=foodLibrary.filter(x=>{
+    let full=normalizeArabicText(`${x.name} ${x.cat} ${x.source} ${x.aliases||""}`);
+    return full.includes(q)||foodAliases(x).some(a=>a.includes(q)||q.includes(a));
+  }).sort((a,b)=>{
+    let an=normalizeArabicText(a.name).includes(q)?0:1;
+    let bn=normalizeArabicText(b.name).includes(q)?0:1;
+    return an-bn || a.cal-b.cal;
+  }).slice(0,20);
+
+  box.innerHTML=list.length?`
+  <div class="niFoodResults">
+    ${list.map(x=>`
+      <button onclick="quickAddWithAmount(${foodLibrary.indexOf(x)})">
+        <b>${x.name}</b>
+        <span>${x.cal} سعرة • P ${x.p} • ${x.cat} • ${x.source}</span>
+      </button>
+    `).join("")}
+  </div>`:`<div class="niEmpty small">ما حصلت أكلة. جرّب كلمة أبسط.</div>`;
+}
+
+function restaurantMealScore(x){
+  return (x.p*2)-x.f-(x.sodium/100)+(x.quality==="clean"?20:0)-(x.quality==="high_sodium"?20:0);
+}
+
+function foodRows(list){
+  return list.map(x=>`
+    <div class="niFoodRow">
+      <div>
+        <b>${x.name}</b>
+        <span>${x.cal} سعرة • P ${x.p} • ${x.unit} • ${x.cat} • ${qualityName(x.quality)} • ${x.source} • ${confName(x.confidence)}</span>
+      </div>
+      <div>
+        <button onclick="quickAddWithAmount(${foodLibrary.indexOf(x)})">إضافة</button>
+        <button onclick="openFoodModal(${foodLibrary.indexOf(x)})">تعديل</button>
+        <button onclick="deleteFoodItem(${foodLibrary.indexOf(x)})">حذف</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* =========================
+   Calculator
+========================= */
+function calculateMealText(){
+  let raw=document.getElementById("mealCalcText").value||"";
+  let text=normalizeArabicText(raw);
+  let result=document.getElementById("mealCalcResult");
+  calcItems=[];
+
+  if(!text.trim()){
+    result.innerHTML=`<div class="niEmpty small">اكتب الوجبة أولاً.</div>`;
+    return;
+  }
+
+  let chunks=text.split(/\+| و |،|,/g).map(x=>x.trim()).filter(Boolean);
+
+  chunks.forEach(chunk=>{
+    foodLibrary.forEach(food=>{
+      let hit=foodAliases(food).find(a=>chunk.includes(a));
+      if(!hit)return;
+
+      let amount=food.grams;
+      let nums=chunk.match(/\d+(\.\d)?/g);
+
+      if(nums&&nums.length){
+        let n=+nums[0];
+        if(chunk.includes("صحن")&&n<=1)amount=food.grams*n;
+        else if(n<=20&&food.unit!=="100g"&&food.grams<=100)amount=n*food.grams;
+        else amount=n;
+      }
+
+      let scaled=scaleFood(food,amount);
+      if(!calcItems.some(z=>z.food.name===food.name&&z.amount===amount)){
+        calcItems.push({food,amount,...scaled});
+      }
+    });
+  });
+
+  if(!calcItems.length){
+    result.innerHTML=`<div class="niEmpty small">ما قدرت أتعرف على الأكلات. اكتب اسم أوضح.</div>`;
+    return;
+  }
+
+  let total=nSum(calcItems);
+
+  result.innerHTML=`
+  <div class="niCalcResult">
+    <h4>النتيجة التقريبية</h4>
+    <div class="niKpis">
+      <div><span>السعرات</span><b>${total.cal}</b></div>
+      <div><span>بروتين</span><b>${total.p}g</b></div>
+      <div><span>كارب</span><b>${total.c}g</b></div>
+      <div><span>دهون</span><b>${total.f}g</b></div>
+    </div>
+    ${calcItems.map(x=>`<p>${x.food.name} • ${x.amount}g تقريباً • ${x.cal} سعرة • ${x.food.source}</p>`).join("")}
+    <button class="niMainBtn" onclick="addCalculatedMeal()">إضافة الوجبة لليوم</button>
+  </div>`;
+}
+
+function addCalculatedMeal(){
+  calcItems.forEach((x,i)=>addMealObject(x.food,x.amount,Date.now()+i,x));
+  calcItems=[];
+  nSave();
+  nTab="meals";
+  localStorage.setItem("liyaqtiNutritionActiveTab","meals");
+  renderNutrition();
+}
+
+/* =========================
+   CRUD
+========================= */
+function addMealObject(food,amount,id=Date.now(),scaled=null){
+  let sc=scaled||scaleFood(food,amount);
+  N.push({
+    id,date:nDate(),name:food.name,meal:food.meal,amount:+amount||food.grams,
+    cal:sc.cal,p:sc.p,c:sc.c,f:sc.f,fiber:sc.fiber,sugar:sc.sugar,sodium:sc.sodium,water:0,
+    quality:food.quality||"medium",source:food.source||"تقديري",confidence:food.confidence||"medium",cat:food.cat||"عام"
+  });
+}
+
+function quickAddWithAmount(i){
+  let x=foodLibrary[i];
+  if(!x)return;
+  let amount=prompt(`الكمية؟ الأساس ${x.grams}g / ${x.unit}`,x.grams||100);
+  if(amount===null)return;
+  addMealObject(x,amount);
+  nSave();
+  nTab="meals";
+  localStorage.setItem("liyaqtiNutritionActiveTab","meals");
+  renderNutrition();
+}
+
+function quickAddByName(name){
+  let x=foodLibrary.find(f=>f.name===name)||foodLibrary.find(f=>normalizeArabicText(f.name).includes(normalizeArabicText(name)));
+  if(!x)return;
+  addMealObject(x,x.grams);
+  nSave();
+  nTab="meals";
+  localStorage.setItem("liyaqtiNutritionActiveTab","meals");
+  renderNutrition();
+}
+
+function openMealModal(id=null){
+  editingMealId=id;
+  let x=id?N.find(a=>a.id===id):null;
+  let modal=document.getElementById("mealModal");
+  if(!modal)return;
+
+  modal.innerHTML=`
+  <div class="niModalBg">
+    <div class="niModal">
+      <div class="niModalHead">
+        <h3>${x?"تعديل وجبة":"إضافة وجبة"}</h3>
+        <button onclick="closeMealModal()">×</button>
+      </div>
+      <div class="niForm">
+        ${field("اسم الأكلة","nName",x?.name||"","مثال: دجاج ورز")}
+        <div><label>نوع الوجبة</label><select id="nMeal"><option value="breakfast">الفطور</option><option value="lunch">الغداء</option><option value="dinner">العشاء</option><option value="snack">سناك</option></select></div>
+        ${field("الكمية","nAmount",x?.amount||"","200","number")}
+        ${field("السعرات","nCal",x?.cal||"","500","number")}
+        ${field("البروتين","nP",x?.p||"","35","number")}
+        ${field("الكارب","nC",x?.c||"","50","number")}
+        ${field("الدهون","nF",x?.f||"","15","number")}
+        ${field("الألياف","nFiber",x?.fiber||"","5","number")}
+        ${field("السكر","nSugar",x?.sugar||"","8","number")}
+        ${field("الصوديوم","nSodium",x?.sodium||"","400","number")}
+        ${field("الماء","nWater",x?.water||"","0","number")}
+      </div>
+      <button class="niMainBtn" onclick="saveMealFromModal()">حفظ الوجبة</button>
+    </div>
+  </div>`;
+  if(x)document.getElementById("nMeal").value=x.meal||"breakfast";
+}
+
+function field(label,id,val,ph,type="text"){
+  return `<div><label>${label}</label><input id="${id}" type="${type}" value="${val}" placeholder="${ph}"></div>`;
+}
+
+function closeMealModal(){
+  let modal=document.getElementById("mealModal");
+  if(modal)modal.innerHTML="";
+  editingMealId=null;
+}
+
+function saveMealFromModal(){
+  let item={
+    id:editingMealId||Date.now(),date:nDate(),
+    name:document.getElementById("nName").value||"وجبة",
+    meal:document.getElementById("nMeal").value,
+    amount:+document.getElementById("nAmount").value||0,
+    cal:+document.getElementById("nCal").value||0,
+    p:+document.getElementById("nP").value||0,
+    c:+document.getElementById("nC").value||0,
+    f:+document.getElementById("nF").value||0,
+    fiber:+document.getElementById("nFiber").value||0,
+    sugar:+document.getElementById("nSugar").value||0,
+    sodium:+document.getElementById("nSodium").value||0,
+    water:+document.getElementById("nWater").value||0,
+    quality:"medium",source:"يدوي",confidence:"low",cat:"يدوي"
+  };
+  if(editingMealId)N=N.map(x=>x.id===editingMealId?item:x);
+  else N.push(item);
+  nSave();
+  closeMealModal();
+  nTab="meals";
+  localStorage.setItem("liyaqtiNutritionActiveTab","meals");
+  renderNutrition();
+}
+
+function editNutritionMeal(id){openMealModal(id)}
+function deleteNutritionMeal(id){if(!confirm("حذف الوجبة؟"))return;N=N.filter(x=>x.id!==id);nSave();renderNutrition()}
+function copyMealToToday(id){let x=N.find(a=>a.id===id);if(!x)return;N.push({...x,id:Date.now(),date:nDate()});nSave();renderNutrition()}
+function copyYesterdayMeals(){let y=N.filter(x=>x.date===nYesterday());if(!y.length)return alert("مافي وجبات أمس.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutrition()}
+function copyYesterdayMealType(type){let y=N.filter(x=>x.date===nYesterday()&&x.meal===type);if(!y.length)return alert("مافي وجبات أمس من هذا النوع.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutrition()}
+
+function openFoodModal(i=null){
+  editingFoodIndex=i;
+  let x=i!==null?foodLibrary[i]:null;
+  let modal=document.getElementById("foodModal");
+  if(!modal)return;
+
+  modal.innerHTML=`
+  <div class="niModalBg">
+    <div class="niModal">
+      <div class="niModalHead"><h3>${x?"تعديل طعام":"إضافة طعام"}</h3><button onclick="closeFoodModal()">×</button></div>
+      <div class="niForm">
+        ${field("اسم الطعام","fName",x?.name||"","مثال: رز برياني")}
+        ${field("التصنيف","fCat",x?.cat||"","إماراتي / مطاعم / بروتين")}
+        <div><label>نوع الوجبة</label><select id="fMeal"><option value="breakfast">الفطور</option><option value="lunch">الغداء</option><option value="dinner">العشاء</option><option value="snack">سناك</option></select></div>
+        ${field("الوحدة","fUnit",x?.unit||"","100g")}
+        ${field("الجرامات الأساسية","fGrams",x?.grams||100,"100","number")}
+        ${field("السعرات","fCal",x?.cal||0,"200","number")}
+        ${field("البروتين","fP",x?.p||0,"20","number")}
+        ${field("الكارب","fC",x?.c||0,"30","number")}
+        ${field("الدهون","fF",x?.f||0,"10","number")}
+        ${field("الألياف","fFiber",x?.fiber||0,"3","number")}
+        ${field("السكر","fSugar",x?.sugar||0,"5","number")}
+        ${field("الصوديوم","fSodium",x?.sodium||0,"300","number")}
+        ${field("المصدر","fSource",x?.source||"تقديري","USDA / مطعم / ملصق")}
+        ${field("كلمات البحث","fAliases",x?.aliases||"","رز,عيش,دجاج")}
+        <div><label>الثقة</label><select id="fConfidence"><option value="high">عالية</option><option value="medium">متوسطة</option><option value="low">منخفضة</option></select></div>
+        <div><label>الجودة</label><select id="fQuality"><option value="clean">نظيف</option><option value="medium">متوسط</option><option value="high_sodium">صوديوم عالي</option><option value="high_fat">دهون عالية</option><option value="high_sugar">سكر عالي</option></select></div>
+      </div>
+      <button class="niMainBtn" onclick="saveFoodFromModal()">حفظ الطعام</button>
+    </div>
+  </div>`;
+  if(x){
+    document.getElementById("fMeal").value=x.meal||"lunch";
+    document.getElementById("fQuality").value=x.quality||"medium";
+    document.getElementById("fConfidence").value=x.confidence||"medium";
+  }
+}
+
+function closeFoodModal(){let m=document.getElementById("foodModal");if(m)m.innerHTML="";editingFoodIndex=null}
+
+function saveFoodFromModal(){
+  let item={
+    id:editingFoodIndex!==null?foodLibrary[editingFoodIndex].id:"f"+Date.now(),
+    name:document.getElementById("fName").value||"طعام",
+    cat:document.getElementById("fCat").value||"عام",
+    meal:document.getElementById("fMeal").value,
+    unit:document.getElementById("fUnit").value||"100g",
+    grams:+document.getElementById("fGrams").value||100,
+    cal:+document.getElementById("fCal").value||0,
+    p:+document.getElementById("fP").value||0,
+    c:+document.getElementById("fC").value||0,
+    f:+document.getElementById("fF").value||0,
+    fiber:+document.getElementById("fFiber").value||0,
+    sugar:+document.getElementById("fSugar").value||0,
+    sodium:+document.getElementById("fSodium").value||0,
+    source:document.getElementById("fSource").value||"تقديري",
+    confidence:document.getElementById("fConfidence").value||"medium",
+    quality:document.getElementById("fQuality").value||"medium",
+    aliases:document.getElementById("fAliases").value||""
+  };
+  if(editingFoodIndex!==null)foodLibrary[editingFoodIndex]=item;
+  else foodLibrary.push(item);
+  nSave();
+  closeFoodModal();
+  renderNutrition();
+}
+
+function deleteFoodItem(i){if(!confirm("حذف الطعام من المكتبة؟"))return;foodLibrary.splice(i,1);nSave();renderNutrition()}
+
+function addFavFromToday(){
+  let today=nToday();
+  if(!today.length)return alert("سجل وجبات اليوم أولاً.");
+  let name=prompt("اسم المفضلة","طلب مطعم");
+  if(!name)return;
+  NF.push({id:Date.now(),name,items:today.map(x=>({...x}))});
+  nSave();
+  renderNutrition();
+}
+
+function useFav(id){
+  let f=NF.find(x=>x.id===id);
+  if(!f)return;
+  f.items.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));
+  nSave();
+  nTab="meals";
+  localStorage.setItem("liyaqtiNutritionActiveTab","meals");
+  renderNutrition();
+}
+
+function saveTodayAsTemplate(){
+  let today=nToday();
+  if(!today.length)return alert("سجل وجبات اليوم أولاً.");
+  let name=prompt("اسم القالب","يوم غذائي");
+  if(!name)return;
+  NT.push({id:Date.now(),name,items:today.map(x=>({...x}))});
+  nSave();
+  renderNutrition();
+}
+
+/* =========================
+   Settings
+========================= */
+function settingsInput(label,id,val){
+  return `<div><label>${label}</label><input id="${id}" type="number" value="${val}"></div>`;
+}
+
+function saveNutritionSettings(){
+  NS={
+    goalType:document.getElementById("setGoalType")?.value||NS.goalType||"loss",
+    weight:+document.getElementById("setWeight")?.value||NS.weight||92,
+    height:+document.getElementById("setHeight")?.value||NS.height||162,
+    age:+document.getElementById("setAge")?.value||NS.age||29,
+    activity:document.getElementById("setActivity")?.value||NS.activity||"moderate",
+    calories:+document.getElementById("setCal").value||2200,
+    protein:+document.getElementById("setP").value||140,
+    carbs:+document.getElementById("setC").value||200,
+    fat:+document.getElementById("setF").value||70,
+    fiber:+document.getElementById("setFiber").value||28,
+    sugar:+document.getElementById("setSugar").value||50,
+    sodium:+document.getElementById("setSodium").value||2300,
+    water:+document.getElementById("setWater").value||8
+  };
+  nSave();
+  renderNutrition();
+}
+
+function applyGoalPreset(){
+  NS.goalType=document.getElementById("setGoalType")?.value||"loss";
+  NS.weight=+document.getElementById("setWeight")?.value||NS.weight||92;
+  NS.height=+document.getElementById("setHeight")?.value||NS.height||162;
+  NS.age=+document.getElementById("setAge")?.value||NS.age||29;
+  NS.activity=document.getElementById("setActivity")?.value||NS.activity||"moderate";
+  NS={...NS,...smartTargets()};
+  nSave();
+  renderNutrition();
+}
+
+/* =========================
+   Charts
+========================= */
+function drawOverviewCharts(){
+  let s=nSum();
+  destroyCharts();
+  if(s.cal&&document.getElementById("calChart")){
+    nutritionCharts.cal=new Chart(calChart,{
+      type:"doughnut",
+      data:{labels:["مستهلك","متبقي"],datasets:[{data:[s.cal,Math.max(0,NS.calories-s.cal)],borderWidth:0}]},
+      options:{cutout:"72%",plugins:{legend:{position:"bottom"}}}
+    });
+  }
+}
+
+function drawReportChart(){
+  let dates=[...new Set(N.map(x=>x.date))].sort().slice(-7);
+  if(!dates.length||!document.getElementById("weekChart"))return;
+  destroyCharts();
+  nutritionCharts.week=new Chart(weekChart,{
+    type:"line",
+    data:{
+      labels:dates.map(x=>x.slice(5)),
+      datasets:[
+        {label:"السعرات",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).cal),tension:.35,fill:false},
+        {label:"البروتين",data:dates.map(d=>nSum(N.filter(x=>x.date===d)).p),tension:.35,fill:false}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{position:"bottom"}},scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function destroyCharts(){
+  Object.values(nutritionCharts).forEach(c=>{try{c.destroy()}catch(e){}});
+  nutritionCharts={};
+}
+
+/* =========================
+   Styles
+========================= */
+function injectNutritionStyle(){
+  if(document.getElementById("nutritionStyle"))return;
+  let s=document.createElement("style");
+  s.id="nutritionStyle";
+  s.innerHTML=`
+  .ni{display:grid;gap:12px;font-size:13px;padding-bottom:36px;max-width:100%;overflow:hidden}.ni *{box-sizing:border-box}
+  .niHero{background:linear-gradient(135deg,#064e3b,#0f766e 48%,#14b8a6);border-radius:26px;padding:17px;color:#fff;display:flex;justify-content:space-between;gap:14px;align-items:center;box-shadow:0 18px 40px rgba(15,118,110,.22);overflow:hidden;position:relative}
+  .niHeroText{position:relative;z-index:1}.niEyebrow{font-size:10px;color:#ccfbf1;font-weight:900}.niHero h2{font-size:21px;margin:5px 0 4px;font-weight:950}.niHero p{font-size:12px;line-height:1.6;margin:0;color:#ecfeff;font-weight:650}
+  .niHeroPills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.niHeroPills span{font-size:10.5px;font-weight:900;background:#ffffff1c;border:1px solid #ffffff30;border-radius:999px;padding:6px 9px;color:#f0fdfa}
+  .niScoreBox{min-width:88px;background:#ffffff1c;border:1px solid #ffffff3b;border-radius:21px;padding:11px;text-align:center}.niScoreBox small,.niScoreBox span{display:block;color:#e6fffb;font-size:10px;font-weight:900}.niScoreBox b{display:block;font-size:25px;color:#fff;margin:4px 0;font-weight:950}
+  .niExecDash{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.niExecDash div,.niSummary,.niSearch,.niCard,.niStrategic{background:var(--card);border:1px solid var(--line);border-radius:23px;padding:14px;box-shadow:0 9px 22px #0000000d;overflow:hidden}
+  .niExecDash small,.niCardHead small,.niSearchHead small,.niCalories small,.niMini small,.niKpis span{color:var(--muted);font-size:11px;font-weight:900}.niExecDash b{display:block;color:var(--pri);font-size:14px;margin-top:5px}
+  .niCardHead,.niSearchHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.niCard h3,.niSearchHead h3{font-size:17px;margin:0;font-weight:950;color:var(--txt)}
+  .niRecommend,.niQuality,.niCalcResult{background:linear-gradient(135deg,#eefaf7,#fff);border:1px solid #d8eee9;border-radius:18px;padding:13px;line-height:1.7;font-weight:800;font-size:13px;color:var(--txt)}
+  .niAlerts{display:grid;gap:8px}.niAlerts div{background:#fff7ed;border:1px solid #fed7aa;border-radius:18px;padding:11px}.niAlerts b,.niAlerts span{display:block;color:#9a3412}
+  .niCalories{display:flex;justify-content:space-between;gap:12px}.niCalories b{display:block;font-size:20px;color:var(--pri);margin-top:3px;white-space:nowrap}
+  .niProgress{height:11px;background:#dff3ef;border-radius:999px;margin:12px 0;overflow:hidden}.niProgress i{display:block;height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:999px}
+  .niMini,.niKpis,.niQuick,.niFoodResults{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.niMini div,.niKpis div{background:#f8faf9;border:1px solid var(--line);border-radius:17px;padding:10px 7px;text-align:center;min-width:0}.niMini em{display:block;font-style:normal}.niMini b,.niKpis b{display:block;font-size:14px;color:var(--pri);margin-top:4px}
+  .niSearch input,.niForm input,.niForm select,.niSettings input,.niTextArea,.niSelect,#builderSearch{width:100%;border-radius:16px;border:1px solid var(--line);background:#fafbfc;color:var(--txt);font-weight:800;padding:0 12px;font-size:13px;outline:none;height:46px}.niTextArea{height:110px;padding:12px;resize:none;line-height:1.7}
+  .niTabs{display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:6px;position:sticky;top:0;z-index:20;scrollbar-width:none;box-shadow:0 8px 18px #0000000a;white-space:nowrap}.niTabs::-webkit-scrollbar{display:none}.niTabs button{border:0;background:transparent;color:var(--muted);border-radius:13px;padding:8px 13px;font-weight:950;font-size:12px;white-space:nowrap;flex:0 0 auto}.niTabs button.on{background:var(--pri);color:#fff}
+  .niSubTabs,.niCats{display:flex;gap:7px;overflow-x:auto;margin:10px 0}.niSubTabs button,.niCats button{border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--txt);padding:8px 12px;font-weight:900;white-space:nowrap}.niSubTabs button.on{background:var(--pri);color:#fff}
+  .niGrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.niEmpty{padding:26px 10px;text-align:center;color:var(--muted);font-weight:900;background:#f8faf9;border:1px dashed var(--line);border-radius:18px;font-size:13px}.niEmpty.small{margin-top:10px;padding:14px;font-size:12px}
+  .niGoal{border:1px solid var(--line);border-radius:16px;padding:11px;margin-top:8px;background:#f8faf9}.niGoal div{display:flex;justify-content:space-between;font-weight:950;font-size:13px;align-items:center;gap:8px}.niGoal p{height:9px;background:#dff3ef;border-radius:999px;overflow:hidden;margin:8px 0 0}.niGoal i{display:block;height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6)}
+  .niAction{display:flex;justify-content:space-between;align-items:center}.niQuick button,.niFoodResults button,.niSearchHead button,.niAction button{border:1px solid var(--line);background:var(--card);border-radius:15px;padding:11px;font-weight:950;color:var(--txt);font-size:12px;text-align:start}.niMainBtn{border:0;border-radius:16px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:11px 15px;font-weight:950;font-size:13px;width:100%;margin-top:12px;height:48px}
+  .niMeal{background:var(--card);border:1px solid var(--line);border-radius:19px;overflow:hidden;margin-top:10px}.niMealHead{display:flex;justify-content:space-between;background:#eefaf7;color:#0f766e;padding:12px;font-weight:950;font-size:13px}.niMealItem{display:flex;justify-content:space-between;gap:8px;padding:11px;border-top:1px solid var(--line)}.niMealItem span,.niMealItem em,.niFoodResults span,.niTemplate span{display:block;color:var(--muted);font-size:11px;margin-top:4px;font-style:normal}.niSwap{display:inline-block;margin-top:7px;background:#ecfeff;color:#0f766e;border:1px solid #99f6e4;border-radius:999px;padding:5px 8px;font-weight:900}.niMealActions{text-align:left;white-space:nowrap}.niMealItem button,.niFoodRow button{border:0;border-radius:10px;padding:7px 8px;font-weight:900;margin:2px;font-size:11px;background:#f1f5f9;color:#111827}
+  .niSettings,.niForm{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.niSettings label,.niForm label{display:block;color:var(--muted);font-weight:950;font-size:11px;margin-bottom:5px}.niTemplate{border:1px solid var(--line);border-radius:16px;padding:11px;margin-top:8px}.niTemplate button{margin-top:8px;border:0;border-radius:12px;padding:8px 10px;background:var(--pri);color:#fff;font-weight:950}
+  .niFoodList{display:grid;gap:8px;max-height:430px;overflow:auto}.niFoodList.compact{max-height:360px}.niFoodRow{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:16px;padding:10px;background:#f8faf9}.niFoodRow span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+  .niStrategic{background:linear-gradient(135deg,#064e3b,#0f172a);color:#fff;border:0}.niStrategicHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.niStrategicHead span{font-size:10.5px;color:#bffaf2;font-weight:900}.niStrategicHead h3{font-size:18px;margin:4px 0 0;color:#fff}.niStrategicHead b{font-size:25px;background:#ffffff1f;border:1px solid #ffffff33;border-radius:17px;padding:10px 12px}.niStrategyGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.niStrategyGrid div,.niStrategyList div{background:#ffffff12;border:1px solid #ffffff20;border-radius:16px;padding:11px}.niStrategyGrid small{display:block;color:#bffaf2;font-weight:950;margin-bottom:5px}.niStrategyGrid p{margin:0;color:#f8fafc;line-height:1.7;font-size:12.5px;font-weight:700}.niStrategyList{display:grid;gap:8px;margin-top:10px;color:#fff;font-size:12.5px;font-weight:850}
+  .niFloat{position:fixed;right:20px;bottom:112px;width:50px;height:50px;border:0;border-radius:50%;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font-size:28px;font-weight:950;z-index:9998;box-shadow:0 12px 28px #0004}
+  .niModalBg,.niPanelBg{position:fixed;inset:0;background:#0007;z-index:10000;display:flex;align-items:flex-end}.niModal,.niPanel{background:var(--card);border-radius:26px 26px 0 0;padding:16px;width:100%;max-height:88vh;overflow:auto}.niPanel{height:88vh}.niModalHead,.niPanelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.niModalHead h3,.niPanelHead h3{font-size:20px;margin:0;color:var(--txt)}.niModalHead button,.niPanelHead button{border:0;background:#f1f5f9;border-radius:14px;font-size:25px;width:42px;height:42px}
+  @media(max-width:600px){.niHero{display:grid;grid-template-columns:1fr auto;padding:15px}.niHero h2{font-size:20px}.niHero p{font-size:11.5px}.niScoreBox{min-width:78px}.niExecDash,.niMini,.niKpis,.niQuick,.niFoodResults{grid-template-columns:repeat(2,1fr)}.niAction{display:block}.niAction button{width:100%;margin-top:10px}.niGrid2{grid-template-columns:1fr}.niForm,.niSettings,.niStrategyGrid{grid-template-columns:1fr}.niMealItem,.niFoodRow{display:block}.niMealActions{margin-top:8px;text-align:right}.niPanel{height:92vh;max-height:92vh}}
+  `;
+  document.head.appendChild(s);
+}
+
+/* =========================
+   Router Hook
+========================= */
+const oldPgNutrition=window.pg;
+
+window.pg=function(id,b){
+  if(typeof oldPgNutrition==="function")oldPgNutrition(id,b);
+  if(id==="dash"){
+    setTimeout(()=>{
+      window.scrollTo({top:0,left:0,behavior:"auto"});
+      renderNutrition();
+    },100);
+  }
+};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  foodLibrary=mergeFoodLibraries(foodLibrary,defaultFoodLibrary);
+  nSave();
+
+  setTimeout(()=>{
+    let d=document.getElementById("dash");
+    if(d&&d.classList.contains("on")){
+      window.scrollTo({top:0,left:0,behavior:"auto"});
+      renderNutrition();
+    }
+  },300);
+});
