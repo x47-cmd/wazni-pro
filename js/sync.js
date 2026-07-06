@@ -1,338 +1,253 @@
 /* =========================================================
-   Liyaqti Sync Engine V8.1
+   Liyaqti Sync Engine V8.2 Compat
    Accounts + Cloud Backup + Multi Device
 ========================================================= */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+(function () {
+  const LS_SETTINGS = "wazniS";
+  const LS_WEIGHTS = "wazni";
+  const LS_STEPS = "wazniSteps";
+  const LS_NUTRITION = "liyaqtiNutritionData";
+  const LS_APP = "liyaqtiAppSettings";
+  const LS_SYNC = "liyaqtiSyncMeta";
 
-import {
-  initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager,
-  doc,
-  getDoc,
-  setDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-/* ضع بيانات Firebase من Firebase Console هنا */
-const firebaseConfig = {
-  apiKey: "PUT_YOUR_API_KEY_HERE",
-  authDomain: "PUT_YOUR_AUTH_DOMAIN_HERE",
-  projectId: "PUT_YOUR_PROJECT_ID_HERE",
-  storageBucket: "PUT_YOUR_STORAGE_BUCKET_HERE",
-  messagingSenderId: "PUT_YOUR_SENDER_ID_HERE",
-  appId: "PUT_YOUR_APP_ID_HERE"
-};
-
-const LS_SETTINGS = "wazniS";
-const LS_WEIGHTS = "wazni";
-const LS_STEPS = "wazniSteps";
-const LS_NUTRITION = "liyaqtiNutritionData";
-const LS_APP = "liyaqtiAppSettings";
-const LS_SYNC_META = "liyaqtiSyncMeta";
-
-function readJSON(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch (e) {
-    return fallback;
-  }
-}
-
-function saveJSON(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function show(message) {
-  try {
-    if (typeof window.showToast === "function") window.showToast(message);
-    else alert(message);
-  } catch (e) {}
-}
-
-function nowISO() {
-  return new Date().toISOString();
-}
-
-function getLocalPayload() {
-  return {
-    app: "Liyaqti",
-    version: "Sync Engine V8.1",
-    exportedAt: nowISO(),
-    settings: readJSON(LS_SETTINGS, {}),
-    appSettings: readJSON(LS_APP, {}),
-    weights: readJSON(LS_WEIGHTS, []),
-    steps: readJSON(LS_STEPS, []),
-    nutrition: readJSON(LS_NUTRITION, {}),
-    syncMeta: readJSON(LS_SYNC_META, {})
-  };
-}
-
-function applyCloudPayload(data) {
-  if (!data) return false;
-
-  if (data.settings) {
-    saveJSON(LS_SETTINGS, data.settings);
-    window.S = data.settings;
+  function readJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
   }
 
-  if (data.appSettings) {
-    saveJSON(LS_APP, data.appSettings);
+  function saveJSON(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
   }
 
-  if (Array.isArray(data.weights)) {
-    saveJSON(LS_WEIGHTS, data.weights);
-    window.D = data.weights;
+  function toast(msg) {
+    if (typeof window.showToast === "function") window.showToast(msg);
+    else alert(msg);
   }
 
-  if (Array.isArray(data.steps)) {
-    saveJSON(LS_STEPS, data.steps);
-    window.SD = data.steps;
+  function getAuth() {
+    if (!window.auth) throw new Error("Firebase Auth غير جاهز");
+    return window.auth;
   }
 
-  if (data.nutrition) {
-    saveJSON(LS_NUTRITION, data.nutrition);
+  function getDb() {
+    if (!window.db) throw new Error("Firestore غير جاهز");
+    return window.db;
   }
 
-  saveJSON(LS_SYNC_META, {
-    lastRestore: nowISO(),
-    source: "firebase"
-  });
-
-  return true;
-}
-
-let app = null;
-let auth = null;
-let db = null;
-let currentUser = null;
-let ready = false;
-
-try {
-  app = initializeApp(firebaseConfig);
-
-  auth = getAuth(app);
-  await setPersistence(auth, browserLocalPersistence);
-
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager()
-    })
-  });
-
-  ready = true;
-} catch (e) {
-  console.error("Liyaqti Firebase Init Error:", e);
-  ready = false;
-}
-
-function userDoc(uid) {
-  return doc(db, "users", uid, "liyaqti", "main");
-}
-
-async function ensureReady() {
-  if (!ready || !auth || !db) {
-    throw new Error("Firebase غير مفعّل. تأكد من firebaseConfig داخل sync.js");
+  function now() {
+    return new Date().toISOString();
   }
-}
 
-async function login(email, password) {
-  await ensureReady();
-  if (!email || !password) throw new Error("اكتب البريد وكلمة المرور");
+  function getPayload() {
+    return {
+      app: "Liyaqti",
+      version: "Sync Engine V8.2 Compat",
+      exportedAt: now(),
+      settings: readJSON(LS_SETTINGS, {}),
+      appSettings: readJSON(LS_APP, {}),
+      weights: readJSON(LS_WEIGHTS, []),
+      steps: readJSON(LS_STEPS, []),
+      nutrition: readJSON(LS_NUTRITION, {}),
+      syncMeta: readJSON(LS_SYNC, {})
+    };
+  }
 
-  const result = await signInWithEmailAndPassword(auth, email, password);
-  currentUser = result.user;
+  function applyPayload(data) {
+    if (!data) return;
 
-  const S = readJSON(LS_SETTINGS, {});
-  S.email = email;
-  saveJSON(LS_SETTINGS, S);
-  window.S = S;
+    if (data.settings) {
+      saveJSON(LS_SETTINGS, data.settings);
+      window.S = data.settings;
+    }
 
-  await backupNow(false);
+    if (data.appSettings) saveJSON(LS_APP, data.appSettings);
 
-  show("✅ تم تسجيل الدخول والمزامنة");
-  return currentUser;
-}
+    if (Array.isArray(data.weights)) {
+      saveJSON(LS_WEIGHTS, data.weights);
+      window.D = data.weights;
+    }
 
-async function register(email, password) {
-  await ensureReady();
-  if (!email || !password) throw new Error("اكتب البريد وكلمة المرور");
-  if (password.length < 6) throw new Error("كلمة المرور لازم تكون 6 أحرف أو أكثر");
+    if (Array.isArray(data.steps)) {
+      saveJSON(LS_STEPS, data.steps);
+      window.SD = data.steps;
+    }
 
-  const result = await createUserWithEmailAndPassword(auth, email, password);
-  currentUser = result.user;
+    if (data.nutrition) saveJSON(LS_NUTRITION, data.nutrition);
 
-  const S = readJSON(LS_SETTINGS, {});
-  S.email = email;
-  saveJSON(LS_SETTINGS, S);
-  window.S = S;
+    saveJSON(LS_SYNC, {
+      lastRestore: now(),
+      source: "firebase"
+    });
+  }
 
-  await backupNow(false);
+  function userDoc(uid) {
+    return getDb().collection("users").doc(uid).collection("liyaqti").doc("main");
+  }
 
-  show("✅ تم إنشاء الحساب وحفظ النسخة السحابية");
-  return currentUser;
-}
+  async function register(email, password) {
+    if (!email || !password) throw new Error("اكتب البريد وكلمة المرور");
+    if (password.length < 6) throw new Error("كلمة المرور لازم تكون 6 أحرف أو أكثر");
 
-async function logout() {
-  await ensureReady();
-  await signOut(auth);
-  currentUser = null;
-
-  const appSettings = readJSON(LS_APP, {});
-  appSettings.mockLogin = false;
-  appSettings.cloudLogin = false;
-  saveJSON(LS_APP, appSettings);
-
-  show("تم تسجيل الخروج");
-}
-
-async function backupNow(withToast = true) {
-  await ensureReady();
-
-  const user = auth.currentUser;
-  if (!user) throw new Error("سجّل دخول أولاً");
-
-  const payload = getLocalPayload();
-
-  await setDoc(userDoc(user.uid), {
-    ...payload,
-    uid: user.uid,
-    email: user.email,
-    updatedAt: serverTimestamp(),
-    updatedAtLocal: nowISO()
-  }, { merge: true });
-
-  const appSettings = readJSON(LS_APP, {});
-  appSettings.cloudLogin = true;
-  appSettings.mockLogin = false;
-  appSettings.mockUserEmail = user.email;
-  appSettings.lastSync = new Date().toLocaleString("ar-AE");
-  saveJSON(LS_APP, appSettings);
-
-  saveJSON(LS_SYNC_META, {
-    lastBackup: nowISO(),
-    email: user.email,
-    uid: user.uid
-  });
-
-  if (withToast) show("☁️ تم رفع النسخة للسحابة");
-  return true;
-}
-
-async function restoreCloud() {
-  await ensureReady();
-
-  const user = auth.currentUser;
-  if (!user) throw new Error("سجّل دخول أولاً");
-
-  const snap = await getDoc(userDoc(user.uid));
-  if (!snap.exists()) throw new Error("لا توجد نسخة سحابية لهذا الحساب");
-
-  const data = snap.data();
-  applyCloudPayload(data);
-
-  const appSettings = readJSON(LS_APP, {});
-  appSettings.cloudLogin = true;
-  appSettings.mockLogin = false;
-  appSettings.mockUserEmail = user.email;
-  appSettings.lastSync = new Date().toLocaleString("ar-AE");
-  saveJSON(LS_APP, appSettings);
-
-  show("✅ تم استرجاع النسخة السحابية");
-  setTimeout(() => location.reload(), 800);
-  return true;
-}
-
-async function smartSync() {
-  await ensureReady();
-
-  const user = auth.currentUser;
-  if (!user) throw new Error("سجّل دخول أولاً");
-
-  const snap = await getDoc(userDoc(user.uid));
-
-  if (!snap.exists()) {
+    const result = await getAuth().createUserWithEmailAndPassword(email, password);
+    await afterLogin(result.user);
     await backupNow(false);
-    show("☁️ لا توجد نسخة قديمة، تم إنشاء نسخة جديدة");
-    return "backup-created";
+    toast("✅ تم إنشاء الحساب وحفظ البيانات");
+    return result.user;
   }
 
-  const cloud = snap.data();
-  const local = getLocalPayload();
+  async function login(email, password) {
+    if (!email || !password) throw new Error("اكتب البريد وكلمة المرور");
 
-  const cloudWeightCount = Array.isArray(cloud.weights) ? cloud.weights.length : 0;
-  const localWeightCount = Array.isArray(local.weights) ? local.weights.length : 0;
-  const cloudStepsCount = Array.isArray(cloud.steps) ? cloud.steps.length : 0;
-  const localStepsCount = Array.isArray(local.steps) ? local.steps.length : 0;
+    const result = await getAuth().signInWithEmailAndPassword(email, password);
+    await afterLogin(result.user);
+    await smartSync(false);
+    toast("✅ تم تسجيل الدخول والمزامنة");
+    return result.user;
+  }
 
-  const cloudTotal = cloudWeightCount + cloudStepsCount;
-  const localTotal = localWeightCount + localStepsCount;
+  async function logout() {
+    await getAuth().signOut();
 
-  if (cloudTotal > localTotal) {
-    applyCloudPayload(cloud);
-    show("📥 تم تنزيل النسخة الأحدث من السحابة");
+    const app = readJSON(LS_APP, {});
+    app.cloudLogin = false;
+    app.mockLogin = false;
+    saveJSON(LS_APP, app);
+
+    toast("تم تسجيل الخروج");
+  }
+
+  async function afterLogin(user) {
+    const S = readJSON(LS_SETTINGS, {});
+    S.email = user.email || S.email || "";
+    saveJSON(LS_SETTINGS, S);
+    window.S = S;
+
+    const app = readJSON(LS_APP, {});
+    app.cloudLogin = true;
+    app.mockLogin = false;
+    app.mockUserEmail = user.email || "";
+    app.lastSync = new Date().toLocaleString("ar-AE");
+    saveJSON(LS_APP, app);
+  }
+
+  async function backupNow(showMsg = true) {
+    const user = getAuth().currentUser;
+    if (!user) throw new Error("سجل دخول أولاً");
+
+    const payload = getPayload();
+
+    await userDoc(user.uid).set({
+      ...payload,
+      uid: user.uid,
+      email: user.email,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAtLocal: now()
+    }, { merge: true });
+
+    const app = readJSON(LS_APP, {});
+    app.cloudLogin = true;
+    app.mockLogin = false;
+    app.mockUserEmail = user.email || "";
+    app.lastSync = new Date().toLocaleString("ar-AE");
+    saveJSON(LS_APP, app);
+
+    saveJSON(LS_SYNC, {
+      lastBackup: now(),
+      uid: user.uid,
+      email: user.email
+    });
+
+    if (showMsg) toast("☁️ تم رفع النسخة للسحابة");
+    return true;
+  }
+
+  async function restoreCloud() {
+    const user = getAuth().currentUser;
+    if (!user) throw new Error("سجل دخول أولاً");
+
+    const snap = await userDoc(user.uid).get();
+    if (!snap.exists) throw new Error("لا توجد نسخة سحابية");
+
+    applyPayload(snap.data());
+
+    toast("✅ تم استرجاع النسخة السحابية");
     setTimeout(() => location.reload(), 800);
-    return "restored";
+    return true;
   }
 
-  await backupNow(false);
-  show("☁️ تم رفع بيانات هذا الجهاز للسحابة");
-  return "backed-up";
-}
+  async function smartSync(showMsg = true) {
+    const user = getAuth().currentUser;
+    if (!user) throw new Error("سجل دخول أولاً");
 
-function getUser() {
-  return currentUser || auth?.currentUser || null;
-}
+    const snap = await userDoc(user.uid).get();
 
-function status() {
-  const user = getUser();
+    if (!snap.exists) {
+      await backupNow(false);
+      if (showMsg) toast("☁️ تم إنشاء أول نسخة سحابية");
+      return "created";
+    }
 
-  return {
-    ready,
-    loggedIn: !!user,
-    email: user?.email || "",
-    uid: user?.uid || "",
-    localMeta: readJSON(LS_SYNC_META, {})
-  };
-}
+    const cloud = snap.data();
+    const local = getPayload();
 
-if (auth) {
-  onAuthStateChanged(auth, user => {
-    currentUser = user || null;
+    const cloudCount =
+      (Array.isArray(cloud.weights) ? cloud.weights.length : 0) +
+      (Array.isArray(cloud.steps) ? cloud.steps.length : 0);
 
-    const appSettings = readJSON(LS_APP, {});
-    appSettings.cloudLogin = !!user;
-    appSettings.mockLogin = false;
+    const localCount =
+      (Array.isArray(local.weights) ? local.weights.length : 0) +
+      (Array.isArray(local.steps) ? local.steps.length : 0);
 
-    if (user?.email) appSettings.mockUserEmail = user.email;
+    if (cloudCount > localCount) {
+      applyPayload(cloud);
+      if (showMsg) toast("📥 تم تنزيل بيانات السحابة");
+      setTimeout(() => location.reload(), 800);
+      return "restored";
+    }
 
-    saveJSON(LS_APP, appSettings);
+    await backupNow(false);
+    if (showMsg) toast("☁️ تم رفع بيانات الجهاز للسحابة");
+    return "backed-up";
+  }
+
+  function status() {
+    const user = getAuth().currentUser;
+    return {
+      ready: !!(window.auth && window.db),
+      loggedIn: !!user,
+      email: user ? user.email : "",
+      uid: user ? user.uid : "",
+      localMeta: readJSON(LS_SYNC, {})
+    };
+  }
+
+  getAuth().onAuthStateChanged(function (user) {
+    const app = readJSON(LS_APP, {});
+    app.cloudLogin = !!user;
+    app.mockLogin = false;
+    if (user && user.email) app.mockUserEmail = user.email;
+    saveJSON(LS_APP, app);
 
     window.dispatchEvent(new CustomEvent("liyaqti-auth-change", {
       detail: status()
     }));
   });
-}
 
-window.LiyaqtiSync = {
-  login,
-  register,
-  logout,
-  backupNow,
-  restoreCloud,
-  smartSync,
-  getUser,
-  status,
-  getLocalPayload
-};
+  window.LiyaqtiSync = {
+    register,
+    login,
+    logout,
+    backupNow,
+    restoreCloud,
+    smartSync,
+    status,
+    getLocalPayload: getPayload
+  };
+
+  console.log("✅ LiyaqtiSync V8.2 ready");
+})();
