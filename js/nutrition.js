@@ -780,7 +780,8 @@ function keepActiveTabVisible(){
     let tabs=document.getElementById("niTabs");
     let active=tabs?.querySelector("button.on");
     if(tabs&&active){
-      active.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
+      let left=active.offsetLeft-(tabs.clientWidth/2)+(active.clientWidth/2);
+      tabs.scrollTo({left:left,behavior:"smooth"});
     }
   },80);
 }
@@ -946,15 +947,15 @@ function restaurantsTab(){
   return `
   <section class="niCard">
     <div class="niCardHead">
-      <div><small>Restaurant Decision Engine</small><h3>🍔 محرك قرارات المطاعم</h3></div>
+      <div><small>Restaurant Decision Engine</small><h3>🍔 المطاعم</h3></div>
     </div>
-
-    <div class="niCats">
-      ${cats.map(c=>`<button onclick="restaurantList('${c}')">${c}</button>`).join("")}
-    </div>
-
-    <div id="restaurantBox">
-      <div class="niEmpty small">اختر مطعم لعرض المنيو داخل نفس الكرت بدون تمديد الصفحة.</div>
+    <div class="niFoodResults">
+      ${cats.map(c=>`
+        <button onclick="openRestaurantPanel('${c}')">
+          <b>${c}</b>
+          <span>${foodLibrary.filter(x=>x.cat===c).length} وجبة</span>
+        </button>
+      `).join("")}
     </div>
   </section>
 
@@ -972,6 +973,27 @@ function restaurantsTab(){
       </div>
     `).join(""):`<div class="niEmpty small">لا توجد وجبات محفوظة.</div>`}
   </section>`;
+}
+function openRestaurantPanel(cat){
+  let panel=document.getElementById("builderPanel");
+  if(!panel)return;
+
+  let list=foodLibrary
+    .filter(x=>x.cat===cat)
+    .sort((a,b)=>restaurantMealScore(b)-restaurantMealScore(a));
+
+  panel.innerHTML=`
+  <div class="niPanelBg">
+    <div class="niPanel">
+      <div class="niPanelHead">
+        <div><small>Restaurant Menu</small><h3>🍔 ${cat}</h3></div>
+        <button onclick="closeBuilderPanel()">×</button>
+      </div>
+      <div class="niFoodList compact">
+        ${list.length?foodRows(list):`<div class="niEmpty small">لا توجد وجبات لهذا المطعم.</div>`}
+      </div>
+    </div>
+  </div>`;
 }
 
 function analyticsTabView(){
@@ -1190,22 +1212,42 @@ function libraryTab(){
   <section class="niCard niAction">
     <div>
       <small>Food Database Pro</small>
-      <h3>📚 مكتبة الأطعمة الاحترافية</h3>
-      <p>${foodLibrary.length} صنف غذائي — تصنيف، مصدر، ثقة، وتعديل مباشر.</p>
+      <h3>📚 مكتبة الأطعمة</h3>
+      <p>${foodLibrary.length} صنف غذائي.</p>
     </div>
     <button onclick="openFoodModal()">+ طعام</button>
   </section>
 
   <section class="niCard">
-    <div class="niCats">
-      ${cats.map(c=>`<button onclick="filterFoodCat('${c}')">${c}</button>`).join("")}
-      <button onclick="filterFoodCat('all')">الكل</button>
+    <div class="niFoodResults">
+      ${cats.map(c=>`
+        <button onclick="openLibraryPanel('${c}')">
+          <b>${c}</b>
+          <span>${foodLibrary.filter(x=>x.cat===c).length} صنف</span>
+        </button>
+      `).join("")}
+      <button onclick="openLibraryPanel('all')"><b>الكل</b><span>${foodLibrary.length} صنف</span></button>
     </div>
-  </section>
-
-  <section class="niCard">
-    <div id="foodLibraryList" class="niFoodList">${foodRows(foodLibrary.slice(0,140))}</div>
   </section>`;
+}
+function openLibraryPanel(cat){
+  let panel=document.getElementById("builderPanel");
+  if(!panel)return;
+
+  let list=cat==="all"?foodLibrary:foodLibrary.filter(x=>x.cat===cat);
+
+  panel.innerHTML=`
+  <div class="niPanelBg">
+    <div class="niPanel">
+      <div class="niPanelHead">
+        <div><small>Food Library</small><h3>📚 ${cat==="all"?"كل الأطعمة":cat}</h3></div>
+        <button onclick="closeBuilderPanel()">×</button>
+      </div>
+      <div class="niFoodList compact">
+        ${foodRows(list)}
+      </div>
+    </div>
+  </div>`;
 }
 
 function settingsTab(){
@@ -2514,7 +2556,12 @@ const oldPgNutrition=window.pg;
 
 window.pg=function(id,b){
   if(typeof oldPgNutrition==="function")oldPgNutrition(id,b);
-  if(id==="dash")setTimeout(renderNutrition,100);
+  if(id==="dash"){
+    setTimeout(()=>{
+      window.scrollTo({top:0,left:0,behavior:"auto"});
+      renderNutrition();
+    },100);
+  }
 };
 
 document.addEventListener("DOMContentLoaded",()=>{
@@ -2523,6 +2570,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   setTimeout(()=>{
     let d=document.getElementById("dash");
-    if(d&&d.classList.contains("on"))renderNutrition();
+    if(d&&d.classList.contains("on")){
+      window.scrollTo({top:0,left:0,behavior:"auto"});
+      renderNutrition();
+    }
   },300);
 });
