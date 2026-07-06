@@ -6,6 +6,7 @@
 let liyaqtiReportRange = 30;
 let liyaqtiReportTab = "executive";
 let liyaqtiReportCharts = [];
+let liyaqtiReportTabsScroll = 0;
 
 // ---------- Core Helpers ----------
 function rpNum(v){
@@ -1351,10 +1352,30 @@ function renderAdvancedReports(){
 
   const page = document.getElementById("reports");
   if(!page) return;
+  const oldTabs = page.querySelector(".rp30-tabs");
+if(oldTabs){
+    liyaqtiReportTabsScroll = oldTabs.scrollLeft;
+}
 
   const s = rpStats();
 
   page.innerHTML = `
+  requestAnimationFrame(() => {
+
+    const tabs = page.querySelector(".rp30-tabs");
+    const active = page.querySelector(".rp30-tab.on");
+
+    if(tabs && active){
+
+        active.scrollIntoView({
+            behavior:"instant",
+            inline:"center",
+            block:"nearest"
+        });
+
+    }
+
+});
     <div class="rp30-wrap">
 
       <div class="rp30-hero">
