@@ -1,6 +1,6 @@
 /* =========================================================
-   Liyaqti Home Intelligence Center V12
-   V11 + V12 Premium Compact + Streak + ETA + Quick Actions
+   Liyaqti Home Intelligence Center V13
+   Final Polish + Compact Premium + Streak + ETA + Actions
 ========================================================= */
 
 (function(){
@@ -198,7 +198,7 @@ function trend(c){
 }
 
 function etaText(c){
-  if(!c.eta)return "نحتاج بيانات أكثر";
+  if(!c.eta)return "نحتاج بيانات";
   if(c.eta<1)return "أقل من أسبوع";
   if(c.eta<4)return c.eta.toFixed(1)+" أسبوع";
   return (c.eta/4).toFixed(1)+" شهر";
@@ -214,7 +214,7 @@ function priority(c,st,nut){
 
 function aiCoach(c,st,nut,score){
   if(score>=85)return "أداؤك ممتاز اليوم. حافظ على نفس النظام ولا ترفع الضغط على نفسك.";
-  if(c.diff>0)return "وزنك ارتفع قليلاً. غالباً سوائل أو ملح. اليوم ركز على الماء والمشي ووجبة خفيفة.";
+  if(c.diff>0)return "وزنك ارتفع قليلاً. غالباً سوائل أو ملح. ركز على الماء والمشي.";
   if(st.steps<3000)return "أهم قرار اليوم: ابدأ بمشي 20 دقيقة وارفع خطواتك تدريجياً.";
   if(st.steps<8000)return "أنت قريب من تحسين يومك. حاول تكمل هدف 8000 خطوة.";
   if(nut.eaten>nut.target)return "السعرات تعدت الهدف. خفف الوجبة القادمة وخليها بروتين وخضار.";
@@ -254,181 +254,206 @@ function renderHome(){
 
   root.innerHTML=`
 <style>
-.home12{display:grid;gap:11px;margin-top:12px;padding-bottom:20px}
-.h12Hero{border-radius:24px;padding:15px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 14px 30px rgba(15,118,110,.2)}
-.h12HeroTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.h12Kicker{font-size:10.5px;font-weight:900;opacity:.82}
-.h12Title{font-size:20px;font-weight:950;margin-top:4px;letter-spacing:-.5px}
-.h12Msg{font-size:12.5px;font-weight:750;line-height:1.7;margin-top:8px;opacity:.95}
-.h12Score{width:64px;height:64px;border-radius:20px;background:#ffffff22;border:1px solid #ffffff3b;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
-.h12ScoreNum{font-size:22px;font-weight:950;line-height:1}
-.h12ScoreTxt{font-size:9.5px;font-weight:900;margin-top:4px;opacity:.9}
-.h12Grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.h12Card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:13px;box-shadow:0 8px 20px rgba(0,0,0,.04)}
-.h12Label{font-size:11px;color:var(--muted);font-weight:900}
-.h12Val{font-size:20px;font-weight:950;color:var(--txt);margin-top:4px;letter-spacing:-.4px}
-.h12Green{color:var(--pri)!important}
-.h12Text{font-size:11.4px;color:var(--muted);font-weight:700;line-height:1.55;margin-top:5px}
-.h12Bar{height:8px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:9px}
-.h12Fill{height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px}
-.h12Section{font-size:16px;font-weight:950;margin-bottom:9px}
-.h12MiniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.h12Mini{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:11px;text-align:center}
-body.dark .h12Mini{background:#0b1b18}
-.h12MiniIcon{font-size:18px}
-.h12MiniVal{font-size:16px;font-weight:950;color:var(--pri);margin-top:3px}
-.h12MiniLbl{font-size:10.5px;color:var(--muted);font-weight:800;margin-top:2px}
-.h12Modules{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
-.h12Module{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:11px;min-height:92px}
-body.dark .h12Module{background:#0b1b18}
-.h12Btn{border:0;border-radius:13px;background:#eefaf7;color:#0f766e;font-size:11.5px;font-weight:950;padding:8px 12px;margin-top:8px}
-body.dark .h12Btn{background:#10201d}
-.h12Chart{height:145px}
-.h12Empty{height:135px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:12.5px;font-weight:800;line-height:1.7;background:#f8faf9;border-radius:18px;border:1px dashed var(--line)}
-body.dark .h12Empty{background:#0b1b18}
-.h12Timeline{display:grid;gap:9px}
-.h12Event{display:grid;grid-template-columns:36px 1fr;gap:9px;align-items:center}
-.h12Icon{width:36px;height:36px;border-radius:14px;background:#eefaf7;display:flex;align-items:center;justify-content:center;font-size:17px}
-body.dark .h12Icon{background:#0b1b18}
-.h12EventTitle{font-size:12px;font-weight:950}
-.h12EventTxt{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
-.h12AI{background:linear-gradient(135deg,#eefaf7,#fff);border-color:#cdeee7}
-body.dark .h12AI{background:linear-gradient(135deg,#0b1b18,#10201d)}
-.h12Actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.h12Action{border:0;border-radius:16px;background:#eefaf7;color:#0f766e;font-size:12px;font-weight:950;padding:12px 8px}
-body.dark .h12Action{background:#0b1b18}
+.home13{display:grid;gap:11px;margin-top:12px;padding-bottom:135px}
+.h13Hero{border-radius:22px;padding:13px 14px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 14px 30px rgba(15,118,110,.20);overflow:hidden}
+.h13HeroTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.h13Kicker{font-size:9.5px;font-weight:900;opacity:.78;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h13Title{font-size:18px;font-weight:950;margin-top:3px;line-height:1.25;letter-spacing:-.4px}
+.h13Msg{font-size:11.8px;font-weight:750;line-height:1.55;margin-top:6px;opacity:.95;max-width:230px}
+.h13Score{width:58px;height:58px;border-radius:18px;background:#ffffff22;border:1px solid #ffffff3b;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.h13ScoreNum{font-size:20px;font-weight:950;line-height:1}
+.h13ScoreTxt{font-size:9px;font-weight:900;margin-top:4px;opacity:.9}
+
+.h13Grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.h13Card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;box-shadow:0 8px 20px rgba(0,0,0,.04)}
+.h13Label{font-size:11px;color:var(--muted);font-weight:900}
+.h13Val{font-size:19px;font-weight:950;color:var(--txt);margin-top:4px;letter-spacing:-.4px}
+.h13Green{color:var(--pri)!important}
+.h13Text{font-size:11.2px;color:var(--muted);font-weight:700;line-height:1.55;margin-top:5px}
+.h13Bar{height:8px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:9px}
+.h13Fill{height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px}
+.h13Section{font-size:15.5px;font-weight:950;margin-bottom:9px}
+
+.h13MiniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.h13Mini{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:10px 8px;text-align:center;min-height:92px}
+body.dark .h13Mini{background:#0b1b18}
+.h13MiniIcon{font-size:18px}
+.h13MiniVal{font-size:15px;font-weight:950;color:var(--pri);margin-top:3px;line-height:1.25}
+.h13MiniLbl{font-size:10.5px;color:var(--muted);font-weight:800;margin-top:2px}
+
+.h13Modules{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.h13Module{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:10px;min-height:82px}
+body.dark .h13Module{background:#0b1b18}
+.h13Btn{border:0;border-radius:13px;background:#eefaf7;color:#0f766e;font-size:11.5px;font-weight:950;padding:8px 12px;margin-top:8px}
+body.dark .h13Btn{background:#10201d}
+
+.h13Chart{height:135px}
+.h13Empty{height:135px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:12.5px;font-weight:800;line-height:1.7;background:#f8faf9;border-radius:18px;border:1px dashed var(--line)}
+body.dark .h13Empty{background:#0b1b18}
+
+.h13Timeline{display:grid;gap:9px}
+.h13Event{display:grid;grid-template-columns:36px 1fr;gap:9px;align-items:center}
+.h13Icon{width:36px;height:36px;border-radius:14px;background:#eefaf7;display:flex;align-items:center;justify-content:center;font-size:17px}
+body.dark .h13Icon{background:#0b1b18}
+.h13EventTitle{font-size:12px;font-weight:950}
+.h13EventTxt{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
+
+.h13AI{background:linear-gradient(135deg,#eefaf7,#fff);border-color:#cdeee7;margin-bottom:4px}
+body.dark .h13AI{background:linear-gradient(135deg,#0b1b18,#10201d)}
+
+.h13Actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.h13Action{border:0;border-radius:16px;background:#eefaf7;color:#0f766e;font-size:12px;font-weight:950;padding:12px 8px}
+body.dark .h13Action{background:#0b1b18}
+
+@media(max-width:430px){
+  .h13Msg{max-width:210px}
+  .h13Title{font-size:17px}
+  .h13Kicker{max-width:200px}
+}
 @media(max-width:390px){
-.h12Grid{grid-template-columns:1fr}
-.h12Modules{grid-template-columns:1fr}
-.h12MiniGrid{grid-template-columns:1fr}
-.h12Actions{grid-template-columns:1fr}
+  .h13Grid{grid-template-columns:1fr}
+  .h13Modules{grid-template-columns:1fr}
+  .h13MiniGrid{grid-template-columns:1fr}
+  .h13Actions{grid-template-columns:1fr}
 }
 </style>
 
-<div class="home12">
+<div class="home13">
 
-  <div class="h12Hero">
-    <div class="h12HeroTop">
+  <div class="h13Hero">
+    <div class="h13HeroTop">
       <div>
-        <div class="h12Kicker">Liyaqti Home Intelligence Center V12</div>
-        <div class="h12Title">ملخصك الصحي اليوم</div>
-        <div class="h12Msg">${aiCoach(c,st,nut,score)}</div>
+        <div class="h13Kicker">Liyaqti Home Intelligence Center V13</div>
+        <div class="h13Title">ملخصك الصحي اليوم</div>
+        <div class="h13Msg">${aiCoach(c,st,nut,score)}</div>
       </div>
-      <div class="h12Score">
-        <div class="h12ScoreNum">${score}</div>
-        <div class="h12ScoreTxt">${scoreText(score)}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="h12Grid">
-    <div class="h12Card">
-      <div class="h12Label">⚖️ الوزن الحالي</div>
-      <div class="h12Val">${c.cur.toFixed(1)} كجم</div>
-      <div class="h12Text">الاتجاه: ${trend(c)} • آخر تغير ${c.diff.toFixed(1)} كجم</div>
-    </div>
-
-    <div class="h12Card">
-      <div class="h12Label">🎯 الهدف</div>
-      <div class="h12Val h12Green">${goalName()}</div>
-      <div class="h12Text">إنجاز ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
-      <div class="h12Bar"><div class="h12Fill" style="width:${c.pct}%"></div></div>
-    </div>
-
-    <div class="h12Card">
-      <div class="h12Label">🍎 التغذية</div>
-      <div class="h12Val">${Math.round(nut.eaten)} / ${nut.target}</div>
-      <div class="h12Text">باقي ${Math.round(nut.remain)} سعرة • بروتين ${Math.round(nut.protein)}g</div>
-      <div class="h12Bar"><div class="h12Fill" style="width:${nut.pct}%"></div></div>
-    </div>
-
-    <div class="h12Card">
-      <div class="h12Label">👣 النشاط</div>
-      <div class="h12Val">${fmt(st.steps)}</div>
-      <div class="h12Text">${st.km.toFixed(1)} كم • ${st.burn} سعرة • ${st.pct.toFixed(0)}%</div>
-      <div class="h12Bar"><div class="h12Fill" style="width:${st.pct}%"></div></div>
-    </div>
-  </div>
-
-  <div class="h12Card">
-    <div class="h12Section">مؤشرات ذكية</div>
-    <div class="h12MiniGrid">
-      <div class="h12Mini"><div class="h12MiniIcon">⏳</div><div class="h12MiniVal">${etaText(c)}</div><div class="h12MiniLbl">توقع الوصول</div></div>
-      <div class="h12Mini"><div class="h12MiniIcon">🔥</div><div class="h12MiniVal">${sDays}</div><div class="h12MiniLbl">Streak</div></div>
-      <div class="h12Mini"><div class="h12MiniIcon">🏆</div><div class="h12MiniVal">${lastAchievement()}</div><div class="h12MiniLbl">الإنجاز</div></div>
-    </div>
-  </div>
-
-  <div class="h12Card h12AI">
-    <div class="h12Section">${p.icon} ${p.title}</div>
-    <div class="h12Text" style="font-size:12.8px">${p.txt}</div>
-  </div>
-
-  <div class="h12Card">
-    <div class="h12Section">إجراءات سريعة</div>
-    <div class="h12Actions">
-      <button class="h12Action" onclick="homeGoPage('goalPage',1)">⚖️ سجل وزن</button>
-      <button class="h12Action" onclick="homeGoPage('dash',2)">🍎 سجل وجبة</button>
-      <button class="h12Action" onclick="homeGoPage('stepsPage',3)">👣 سجل خطوات</button>
-    </div>
-  </div>
-
-  <div class="h12Card">
-    <div class="h12Section">مراكز لياقتي</div>
-    <div class="h12Modules">
-      <div class="h12Module">
-        <div class="h12Label">🎯 هدفي</div>
-        <div class="h12Text">${goalName()} • ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
-        <button class="h12Btn" onclick="homeGoPage('goalPage',1)">فتح</button>
-      </div>
-      <div class="h12Module">
-        <div class="h12Label">🍎 التغذية</div>
-        <div class="h12Text">أكلت ${Math.round(nut.eaten)} وباقي ${Math.round(nut.remain)} سعرة</div>
-        <button class="h12Btn" onclick="homeGoPage('dash',2)">فتح</button>
-      </div>
-      <div class="h12Module">
-        <div class="h12Label">👣 خطواتي</div>
-        <div class="h12Text">${fmt(st.steps)} خطوة من هدف ${fmt(st.goal)}</div>
-        <button class="h12Btn" onclick="homeGoPage('stepsPage',3)">فتح</button>
-      </div>
-      <div class="h12Module">
-        <div class="h12Label">📊 التحليل</div>
-        <div class="h12Text">اتجاه الوزن: ${trend(c)} • سجلات ${c.records}</div>
-        <button class="h12Btn" onclick="homeGoPage('reports',4)">فتح</button>
+      <div class="h13Score">
+        <div class="h13ScoreNum">${score}</div>
+        <div class="h13ScoreTxt">${scoreText(score)}</div>
       </div>
     </div>
   </div>
 
-  <div class="h12Card">
-    <div class="h12Section">📈 شارت مختصر للوزن</div>
+  <div class="h13Grid">
+    <div class="h13Card">
+      <div class="h13Label">⚖️ الوزن الحالي</div>
+      <div class="h13Val">${c.cur.toFixed(1)} كجم</div>
+      <div class="h13Text">الاتجاه: ${trend(c)} • آخر تغير ${c.diff.toFixed(1)} كجم</div>
+    </div>
+
+    <div class="h13Card">
+      <div class="h13Label">🎯 الهدف</div>
+      <div class="h13Val h13Green">${goalName()}</div>
+      <div class="h13Text">إنجاز ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
+      <div class="h13Bar"><div class="h13Fill" style="width:${c.pct}%"></div></div>
+    </div>
+
+    <div class="h13Card">
+      <div class="h13Label">🍎 التغذية</div>
+      <div class="h13Val">${Math.round(nut.eaten)} / ${nut.target}</div>
+      <div class="h13Text">باقي ${Math.round(nut.remain)} سعرة • بروتين ${Math.round(nut.protein)}g</div>
+      <div class="h13Bar"><div class="h13Fill" style="width:${nut.pct}%"></div></div>
+    </div>
+
+    <div class="h13Card">
+      <div class="h13Label">👣 النشاط</div>
+      <div class="h13Val">${fmt(st.steps)}</div>
+      <div class="h13Text">${st.km.toFixed(1)} كم • ${st.burn} سعرة • ${st.pct.toFixed(0)}%</div>
+      <div class="h13Bar"><div class="h13Fill" style="width:${st.pct}%"></div></div>
+    </div>
+  </div>
+
+  <div class="h13Card">
+    <div class="h13Section">مؤشرات ذكية</div>
+    <div class="h13MiniGrid">
+      <div class="h13Mini">
+        <div class="h13MiniIcon">⏳</div>
+        <div class="h13MiniVal">${etaText(c)}</div>
+        <div class="h13MiniLbl">توقع الوصول</div>
+      </div>
+      <div class="h13Mini">
+        <div class="h13MiniIcon">🔥</div>
+        <div class="h13MiniVal">${sDays}</div>
+        <div class="h13MiniLbl">Streak</div>
+      </div>
+      <div class="h13Mini">
+        <div class="h13MiniIcon">🏆</div>
+        <div class="h13MiniVal">${lastAchievement()}</div>
+        <div class="h13MiniLbl">الإنجاز</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="h13Card h13AI">
+    <div class="h13Section">${p.icon} ${p.title}</div>
+    <div class="h13Text" style="font-size:12.8px">${p.txt}</div>
+  </div>
+
+  <div class="h13Card">
+    <div class="h13Section">إجراءات سريعة</div>
+    <div class="h13Actions">
+      <button class="h13Action" onclick="homeGoPage('goalPage',1)">⚖️ سجل وزن</button>
+      <button class="h13Action" onclick="homeGoPage('dash',2)">🍎 سجل وجبة</button>
+      <button class="h13Action" onclick="homeGoPage('stepsPage',3)">👣 سجل خطوات</button>
+    </div>
+  </div>
+
+  <div class="h13Card">
+    <div class="h13Section">مراكز لياقتي</div>
+    <div class="h13Modules">
+      <div class="h13Module">
+        <div class="h13Label">🎯 هدفي</div>
+        <div class="h13Text">${goalName()} • ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
+        <button class="h13Btn" onclick="homeGoPage('goalPage',1)">فتح</button>
+      </div>
+      <div class="h13Module">
+        <div class="h13Label">🍎 التغذية</div>
+        <div class="h13Text">أكلت ${Math.round(nut.eaten)} وباقي ${Math.round(nut.remain)} سعرة</div>
+        <button class="h13Btn" onclick="homeGoPage('dash',2)">فتح</button>
+      </div>
+      <div class="h13Module">
+        <div class="h13Label">👣 خطواتي</div>
+        <div class="h13Text">${fmt(st.steps)} خطوة من هدف ${fmt(st.goal)}</div>
+        <button class="h13Btn" onclick="homeGoPage('stepsPage',3)">فتح</button>
+      </div>
+      <div class="h13Module">
+        <div class="h13Label">📊 التحليل</div>
+        <div class="h13Text">اتجاه الوزن: ${trend(c)} • سجلات ${c.records}</div>
+        <button class="h13Btn" onclick="homeGoPage('reports',4)">فتح</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="h13Card">
+    <div class="h13Section">📈 شارت مختصر للوزن</div>
     ${
       chartHasData
-      ? `<div class="h12Chart"><canvas id="homeChartV12"></canvas></div>`
-      : `<div class="h12Empty">لا توجد بيانات كافية للرسم.<br>سجل وزنك يومين أو أكثر حتى يظهر الشارت.</div>`
+      ? `<div class="h13Chart"><canvas id="homeChartV13"></canvas></div>`
+      : `<div class="h13Empty">لا توجد بيانات كافية للرسم.<br>سجل وزنك يومين أو أكثر حتى يظهر الشارت.</div>`
     }
   </div>
 
-  <div class="h12Card">
-    <div class="h12Section">آخر الأحداث</div>
-    <div class="h12Timeline">
-      <div class="h12Event">
-        <div class="h12Icon">⚖️</div>
-        <div><div class="h12EventTitle">آخر وزن</div><div class="h12EventTxt">${c.cur.toFixed(1)} كجم • ${trend(c)}</div></div>
+  <div class="h13Card">
+    <div class="h13Section">آخر الأحداث</div>
+    <div class="h13Timeline">
+      <div class="h13Event">
+        <div class="h13Icon">⚖️</div>
+        <div><div class="h13EventTitle">آخر وزن</div><div class="h13EventTxt">${c.cur.toFixed(1)} كجم • ${trend(c)}</div></div>
       </div>
-      <div class="h12Event">
-        <div class="h12Icon">🍎</div>
-        <div><div class="h12EventTitle">التغذية</div><div class="h12EventTxt">${Math.round(nut.eaten)} / ${nut.target} سعرة • بروتين ${Math.round(nut.protein)}g</div></div>
+      <div class="h13Event">
+        <div class="h13Icon">🍎</div>
+        <div><div class="h13EventTitle">التغذية</div><div class="h13EventTxt">${Math.round(nut.eaten)} / ${nut.target} سعرة • بروتين ${Math.round(nut.protein)}g</div></div>
       </div>
-      <div class="h12Event">
-        <div class="h12Icon">👣</div>
-        <div><div class="h12EventTitle">خطوات اليوم</div><div class="h12EventTxt">${fmt(st.steps)} خطوة • ${st.km.toFixed(1)} كم</div></div>
+      <div class="h13Event">
+        <div class="h13Icon">👣</div>
+        <div><div class="h13EventTitle">خطوات اليوم</div><div class="h13EventTxt">${fmt(st.steps)} خطوة • ${st.km.toFixed(1)} كم</div></div>
       </div>
     </div>
   </div>
 
-  <div class="h12Card h12AI">
-    <div class="h12Section">💡 قرار اليوم</div>
-    <div class="h12Text" style="font-size:12.8px">${aiCoach(c,st,nut,score)}</div>
+  <div class="h13Card h13AI">
+    <div class="h13Section">💡 قرار اليوم</div>
+    <div class="h13Text" style="font-size:12.8px">${aiCoach(c,st,nut,score)}</div>
   </div>
 
 </div>
@@ -439,14 +464,14 @@ body.dark .h12Action{background:#0b1b18}
 
 function drawChart(ok){
   if(!ok)return;
-  let canvas=q("homeChartV12");
+  let canvas=q("homeChartV13");
   if(!canvas || typeof Chart==="undefined")return;
 
-  if(window.homeChartV12Obj)window.homeChartV12Obj.destroy();
+  if(window.homeChartV13Obj)window.homeChartV13Obj.destroy();
 
   let data=getD().slice(-10);
 
-  window.homeChartV12Obj=new Chart(canvas,{
+  window.homeChartV13Obj=new Chart(canvas,{
     type:"line",
     data:{
       labels:data.map(x=>(x.d||"").slice(5)),
