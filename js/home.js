@@ -403,10 +403,10 @@ body.dark .h13Action{background:#0b1b18}
     <div class="h13Modules">
       <div class="h13Module">
         <div class="h13Label">🎯 هدفي</div>
-       <div class="h13Text">
-🎯 ${goalName()} (${c.goal.toFixed(1)} كجم)
+      <div class="h13Text">
+🎯 الهدف: ${c.goal.toFixed(1)} كجم
 <br>
-📉 باقي ${c.remain.toFixed(1)} كجم • ${c.pct.toFixed(0)}%
+📉 المتبقي: ${c.remain.toFixed(1)} كجم • الإنجاز: ${c.pct.toFixed(0)}%
 </div>
         <button class="h13Btn" onclick="homeGoPage('goalPage',1)">فتح</button>
       </div>
