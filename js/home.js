@@ -1,6 +1,7 @@
 /* =========================================================
-   Liyaqti Home Intelligence Center V13
+   Liyaqti Home Intelligence Center V14
    Final Polish + Compact Premium + Streak + ETA + Actions
+   + Quick Weight Entry for Active Weight Loss Goal
 ========================================================= */
 
 (function(){
@@ -31,6 +32,11 @@ function goalName(){
     custom:"هدف مخصص"
   };
   return names[s.goalType]||"خسارة الوزن";
+}
+
+function isWeightLossGoal(){
+  let s=getS();
+  return !s.goalType || s.goalType==="loss";
 }
 
 function stepsToday(){
@@ -233,6 +239,57 @@ function lastAchievement(){
   return "ابدأ أول إنجاز";
 }
 
+function saveWeightStorage(arr){
+  try{D=arr}catch(e){}
+  try{localStorage.setItem("wazniData",JSON.stringify(arr))}catch(e){}
+  try{localStorage.setItem("wazniD",JSON.stringify(arr))}catch(e){}
+  try{localStorage.setItem("D",JSON.stringify(arr))}catch(e){}
+}
+
+function homeSaveWeight(){
+  let input=q("homeWeightInputV14");
+  let msg=q("homeWeightMsgV14");
+  let w=num(input&&input.value);
+
+  if(!w || w<30 || w>250){
+    if(msg)msg.innerHTML="⚠️ أدخل وزن صحيح بين 30 و250 كجم";
+    return;
+  }
+
+  let t=todayISO();
+  let arr=getD().slice();
+
+  let found=false;
+  arr=arr.map(x=>{
+    if((x.d||"").slice(0,10)===t){
+      found=true;
+      return Object.assign({},x,{d:t,w:w});
+    }
+    return x;
+  });
+
+  if(!found){
+    arr.push({d:t,w:w});
+  }
+
+  arr.sort((a,b)=>new Date(a.d)-new Date(b.d));
+  saveWeightStorage(arr);
+
+  if(msg)msg.innerHTML=found?"✅ تم تحديث وزن اليوم":"✅ تم تسجيل وزن اليوم";
+
+  try{window.dispatchEvent(new Event("liyaqtiWeightChanged"))}catch(e){}
+  try{window.dispatchEvent(new Event("liyaqtiGoalChanged"))}catch(e){}
+
+  try{
+    if(typeof render==="function")render();
+    else renderHome();
+  }catch(e){
+    renderHome();
+  }
+}
+
+window.homeSaveWeight=homeSaveWeight;
+
 function pageGo(id,i){
   let tab=document.querySelectorAll(".tab")[i];
   if(typeof pg==="function")pg(id,tab);
@@ -244,13 +301,15 @@ function renderHome(){
   if(!root)return;
 
   let c=core();
-let freshS = {};
-try{
-  freshS = JSON.parse(localStorage.getItem("wazniS")) || {};
-}catch(e){}
 
-S = Object.assign(S || {}, freshS);
-c = core();
+  let freshS = {};
+  try{
+    freshS = JSON.parse(localStorage.getItem("wazniS")) || {};
+  }catch(e){}
+
+  try{S = Object.assign(S || {}, freshS)}catch(e){}
+
+  c = core();
   let st=stepsCore();
   let nut=nutritionToday();
   let score=healthScore(c,st,nut);
@@ -258,6 +317,7 @@ c = core();
   let p=priority(c,st,nut);
   let sDays=streak();
   let chartHasData=d.length>=2;
+  let showWeightEntry=isWeightLossGoal();
 
   root.innerHTML=`
 <style>
@@ -280,6 +340,13 @@ c = core();
 .h13Bar{height:8px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:9px}
 .h13Fill{height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px}
 .h13Section{font-size:15.5px;font-weight:950;margin-bottom:9px}
+
+.h13WeightBox{background:linear-gradient(135deg,#ecfdf5,#ffffff);border-color:#bbf7d0}
+body.dark .h13WeightBox{background:linear-gradient(135deg,#0b1b18,#10201d)}
+.h13WeightRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px}
+.h13WeightInput{width:100%;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:15px;padding:12px;font-size:15px;font-weight:900;outline:none}
+.h13SaveBtn{border:0;border-radius:15px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font-size:12px;font-weight:950;padding:13px 15px;white-space:nowrap}
+.h13WeightMsg{font-size:11.5px;font-weight:900;color:var(--pri);margin-top:8px;min-height:17px}
 
 .h13MiniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .h13Mini{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:10px 8px;text-align:center;min-height:92px}
@@ -322,6 +389,7 @@ body.dark .h13Action{background:#0b1b18}
   .h13Modules{grid-template-columns:1fr}
   .h13MiniGrid{grid-template-columns:1fr}
   .h13Actions{grid-template-columns:1fr}
+  .h13WeightRow{grid-template-columns:1fr}
 }
 </style>
 
@@ -330,7 +398,7 @@ body.dark .h13Action{background:#0b1b18}
   <div class="h13Hero">
     <div class="h13HeroTop">
       <div>
-        <div class="h13Kicker">Liyaqti Home Intelligence Center V13</div>
+        <div class="h13Kicker">Liyaqti Home Intelligence Center V14</div>
         <div class="h13Title">ملخصك الصحي اليوم</div>
         <div class="h13Msg">${aiCoach(c,st,nut,score)}</div>
       </div>
@@ -369,6 +437,22 @@ body.dark .h13Action{background:#0b1b18}
       <div class="h13Bar"><div class="h13Fill" style="width:${st.pct}%"></div></div>
     </div>
   </div>
+
+  ${
+    showWeightEntry
+    ? `
+  <div class="h13Card h13WeightBox">
+    <div class="h13Section">⚖️ تسجيل وزن اليوم</div>
+    <div class="h13Text">هدفك النشط هو خسارة الوزن، تقدر تسجل وزن اليوم مباشرة من الرئيسية.</div>
+    <div class="h13WeightRow">
+      <input id="homeWeightInputV14" class="h13WeightInput" type="number" step="0.1" inputmode="decimal" placeholder="مثال: ${c.cur.toFixed(1)}" value="">
+      <button class="h13SaveBtn" onclick="homeSaveWeight()">حفظ الوزن</button>
+    </div>
+    <div id="homeWeightMsgV14" class="h13WeightMsg"></div>
+  </div>
+    `
+    : ``
+  }
 
   <div class="h13Card">
     <div class="h13Section">مؤشرات ذكية</div>
@@ -410,11 +494,11 @@ body.dark .h13Action{background:#0b1b18}
     <div class="h13Modules">
       <div class="h13Module">
         <div class="h13Label">🎯 هدفي</div>
-<div class="h13Text">
-🎯 الهدف: ${c.goal.toFixed(1)} كجم
-<br>
-📉 المتبقي: ${c.remain.toFixed(1)} كجم • الإنجاز: ${c.pct.toFixed(0)}%
-</div>
+        <div class="h13Text">
+          🎯 الهدف: ${c.goal.toFixed(1)} كجم
+          <br>
+          📉 المتبقي: ${c.remain.toFixed(1)} كجم • الإنجاز: ${c.pct.toFixed(0)}%
+        </div>
         <button class="h13Btn" onclick="homeGoPage('goalPage',1)">فتح</button>
       </div>
       <div class="h13Module">
@@ -505,18 +589,16 @@ function drawChart(ok){
 window.renderHomeDashboard=renderHome;
 
 window.addEventListener("liyaqtiGoalChanged", function(){
-  if(typeof renderHome==="function"){
-    renderHome();
-  }
+  renderHome();
+});
+
+window.addEventListener("liyaqtiWeightChanged", function(){
+  renderHome();
 });
 
 window.addEventListener("storage", function(){
-  if(typeof renderHome==="function"){
-    renderHome();
-  }
+  renderHome();
 });
-
-window.renderHomeDashboard=renderHome;
 
 let oldRender=null;
 try{oldRender=render}catch(e){}
@@ -530,27 +612,6 @@ if(typeof oldRender==="function"){
     renderHome();
   };
 }
-
-window.addEventListener("storage",function(){
-  try{
-    S = JSON.parse(localStorage.getItem("wazniS") || "{}");
-  }catch(e){}
-  renderHome();
-});
-
-setInterval(function(){
-  try{
-    S = JSON.parse(localStorage.getItem("wazniS") || "{}");
-  }catch(e){}
-  renderHome();
-},1000);
-
-window.addEventListener("liyaqtiGoalChanged",function(){
-  try{
-    S = JSON.parse(localStorage.getItem("wazniS") || "{}");
-  }catch(e){}
-  renderHome();
-});
 
 setTimeout(renderHome,200);
 
