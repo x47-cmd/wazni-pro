@@ -509,15 +509,34 @@ window.addEventListener("storage", function(){
   }
 });
 
+window.renderHomeDashboard=renderHome;
+
 let oldRender=null;
 try{oldRender=render}catch(e){}
 
 if(typeof oldRender==="function"){
   window.render=function(){
+    try{
+      S = JSON.parse(localStorage.getItem("wazniS") || "{}");
+    }catch(e){}
     oldRender();
     renderHome();
   };
 }
+
+window.addEventListener("storage",function(){
+  try{
+    S = JSON.parse(localStorage.getItem("wazniS") || "{}");
+  }catch(e){}
+  renderHome();
+});
+
+setInterval(function(){
+  try{
+    S = JSON.parse(localStorage.getItem("wazniS") || "{}");
+  }catch(e){}
+  renderHome();
+},1000);
 
 setTimeout(renderHome,200);
 
