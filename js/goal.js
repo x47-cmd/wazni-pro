@@ -521,40 +521,41 @@ s.textContent=`
 .g90{display:grid;gap:16px;padding-bottom:20px}
 .g90Hero{
   color:white;
-  border-radius:22px;
-  padding:14px 16px;
+  border-radius:20px;
+  padding:12px 14px;
   background:linear-gradient(135deg,var(--g90c),#14b8a6);
   box-shadow:0 14px 30px rgba(15,118,110,.20);
   overflow:hidden
 }
 .g90Hero h2{
   margin:0;
-  font-size:18px;
-  font-weight:950;
-  line-height:1.25;
-  letter-spacing:-.4px
+  font-size:16px;
+  font-weight:900;
+  line-height:1.2;
 }
+
 .g90Hero p{
-  margin:7px 0 0;
-  line-height:1.55;
-  font-size:12px;
-  font-weight:800;
-  color:#effffb;
-  opacity:.95
+  margin:4px 0 0;
+  font-size:11px;
+  line-height:1.45;
+  font-weight:700;
+  color:#ecfffb;
 }
+
 .g90Chips{
   display:flex;
-  gap:7px;
+  gap:6px;
   flex-wrap:wrap;
-  margin-top:10px
+  margin-top:8px;
 }
+
 .g90Chip{
-  background:rgba(255,255,255,.18);
-  border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.22);
   border-radius:999px;
-  padding:7px 10px;
-  font-size:11px;
-  font-weight:950
+  padding:5px 9px;
+  font-size:10px;
+  font-weight:800;
 }
 .g90Card{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.07)}
 .g90Grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
