@@ -207,43 +207,45 @@ function lastAchievement(){
 ========================= */
 
 function homeSaveWeight(){
-  let input=q("homeWeightInputV15");
-  let msg=q("homeQuickMsgV15");
-  let w=num(input&&input.value);
+  const input=document.getElementById("homeWeightInputV15");
+  const msg=document.getElementById("homeQuickMsgV15");
+  const w=Number(input?.value);
 
   if(!w || w<30 || w>250){
-    if(msg)msg.innerHTML="⚠️ أدخل وزن صحيح بين 30 و250 كجم";
+    if(msg)msg.innerHTML="⚠️ أدخل وزن صحيح";
     return;
   }
 
-  let t=todayISO();
-  let arr=getD().slice();
-  let found=false;
+  const d=todayISO();
+  let arr=[];
 
-  arr=arr.map(x=>{
-    let d=String(x.d||x.date||x.dt||"").slice(0,10);
-    if(d===t){
-      found=true;
-      return Object.assign({},x,{d:t,date:t,dt:t,w:w,weight:w});
-    }
-    return x;
-  });
+  try{arr=JSON.parse(localStorage.getItem("wazni")||"[]")}catch(e){arr=[]}
+  if(!Array.isArray(arr))arr=[];
 
-  if(!found)arr.push({d:t,date:t,dt:t,w:w,weight:w});
-  arr.sort((a,b)=>String(a.d||a.date||a.dt).localeCompare(String(b.d||b.date||b.dt)));
+  arr=arr.filter(x=>String(x.d||x.date||x.dt||"").slice(0,10)!==d);
+  arr.push({d:d,date:d,dt:d,w:w,weight:w});
+  arr.sort((a,b)=>String(a.d||a.date).localeCompare(String(b.d||b.date)));
 
-  try{window.D=arr}catch(e){}
+  window.D=arr;
 
   localStorage.setItem("wazni",JSON.stringify(arr));
   localStorage.setItem("wazniData",JSON.stringify(arr));
   localStorage.setItem("wazniD",JSON.stringify(arr));
   localStorage.setItem("D",JSON.stringify(arr));
 
-  if(input)input.value="";
-  if(msg)msg.innerHTML="✅ تم حفظ الوزن وتحديث كل الصفحات";
+  input.value="";
+  if(msg)msg.innerHTML="✅ تم حفظ الوزن";
 
-  refreshEverywhere("weight");
+  try{renderHome()}catch(e){}
+  try{renderGoalV90()}catch(e){}
+  try{render()}catch(e){}
+
+  window.dispatchEvent(new Event("liyaqtiWeightChanged"));
+  window.dispatchEvent(new Event("liyaqtiGoalChanged"));
+  window.dispatchEvent(new Event("liyaqti:dataUpdated"));
 }
+
+window.homeSaveWeight=homeSaveWeight;
 
 function homeSaveSteps(){
   let input=q("homeStepsInputV15");
