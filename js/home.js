@@ -538,6 +538,13 @@ setInterval(function(){
   renderHome();
 },1000);
 
+window.addEventListener("liyaqtiGoalChanged",function(){
+  try{
+    S = JSON.parse(localStorage.getItem("wazniS") || "{}");
+  }catch(e){}
+  renderHome();
+});
+
 setTimeout(renderHome,200);
 
 })();
