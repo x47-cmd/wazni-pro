@@ -534,8 +534,22 @@ window.goalV90Type=function(t){
   saveCurrentProfile();
   S.goalType=t;
   syncFromProfile(t);
+
+  localStorage.setItem("wazniS", JSON.stringify(S));
+
+  window.dispatchEvent(new Event("liyaqtiGoalChanged"));
+  window.dispatchEvent(new Event("storage"));
+
   addHistory("تم اختيار هدف: "+META[t].name);
   renderGoalV90();
+
+  if(typeof renderHome==="function"){
+    setTimeout(renderHome,80);
+  }
+
+  if(typeof render==="function"){
+    try{render()}catch(e){}
+  }
 };
 
 window.goalV90ToggleDay=function(k){
