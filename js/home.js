@@ -248,27 +248,29 @@ const msg=document.getElementById("homeQuickMsgV16");
 window.homeSaveWeight=homeSaveWeight;
 
 function homeSaveSteps(){
-  let input=q("homeStepsInputV16");
-let msg=q("homeQuickMsgV16");
-  let steps=Math.round(num(input&&input.value));
+  const input=document.getElementById("homeStepsInputV16");
+  const msg=document.getElementById("homeQuickMsgV16");
+  const steps=Math.round(Number(input?.value));
 
   if(!steps || steps<1 || steps>100000){
     if(msg)msg.innerHTML="⚠️ أدخل عدد خطوات صحيح";
     return;
   }
 
-  let t=todayISO();
+  const d=todayISO();
 
   let sd=[];
   try{sd=JSON.parse(localStorage.getItem("wazniSteps")||"[]")}catch(e){sd=[]}
+  if(!Array.isArray(sd))sd=[];
 
-  sd=sd.filter(x=>String(x.d||x.date||"").slice(0,10)!==t);
-  sd.push({d:t,date:t,steps:steps});
+  sd=sd.filter(x=>String(x.d||x.date||x.day||"").slice(0,10)!==d);
+  sd.push({d:d,date:d,day:d,steps:steps,st:steps});
   sd.sort((a,b)=>String(a.d||a.date).localeCompare(String(b.d||b.date)));
 
-  try{window.SD=sd}catch(e){}
+  window.SD=sd;
 
   localStorage.setItem("wazniSteps",JSON.stringify(sd));
+  localStorage.setItem("wazniStepsData",JSON.stringify(sd));
   localStorage.setItem("liyaqtiStepsData",JSON.stringify(sd));
   localStorage.setItem("SD",JSON.stringify(sd));
 
@@ -276,27 +278,45 @@ let msg=q("homeQuickMsgV16");
   let found=false;
 
   arr=arr.map(x=>{
-    let d=String(x.d||x.date||x.dt||"").slice(0,10);
-    if(d===t){
+    let xd=String(x.d||x.date||x.dt||x.day||"").slice(0,10);
+    if(xd===d){
       found=true;
-      return Object.assign({},x,{d:t,date:t,dt:t,st:steps,steps:steps});
+      return Object.assign({},x,{
+        d:d,date:d,dt:d,day:d,
+        st:steps,steps:steps,s:steps
+      });
     }
     return x;
   });
 
-  if(!found)arr.push({d:t,date:t,dt:t,st:steps,steps:steps});
+  if(!found){
+    arr.push({
+      d:d,date:d,dt:d,day:d,
+      st:steps,steps:steps,s:steps
+    });
+  }
 
-  try{window.D=arr}catch(e){}
+  arr.sort((a,b)=>String(a.d||a.date).localeCompare(String(b.d||b.date)));
+  window.D=arr;
 
   localStorage.setItem("wazni",JSON.stringify(arr));
   localStorage.setItem("wazniData",JSON.stringify(arr));
   localStorage.setItem("wazniD",JSON.stringify(arr));
   localStorage.setItem("D",JSON.stringify(arr));
 
-  if(input)input.value="";
+  input.value="";
   if(msg)msg.innerHTML="✅ تم حفظ الخطوات وتحديث كل الصفحات";
 
-  refreshEverywhere("steps");
+  try{renderHome()}catch(e){}
+  try{renderSteps()}catch(e){}
+  try{drawStepsChart&&drawStepsChart()}catch(e){}
+  try{renderGoalV90()}catch(e){}
+  try{renderAdvancedReports()}catch(e){}
+  try{render()}catch(e){}
+
+  window.dispatchEvent(new Event("liyaqtiStepsChanged"));
+  window.dispatchEvent(new Event("liyaqtiGoalChanged"));
+  window.dispatchEvent(new Event("liyaqti:dataUpdated"));
 }
 
 function saveMealFromHome(food,grams,mealType){
