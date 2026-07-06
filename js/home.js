@@ -16,7 +16,9 @@ function getD(){
   }catch(e){return []}
 }
 
-function getS(){try{return S||JSON.parse(localStorage.getItem("wazniS")||"{}")}catch(e){return {}}}
+function getS(){
+  try{return S||JSON.parse(localStorage.getItem("wazniS")||"{}")}catch(e){return {}}
+}
 
 function todayISO(){
   try{
@@ -309,41 +311,30 @@ function homeSaveSteps(){
   refreshEverywhere("steps");
 }
 
-function homeSaveMeal(){
-  let name=q("homeMealNameV15");
-  let cal=q("homeMealCaloriesV15");
+function homeOpenNutritionQuickAdd(){
   let msg=q("homeQuickMsgV15");
 
-  let mealName=String(name&&name.value||"").trim();
-  let calories=Math.round(num(cal&&cal.value));
-
-  if(!mealName){
-    if(msg)msg.innerHTML="⚠️ اكتب اسم الوجبة";
+  if(typeof openNutritionQuickAdd==="function"){
+    openNutritionQuickAdd();
+    if(msg)msg.innerHTML="🍎 اختر الوجبة من مكتبة التغذية الذكية";
     return;
   }
 
-  if(!calories || calories<1 || calories>5000){
-    if(msg)msg.innerHTML="⚠️ أدخل سعرات صحيحة";
-    return;
+  if(typeof pg==="function"){
+    let tab=document.querySelectorAll(".tab")[2];
+    pg("dash",tab);
   }
 
-  if(window.LiyaqtiStore){
-    LiyaqtiStore.saveMeal({
-      name:mealName,
-      calories:calories,
-      date:todayISO()
-    });
-  }
-
-  if(name)name.value="";
-  if(cal)cal.value="";
-  if(msg)msg.innerHTML="✅ تم حفظ الوجبة وتحديث التغذية والرئيسية";
-  refreshEverywhere("nutrition");
+  setTimeout(function(){
+    if(typeof openNutritionQuickAdd==="function")openNutritionQuickAdd();
+  },300);
 }
 
 function refreshEverywhere(type){
   try{window.dispatchEvent(new Event("liyaqtiWeightChanged"))}catch(e){}
   try{window.dispatchEvent(new Event("liyaqtiGoalChanged"))}catch(e){}
+  try{window.dispatchEvent(new Event("liyaqtiStepsChanged"))}catch(e){}
+  try{window.dispatchEvent(new Event("liyaqtiNutritionChanged"))}catch(e){}
   try{window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{detail:{type:type||"update"}}))}catch(e){}
 
   try{
@@ -356,7 +347,7 @@ function refreshEverywhere(type){
 
 window.homeSaveWeight=homeSaveWeight;
 window.homeSaveSteps=homeSaveSteps;
-window.homeSaveMeal=homeSaveMeal;
+window.homeOpenNutritionQuickAdd=homeOpenNutritionQuickAdd;
 
 function pageGo(id,i){
   let tab=document.querySelectorAll(".tab")[i];
@@ -411,8 +402,9 @@ body.dark .h13QuickBox{background:linear-gradient(135deg,#0b1b18,#10201d)}
 .h13QuickItem{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px}
 .h13QuickTitle{font-size:12.5px;font-weight:950;color:var(--txt);margin-bottom:7px}
 .h13QuickRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-.h13QuickMeal{display:grid;grid-template-columns:1.2fr .8fr auto;gap:8px;align-items:center}
+.h13QuickMealBtn{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
 .h13Input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:15px;padding:12px;font-size:15px;font-weight:900;outline:none}
+.h13MealOpen{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:15px;padding:12px;font-size:14px;font-weight:900;text-align:right}
 .h13SaveBtn{border:0;border-radius:15px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font-size:12px;font-weight:950;padding:13px 15px;white-space:nowrap}
 .h13QuickMsg{font-size:11.5px;font-weight:900;color:var(--pri);margin-top:8px;min-height:17px}
 
@@ -457,7 +449,7 @@ body.dark .h13Action{background:#0b1b18}
   .h13MiniGrid{grid-template-columns:1fr}
   .h13Actions{grid-template-columns:1fr}
   .h13QuickRow{grid-template-columns:1fr}
-  .h13QuickMeal{grid-template-columns:1fr}
+  .h13QuickMealBtn{grid-template-columns:1fr}
 }
 </style>
 
@@ -532,10 +524,9 @@ body.dark .h13Action{background:#0b1b18}
 
       <div class="h13QuickItem">
         <div class="h13QuickTitle">🍎 إضافة وجبة سريعة</div>
-        <div class="h13QuickMeal">
-          <input id="homeMealNameV15" class="h13Input" type="text" placeholder="اسم الوجبة">
-          <input id="homeMealCaloriesV15" class="h13Input" type="number" inputmode="numeric" placeholder="السعرات">
-          <button class="h13SaveBtn" onclick="homeSaveMeal()">حفظ الوجبة</button>
+        <div class="h13QuickMealBtn">
+          <button class="h13MealOpen" onclick="homeOpenNutritionQuickAdd()">بحث ذكي: رز، دجاج، KFC، شاورما، مجبوس...</button>
+          <button class="h13SaveBtn" onclick="homeOpenNutritionQuickAdd()">إضافة وجبة</button>
         </div>
       </div>
 
@@ -684,6 +675,8 @@ window.renderHomeDashboard=renderHome;
 
 window.addEventListener("liyaqtiGoalChanged",renderHome);
 window.addEventListener("liyaqtiWeightChanged",renderHome);
+window.addEventListener("liyaqtiStepsChanged",renderHome);
+window.addEventListener("liyaqtiNutritionChanged",renderHome);
 window.addEventListener("liyaqti:dataUpdated",renderHome);
 window.addEventListener("storage",renderHome);
 
