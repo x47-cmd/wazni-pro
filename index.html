@@ -180,34 +180,7 @@ overflow:hidden;
 <div><button class="btn btn2" onclick="lang()">EN</button> <button class="btn btn2" onclick="dark()">🌙</button></div>
 </div>
 
-<div id="home" class="page on">
-<h3>🏠 الرئيسية </h3>
-
-<div class="grid kpis">
-<div class="card"><div class="muted">الوزن الحالي</div><div class="num"><span id="homeCurrent">--</span> kg</div></div>
-<div class="card"><div class="muted">الهدف النشط</div><div class="num" id="homeGoalName">خسارة الوزن</div></div>
-<div class="card"><div class="muted">نسبة الإنجاز</div><div class="num"><span id="homeProgress">0</span>%</div></div>
-<div class="card"><div class="muted">خطوات اليوم</div><div class="num"><span id="homeSteps">0</span></div></div>
-</div>
-
-<div class="grid hero">
-<div class="card">
-<h3>📊 ملخص اليوم</h3>
-<div id="homeSmart" class="coachBox">جاري تحليل بياناتك...</div>
-</div>
-
-<div class="card">
-<h3>🎯 حالة الهدف</h3>
-<div class="bar"><div id="homeFill" class="fill"></div></div>
-<p class="muted" id="homeTargetText">جاري حساب التقدم...</p>
-</div>
-</div>
-
-<div class="card" style="margin-top:16px">
-<h3>مركز المتابعة الذكي</h3>
-<div id="homeModules" class="statsGrid"></div>
-</div>
-</div>
+<div id="home" class="page on"></div>
 
 <div id="goalPage" class="page">
 
@@ -717,46 +690,7 @@ if(range==="7")return D.slice(-7);
 if(range==="30")return D.slice(-30);
 return D;
 }
-function renderHomeDashboard(){
-  let cur=D.length?D[D.length-1].w:S.start;
-  let loss=S.start-cur;
-  let total=S.start-S.goal;
-  let rem=cur-S.goal;
-  let p=total?Math.max(0,Math.min(100,loss/total*100)):0;
-  let todaySteps=currentSteps().steps||0;
-  let lastDiff=D.length>1?(D[D.length-1].w-D[D.length-2].w):0;
 
-  if(document.getElementById("homeCurrent"))homeCurrent.textContent=D.length?cur.toFixed(1):"--";
-  if(document.getElementById("homeProgress"))homeProgress.textContent=p.toFixed(0);
-  if(document.getElementById("homeSteps"))homeSteps.textContent=todaySteps;
-  if(document.getElementById("homeFill"))homeFill.style.width=p+"%";
-
-  if(document.getElementById("homeTargetText")){
-    homeTargetText.textContent=`باقي لك ${rem.toFixed(1)} كجم للوصول إلى هدف ${S.goal} كجم`;
-  }
-
-  if(document.getElementById("homeSmart")){
-    let status=lastDiff<0?"🟢 ممتاز، وزنك نازل":lastDiff>0?"🔴 انتبه، وزنك ارتفع":"🟡 وزنك ثابت";
-    homeSmart.innerHTML=`
-      <div class="coachTitle">${status}</div>
-      <div class="coachText">
-      وزنك الحالي ${cur.toFixed(1)} كجم، أنجزت ${p.toFixed(0)}% من هدفك.
-      ${D.length>1?`آخر تغير كان ${lastDiff.toFixed(1)} كجم.`:"سجل يومين أو أكثر عشان يظهر تحليل أقوى."}
-      </div>
-    `;
-  }
-
-  if(document.getElementById("homeModules")){
-    homeModules.innerHTML=`
-      <div class="statCard"><div class="statLabel">🎯 الهدف</div><div class="statValue">نشط</div></div>
-      <div class="statCard"><div class="statLabel">⚖️ المتبقي</div><div class="statValue">${rem.toFixed(1)} كجم</div></div>
-      <div class="statCard"><div class="statLabel">📉 المفقود</div><div class="statValue">${loss.toFixed(1)} كجم</div></div>
-      <div class="statCard"><div class="statLabel">👣 اليوم</div><div class="statValue">${todaySteps}</div></div>
-      <div class="statCard"><div class="statLabel">📊 التحليل</div><div class="statValue">جاهز</div></div>
-      <div class="statCard"><div class="statLabel">🏆 الإنجازات</div><div class="statValue">قريباً</div></div>
-    `;
-  }
-}
 function toggleGoalSelector(){
 
 let x=document.getElementById("goalSelector");
@@ -1041,7 +975,6 @@ if(S.goalType==="run"){
 dashboardStats(cur,loss,rem);
 renderCalendar();
 renderSteps();
-renderHomeDashboard();
 renderTrainingPlan();
 renderActivities();
 renderAchievements();
@@ -2251,10 +2184,10 @@ updateTodayPreview();
 render();
 </script>
 
-<script src="storage.js"></script>
 <script src="js/reports.js"></script>
 <script src="js/nutrition.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/home.js"></script>
 
 </body>
 </html>
