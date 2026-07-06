@@ -1,6 +1,6 @@
 /* =========================================================
-   Liyaqti Home Intelligence Center V10
-   Premium Compact Dashboard
+   Liyaqti Home Intelligence Center V12
+   V11 + V12 Premium Compact + Streak + ETA + Quick Actions
 ========================================================= */
 
 (function(){
@@ -9,15 +9,10 @@ function q(id){return document.getElementById(id)}
 function num(v,f=0){v=Number(v);return isNaN(v)?f:v}
 function fmt(v){return Math.round(num(v)).toLocaleString("en-US")}
 
-function getD(){
-  try{return Array.isArray(D)?D:[]}catch(e){return []}
-}
-function getS(){
-  try{return S||{}}catch(e){return {}}
-}
-function getSD(){
-  try{return Array.isArray(SD)?SD:[]}catch(e){return []}
-}
+function getD(){try{return Array.isArray(D)?D:[]}catch(e){return []}}
+function getS(){try{return S||{}}catch(e){return {}}}
+function getSD(){try{return Array.isArray(SD)?SD:[]}catch(e){return []}}
+function getAD(){try{return Array.isArray(AD)?AD:JSON.parse(localStorage.wazniActivities||"[]")}catch(e){return []}}
 
 function todayISO(){
   try{if(typeof isoDate==="function")return isoDate()}catch(e){}
@@ -55,7 +50,14 @@ function nutritionToday(){
     let data=JSON.parse(localStorage.getItem("liyaqtiNutritionData")||"{}");
     let settings=JSON.parse(localStorage.getItem("liyaqtiNutritionSettings")||"{}");
 
-    target=num(settings.calories||settings.targetCalories||settings.dailyCalories||data.targetCalories||data.dailyTarget,2200);
+    target=num(
+      settings.calories||
+      settings.targetCalories||
+      settings.dailyCalories||
+      data.targetCalories||
+      data.dailyTarget,
+      2200
+    );
 
     let pools=[
       data.meals,
@@ -66,19 +68,15 @@ function nutritionToday(){
       data.items
     ].filter(Array.isArray);
 
-    let all=pools.flat();
-
-    all.forEach(x=>{
+    pools.flat().forEach(x=>{
       let d=(x.date||x.d||x.day||x.createdAt||"").slice(0,10);
       if(d && d!==t)return;
-
       eaten+=num(x.calories||x.cal||x.kcal);
       protein+=num(x.protein||x.p);
       carbs+=num(x.carbs||x.carb||x.c);
       fat+=num(x.fat||x.f);
       water+=num(x.water);
     });
-
   }catch(e){}
 
   return {
@@ -137,6 +135,30 @@ function stepsCore(){
   };
 }
 
+function streak(){
+  let dates=getD().map(x=>x.d).filter(Boolean).sort();
+  if(!dates.length)return 0;
+
+  let set=new Set(dates);
+  let count=0;
+  let d=new Date();
+
+  for(let i=0;i<90;i++){
+    let iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    if(set.has(iso)){
+      count++;
+      d.setDate(d.getDate()-1);
+    }else{
+      if(i===0){
+        d.setDate(d.getDate()-1);
+        continue;
+      }
+      break;
+    }
+  }
+  return count;
+}
+
 function healthScore(c,st,nut){
   let score=35;
 
@@ -175,6 +197,21 @@ function trend(c){
   return "ثابت";
 }
 
+function etaText(c){
+  if(!c.eta)return "نحتاج بيانات أكثر";
+  if(c.eta<1)return "أقل من أسبوع";
+  if(c.eta<4)return c.eta.toFixed(1)+" أسبوع";
+  return (c.eta/4).toFixed(1)+" شهر";
+}
+
+function priority(c,st,nut){
+  if(st.steps<3000)return {icon:"👣",title:"النقص الأكبر",txt:"خطواتك منخفضة اليوم. ابدأ بمشي 20 دقيقة."};
+  if(nut.protein<70)return {icon:"🥩",title:"النقص الأكبر",txt:"البروتين منخفض. أضف بروتين في الوجبة القادمة."};
+  if(nut.eaten>nut.target)return {icon:"🍎",title:"تنبيه السعرات",txt:"السعرات تعدت الهدف. خفف الوجبة القادمة."};
+  if(c.diff>0)return {icon:"💧",title:"تنبيه الوزن",txt:"وزنك ارتفع قليلاً. ركز على الماء وتقليل الملح."};
+  return {icon:"✅",title:"الأولوية اليوم",txt:"استمر بنفس الوتيرة وحافظ على تسجيل بياناتك."};
+}
+
 function aiCoach(c,st,nut,score){
   if(score>=85)return "أداؤك ممتاز اليوم. حافظ على نفس النظام ولا ترفع الضغط على نفسك.";
   if(c.diff>0)return "وزنك ارتفع قليلاً. غالباً سوائل أو ملح. اليوم ركز على الماء والمشي ووجبة خفيفة.";
@@ -184,6 +221,16 @@ function aiCoach(c,st,nut,score){
   if(nut.protein<70)return "البروتين منخفض. أضف بروتين واضح في الوجبة القادمة.";
   if(c.diff<0)return "وزنك نازل. استمر بنفس الهدوء ولا تغيّر الخطة بسرعة.";
   return "يومك مستقر. ركز على خطواتك وبروتينك وتسجيل بياناتك.";
+}
+
+function lastAchievement(){
+  try{
+    let a=JSON.parse(localStorage.getItem("achievements")||"[]");
+    if(a.length)return "آخر إنجاز محفوظ";
+  }catch(e){}
+  let ad=getAD();
+  if(ad.length)return "أول نشاط مسجل";
+  return "ابدأ أول إنجاز";
 }
 
 function pageGo(id,i){
@@ -201,176 +248,187 @@ function renderHome(){
   let nut=nutritionToday();
   let score=healthScore(c,st,nut);
   let d=getD();
-
+  let p=priority(c,st,nut);
+  let sDays=streak();
   let chartHasData=d.length>=2;
 
   root.innerHTML=`
 <style>
-.home10{display:grid;gap:12px;margin-top:14px;padding-bottom:12px}
-.h10Hero{border-radius:28px;padding:18px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 16px 34px rgba(15,118,110,.22)}
-.h10HeroTop{display:flex;justify-content:space-between;gap:12px;align-items:center}
-.h10Kicker{font-size:11px;font-weight:900;opacity:.82}
-.h10Title{font-size:23px;font-weight:950;margin-top:5px;letter-spacing:-.6px}
-.h10Msg{font-size:13px;font-weight:750;line-height:1.8;margin-top:10px;opacity:.95}
-.h10Score{width:72px;height:72px;border-radius:22px;background:#ffffff22;border:1px solid #ffffff3b;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
-.h10ScoreNum{font-size:25px;font-weight:950;line-height:1}
-.h10ScoreTxt{font-size:10px;font-weight:900;margin-top:5px;opacity:.9}
-.h10Grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.h10Card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:14px;box-shadow:0 8px 22px rgba(0,0,0,.045)}
-.h10Label{font-size:11.5px;color:var(--muted);font-weight:900}
-.h10Val{font-size:22px;font-weight:950;color:var(--txt);margin-top:5px;letter-spacing:-.5px}
-.h10Green{color:var(--pri)!important}
-.h10Text{font-size:11.8px;color:var(--muted);font-weight:700;line-height:1.65;margin-top:6px}
-.h10Bar{height:9px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:10px}
-.h10Fill{height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px}
-.h10Section{font-size:17px;font-weight:950;margin-bottom:10px}
-.h10Modules{display:grid;gap:0}
-.h10Module{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
-.h10Module:last-child{border-bottom:0;padding-bottom:0}
-.h10Btn{border:0;border-radius:15px;background:#eefaf7;color:#0f766e;font-size:12px;font-weight:950;padding:9px 13px}
-body.dark .h10Btn{background:#0b1b18}
-.h10Chart{height:165px}
-.h10Empty{height:150px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:13px;font-weight:800;line-height:1.7;background:#f8faf9;border-radius:18px;border:1px dashed var(--line)}
-body.dark .h10Empty{background:#0b1b18}
-.h10Timeline{display:grid;gap:10px}
-.h10Event{display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:center}
-.h10Icon{width:38px;height:38px;border-radius:15px;background:#eefaf7;display:flex;align-items:center;justify-content:center;font-size:18px}
-body.dark .h10Icon{background:#0b1b18}
-.h10EventTitle{font-size:12.5px;font-weight:950}
-.h10EventTxt{font-size:11.8px;color:var(--muted);font-weight:700;margin-top:2px}
-.h10AI{background:linear-gradient(135deg,#eefaf7,#fff);border-color:#cdeee7}
-body.dark .h10AI{background:linear-gradient(135deg,#0b1b18,#10201d)}
+.home12{display:grid;gap:11px;margin-top:12px;padding-bottom:20px}
+.h12Hero{border-radius:24px;padding:15px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 14px 30px rgba(15,118,110,.2)}
+.h12HeroTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.h12Kicker{font-size:10.5px;font-weight:900;opacity:.82}
+.h12Title{font-size:20px;font-weight:950;margin-top:4px;letter-spacing:-.5px}
+.h12Msg{font-size:12.5px;font-weight:750;line-height:1.7;margin-top:8px;opacity:.95}
+.h12Score{width:64px;height:64px;border-radius:20px;background:#ffffff22;border:1px solid #ffffff3b;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.h12ScoreNum{font-size:22px;font-weight:950;line-height:1}
+.h12ScoreTxt{font-size:9.5px;font-weight:900;margin-top:4px;opacity:.9}
+.h12Grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.h12Card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:13px;box-shadow:0 8px 20px rgba(0,0,0,.04)}
+.h12Label{font-size:11px;color:var(--muted);font-weight:900}
+.h12Val{font-size:20px;font-weight:950;color:var(--txt);margin-top:4px;letter-spacing:-.4px}
+.h12Green{color:var(--pri)!important}
+.h12Text{font-size:11.4px;color:var(--muted);font-weight:700;line-height:1.55;margin-top:5px}
+.h12Bar{height:8px;background:#dff3ef;border-radius:99px;overflow:hidden;margin-top:9px}
+.h12Fill{height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px}
+.h12Section{font-size:16px;font-weight:950;margin-bottom:9px}
+.h12MiniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.h12Mini{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:11px;text-align:center}
+body.dark .h12Mini{background:#0b1b18}
+.h12MiniIcon{font-size:18px}
+.h12MiniVal{font-size:16px;font-weight:950;color:var(--pri);margin-top:3px}
+.h12MiniLbl{font-size:10.5px;color:var(--muted);font-weight:800;margin-top:2px}
+.h12Modules{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.h12Module{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:11px;min-height:92px}
+body.dark .h12Module{background:#0b1b18}
+.h12Btn{border:0;border-radius:13px;background:#eefaf7;color:#0f766e;font-size:11.5px;font-weight:950;padding:8px 12px;margin-top:8px}
+body.dark .h12Btn{background:#10201d}
+.h12Chart{height:145px}
+.h12Empty{height:135px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:12.5px;font-weight:800;line-height:1.7;background:#f8faf9;border-radius:18px;border:1px dashed var(--line)}
+body.dark .h12Empty{background:#0b1b18}
+.h12Timeline{display:grid;gap:9px}
+.h12Event{display:grid;grid-template-columns:36px 1fr;gap:9px;align-items:center}
+.h12Icon{width:36px;height:36px;border-radius:14px;background:#eefaf7;display:flex;align-items:center;justify-content:center;font-size:17px}
+body.dark .h12Icon{background:#0b1b18}
+.h12EventTitle{font-size:12px;font-weight:950}
+.h12EventTxt{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
+.h12AI{background:linear-gradient(135deg,#eefaf7,#fff);border-color:#cdeee7}
+body.dark .h12AI{background:linear-gradient(135deg,#0b1b18,#10201d)}
+.h12Actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.h12Action{border:0;border-radius:16px;background:#eefaf7;color:#0f766e;font-size:12px;font-weight:950;padding:12px 8px}
+body.dark .h12Action{background:#0b1b18}
 @media(max-width:390px){
-.h10Grid{grid-template-columns:1fr}
-.h10Title{font-size:20px}
-.h10Val{font-size:20px}
+.h12Grid{grid-template-columns:1fr}
+.h12Modules{grid-template-columns:1fr}
+.h12MiniGrid{grid-template-columns:1fr}
+.h12Actions{grid-template-columns:1fr}
 }
 </style>
 
-<div class="home10">
+<div class="home12">
 
-  <div class="h10Hero">
-    <div class="h10HeroTop">
+  <div class="h12Hero">
+    <div class="h12HeroTop">
       <div>
-        <div class="h10Kicker">Liyaqti Home Intelligence Center V10</div>
-        <div class="h10Title">ملخصك الصحي اليوم</div>
-        <div class="h10Msg">${aiCoach(c,st,nut,score)}</div>
+        <div class="h12Kicker">Liyaqti Home Intelligence Center V12</div>
+        <div class="h12Title">ملخصك الصحي اليوم</div>
+        <div class="h12Msg">${aiCoach(c,st,nut,score)}</div>
       </div>
-      <div class="h10Score">
-        <div class="h10ScoreNum">${score}</div>
-        <div class="h10ScoreTxt">${scoreText(score)}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="h10Grid">
-
-    <div class="h10Card">
-      <div class="h10Label">⚖️ الوزن الحالي</div>
-      <div class="h10Val">${c.cur.toFixed(1)} كجم</div>
-      <div class="h10Text">الاتجاه: ${trend(c)} • آخر تغير ${c.diff.toFixed(1)} كجم</div>
-    </div>
-
-    <div class="h10Card">
-      <div class="h10Label">🎯 الهدف النشط</div>
-      <div class="h10Val h10Green">${goalName()}</div>
-      <div class="h10Text">إنجاز ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
-      <div class="h10Bar"><div class="h10Fill" style="width:${c.pct}%"></div></div>
-    </div>
-
-    <div class="h10Card">
-      <div class="h10Label">🍎 التغذية اليوم</div>
-      <div class="h10Val">${Math.round(nut.eaten)} / ${nut.target}</div>
-      <div class="h10Text">باقي ${Math.round(nut.remain)} سعرة • بروتين ${Math.round(nut.protein)}g</div>
-      <div class="h10Bar"><div class="h10Fill" style="width:${nut.pct}%"></div></div>
-    </div>
-
-    <div class="h10Card">
-      <div class="h10Label">👣 النشاط</div>
-      <div class="h10Val">${fmt(st.steps)}</div>
-      <div class="h10Text">${st.km.toFixed(1)} كم • ${st.burn} سعرة • ${st.pct.toFixed(0)}%</div>
-      <div class="h10Bar"><div class="h10Fill" style="width:${st.pct}%"></div></div>
-    </div>
-
-  </div>
-
-  <div class="h10Card">
-    <div class="h10Section">مراكز لياقتي</div>
-
-    <div class="h10Modules">
-      <div class="h10Module">
-        <div>
-          <div class="h10Label">🎯 هدفي</div>
-          <div class="h10Text">${goalName()} • تقدم ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
-        </div>
-        <button class="h10Btn" onclick="homeGoPage('goalPage',1)">فتح</button>
-      </div>
-
-      <div class="h10Module">
-        <div>
-          <div class="h10Label">🍎 التغذية</div>
-          <div class="h10Text">أكلت ${Math.round(nut.eaten)} وباقي ${Math.round(nut.remain)} سعرة</div>
-        </div>
-        <button class="h10Btn" onclick="homeGoPage('dash',2)">فتح</button>
-      </div>
-
-      <div class="h10Module">
-        <div>
-          <div class="h10Label">👣 خطواتي</div>
-          <div class="h10Text">${fmt(st.steps)} خطوة اليوم من هدف ${fmt(st.goal)}</div>
-        </div>
-        <button class="h10Btn" onclick="homeGoPage('stepsPage',3)">فتح</button>
-      </div>
-
-      <div class="h10Module">
-        <div>
-          <div class="h10Label">📊 التحليل</div>
-          <div class="h10Text">اتجاه الوزن: ${trend(c)} • عدد السجلات ${c.records}</div>
-        </div>
-        <button class="h10Btn" onclick="homeGoPage('reports',4)">فتح</button>
+      <div class="h12Score">
+        <div class="h12ScoreNum">${score}</div>
+        <div class="h12ScoreTxt">${scoreText(score)}</div>
       </div>
     </div>
   </div>
 
-  <div class="h10Card">
-    <div class="h10Section">📈 شارت مختصر للوزن</div>
+  <div class="h12Grid">
+    <div class="h12Card">
+      <div class="h12Label">⚖️ الوزن الحالي</div>
+      <div class="h12Val">${c.cur.toFixed(1)} كجم</div>
+      <div class="h12Text">الاتجاه: ${trend(c)} • آخر تغير ${c.diff.toFixed(1)} كجم</div>
+    </div>
+
+    <div class="h12Card">
+      <div class="h12Label">🎯 الهدف</div>
+      <div class="h12Val h12Green">${goalName()}</div>
+      <div class="h12Text">إنجاز ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
+      <div class="h12Bar"><div class="h12Fill" style="width:${c.pct}%"></div></div>
+    </div>
+
+    <div class="h12Card">
+      <div class="h12Label">🍎 التغذية</div>
+      <div class="h12Val">${Math.round(nut.eaten)} / ${nut.target}</div>
+      <div class="h12Text">باقي ${Math.round(nut.remain)} سعرة • بروتين ${Math.round(nut.protein)}g</div>
+      <div class="h12Bar"><div class="h12Fill" style="width:${nut.pct}%"></div></div>
+    </div>
+
+    <div class="h12Card">
+      <div class="h12Label">👣 النشاط</div>
+      <div class="h12Val">${fmt(st.steps)}</div>
+      <div class="h12Text">${st.km.toFixed(1)} كم • ${st.burn} سعرة • ${st.pct.toFixed(0)}%</div>
+      <div class="h12Bar"><div class="h12Fill" style="width:${st.pct}%"></div></div>
+    </div>
+  </div>
+
+  <div class="h12Card">
+    <div class="h12Section">مؤشرات ذكية</div>
+    <div class="h12MiniGrid">
+      <div class="h12Mini"><div class="h12MiniIcon">⏳</div><div class="h12MiniVal">${etaText(c)}</div><div class="h12MiniLbl">توقع الوصول</div></div>
+      <div class="h12Mini"><div class="h12MiniIcon">🔥</div><div class="h12MiniVal">${sDays}</div><div class="h12MiniLbl">Streak</div></div>
+      <div class="h12Mini"><div class="h12MiniIcon">🏆</div><div class="h12MiniVal">${lastAchievement()}</div><div class="h12MiniLbl">الإنجاز</div></div>
+    </div>
+  </div>
+
+  <div class="h12Card h12AI">
+    <div class="h12Section">${p.icon} ${p.title}</div>
+    <div class="h12Text" style="font-size:12.8px">${p.txt}</div>
+  </div>
+
+  <div class="h12Card">
+    <div class="h12Section">إجراءات سريعة</div>
+    <div class="h12Actions">
+      <button class="h12Action" onclick="homeGoPage('goalPage',1)">⚖️ سجل وزن</button>
+      <button class="h12Action" onclick="homeGoPage('dash',2)">🍎 سجل وجبة</button>
+      <button class="h12Action" onclick="homeGoPage('stepsPage',3)">👣 سجل خطوات</button>
+    </div>
+  </div>
+
+  <div class="h12Card">
+    <div class="h12Section">مراكز لياقتي</div>
+    <div class="h12Modules">
+      <div class="h12Module">
+        <div class="h12Label">🎯 هدفي</div>
+        <div class="h12Text">${goalName()} • ${c.pct.toFixed(0)}% • باقي ${c.remain.toFixed(1)} كجم</div>
+        <button class="h12Btn" onclick="homeGoPage('goalPage',1)">فتح</button>
+      </div>
+      <div class="h12Module">
+        <div class="h12Label">🍎 التغذية</div>
+        <div class="h12Text">أكلت ${Math.round(nut.eaten)} وباقي ${Math.round(nut.remain)} سعرة</div>
+        <button class="h12Btn" onclick="homeGoPage('dash',2)">فتح</button>
+      </div>
+      <div class="h12Module">
+        <div class="h12Label">👣 خطواتي</div>
+        <div class="h12Text">${fmt(st.steps)} خطوة من هدف ${fmt(st.goal)}</div>
+        <button class="h12Btn" onclick="homeGoPage('stepsPage',3)">فتح</button>
+      </div>
+      <div class="h12Module">
+        <div class="h12Label">📊 التحليل</div>
+        <div class="h12Text">اتجاه الوزن: ${trend(c)} • سجلات ${c.records}</div>
+        <button class="h12Btn" onclick="homeGoPage('reports',4)">فتح</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="h12Card">
+    <div class="h12Section">📈 شارت مختصر للوزن</div>
     ${
       chartHasData
-      ? `<div class="h10Chart"><canvas id="homeChartV10"></canvas></div>`
-      : `<div class="h10Empty">لا توجد بيانات كافية للرسم.<br>سجل وزنك يومين أو أكثر حتى يظهر الشارت.</div>`
+      ? `<div class="h12Chart"><canvas id="homeChartV12"></canvas></div>`
+      : `<div class="h12Empty">لا توجد بيانات كافية للرسم.<br>سجل وزنك يومين أو أكثر حتى يظهر الشارت.</div>`
     }
   </div>
 
-  <div class="h10Card">
-    <div class="h10Section">آخر الأحداث</div>
-    <div class="h10Timeline">
-      <div class="h10Event">
-        <div class="h10Icon">⚖️</div>
-        <div>
-          <div class="h10EventTitle">آخر وزن</div>
-          <div class="h10EventTxt">${c.cur.toFixed(1)} كجم • ${trend(c)}</div>
-        </div>
+  <div class="h12Card">
+    <div class="h12Section">آخر الأحداث</div>
+    <div class="h12Timeline">
+      <div class="h12Event">
+        <div class="h12Icon">⚖️</div>
+        <div><div class="h12EventTitle">آخر وزن</div><div class="h12EventTxt">${c.cur.toFixed(1)} كجم • ${trend(c)}</div></div>
       </div>
-      <div class="h10Event">
-        <div class="h10Icon">🍎</div>
-        <div>
-          <div class="h10EventTitle">التغذية</div>
-          <div class="h10EventTxt">${Math.round(nut.eaten)} / ${nut.target} سعرة • بروتين ${Math.round(nut.protein)}g</div>
-        </div>
+      <div class="h12Event">
+        <div class="h12Icon">🍎</div>
+        <div><div class="h12EventTitle">التغذية</div><div class="h12EventTxt">${Math.round(nut.eaten)} / ${nut.target} سعرة • بروتين ${Math.round(nut.protein)}g</div></div>
       </div>
-      <div class="h10Event">
-        <div class="h10Icon">👣</div>
-        <div>
-          <div class="h10EventTitle">خطوات اليوم</div>
-          <div class="h10EventTxt">${fmt(st.steps)} خطوة • ${st.km.toFixed(1)} كم</div>
-        </div>
+      <div class="h12Event">
+        <div class="h12Icon">👣</div>
+        <div><div class="h12EventTitle">خطوات اليوم</div><div class="h12EventTxt">${fmt(st.steps)} خطوة • ${st.km.toFixed(1)} كم</div></div>
       </div>
     </div>
   </div>
 
-  <div class="h10Card h10AI">
-    <div class="h10Section">💡 قرار اليوم</div>
-    <div class="h10Text" style="font-size:13px">${aiCoach(c,st,nut,score)}</div>
+  <div class="h12Card h12AI">
+    <div class="h12Section">💡 قرار اليوم</div>
+    <div class="h12Text" style="font-size:12.8px">${aiCoach(c,st,nut,score)}</div>
   </div>
 
 </div>
@@ -381,13 +439,14 @@ body.dark .h10AI{background:linear-gradient(135deg,#0b1b18,#10201d)}
 
 function drawChart(ok){
   if(!ok)return;
-  let canvas=q("homeChartV10");
+  let canvas=q("homeChartV12");
   if(!canvas || typeof Chart==="undefined")return;
 
-  if(window.homeChartV10Obj)window.homeChartV10Obj.destroy();
+  if(window.homeChartV12Obj)window.homeChartV12Obj.destroy();
 
   let data=getD().slice(-10);
-  window.homeChartV10Obj=new Chart(canvas,{
+
+  window.homeChartV12Obj=new Chart(canvas,{
     type:"line",
     data:{
       labels:data.map(x=>(x.d||"").slice(5)),
