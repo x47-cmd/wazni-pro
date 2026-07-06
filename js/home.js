@@ -207,46 +207,93 @@ function lastAchievement(){
 ========================= */
 
 function homeSaveWeight(){
-  let input=q("homeWeightInputV16"), msg=q("homeQuickMsgV16");
+  let input=q("homeWeightInputV15");
+  let msg=q("homeQuickMsgV15");
   let w=num(input&&input.value);
 
-  if(!w||w<30||w>250){if(msg)msg.innerHTML="⚠️ أدخل وزن صحيح بين 30 و250 كجم";return}
-
-  if(window.LiyaqtiStore)LiyaqtiStore.saveWeight(w,todayISO());
-  else{
-    let arr=getD().slice(),t=todayISO(),found=false;
-    arr=arr.map(x=>{
-      let d=String(x.d||x.date||x.dt||"").slice(0,10);
-      if(d===t){found=true;return Object.assign({},x,{d:t,date:t,dt:t,w:w,weight:w})}
-      return x;
-    });
-    if(!found)arr.push({d:t,date:t,dt:t,w:w,weight:w});
-    arr.sort((a,b)=>String(a.d||a.date||a.dt).localeCompare(String(b.d||b.date||b.dt)));
-    save("wazniData",arr);save("D",arr);try{window.D=arr}catch(e){}
+  if(!w || w<30 || w>250){
+    if(msg)msg.innerHTML="⚠️ أدخل وزن صحيح بين 30 و250 كجم";
+    return;
   }
 
-  input.value="";
+  let t=todayISO();
+  let arr=getD().slice();
+  let found=false;
+
+  arr=arr.map(x=>{
+    let d=String(x.d||x.date||x.dt||"").slice(0,10);
+    if(d===t){
+      found=true;
+      return Object.assign({},x,{d:t,date:t,dt:t,w:w,weight:w});
+    }
+    return x;
+  });
+
+  if(!found)arr.push({d:t,date:t,dt:t,w:w,weight:w});
+  arr.sort((a,b)=>String(a.d||a.date||a.dt).localeCompare(String(b.d||b.date||b.dt)));
+
+  try{window.D=arr}catch(e){}
+
+  localStorage.setItem("wazni",JSON.stringify(arr));
+  localStorage.setItem("wazniData",JSON.stringify(arr));
+  localStorage.setItem("wazniD",JSON.stringify(arr));
+  localStorage.setItem("D",JSON.stringify(arr));
+
+  if(input)input.value="";
   if(msg)msg.innerHTML="✅ تم حفظ الوزن وتحديث كل الصفحات";
+
   refreshEverywhere("weight");
 }
 
 function homeSaveSteps(){
-  let input=q("homeStepsInputV16"), msg=q("homeQuickMsgV16");
+  let input=q("homeStepsInputV15");
+  let msg=q("homeQuickMsgV15");
   let steps=Math.round(num(input&&input.value));
 
-  if(!steps||steps<1||steps>100000){if(msg)msg.innerHTML="⚠️ أدخل عدد خطوات صحيح";return}
-
-  if(window.LiyaqtiStore)LiyaqtiStore.saveSteps(steps,todayISO());
-  else{
-    let t=todayISO(), sd=read("wazniStepsData",read("SD",[]))||[];
-    let idx=sd.findIndex(x=>String(x.date||x.dt||x.d||"").slice(0,10)===t);
-    let item={date:t,dt:t,d:t,steps,st:steps,distance:+(steps*.00075).toFixed(2),calories:Math.round(steps*.04)};
-    if(idx>=0)sd[idx]=Object.assign({},sd[idx],item); else sd.push(item);
-    save("wazniStepsData",sd);save("SD",sd);try{window.SD=sd}catch(e){}
+  if(!steps || steps<1 || steps>100000){
+    if(msg)msg.innerHTML="⚠️ أدخل عدد خطوات صحيح";
+    return;
   }
 
-  input.value="";
+  let t=todayISO();
+
+  let sd=[];
+  try{sd=JSON.parse(localStorage.getItem("wazniSteps")||"[]")}catch(e){sd=[]}
+
+  sd=sd.filter(x=>String(x.d||x.date||"").slice(0,10)!==t);
+  sd.push({d:t,date:t,steps:steps});
+  sd.sort((a,b)=>String(a.d||a.date).localeCompare(String(b.d||b.date)));
+
+  try{window.SD=sd}catch(e){}
+
+  localStorage.setItem("wazniSteps",JSON.stringify(sd));
+  localStorage.setItem("liyaqtiStepsData",JSON.stringify(sd));
+  localStorage.setItem("SD",JSON.stringify(sd));
+
+  let arr=getD().slice();
+  let found=false;
+
+  arr=arr.map(x=>{
+    let d=String(x.d||x.date||x.dt||"").slice(0,10);
+    if(d===t){
+      found=true;
+      return Object.assign({},x,{d:t,date:t,dt:t,st:steps,steps:steps});
+    }
+    return x;
+  });
+
+  if(!found)arr.push({d:t,date:t,dt:t,st:steps,steps:steps});
+
+  try{window.D=arr}catch(e){}
+
+  localStorage.setItem("wazni",JSON.stringify(arr));
+  localStorage.setItem("wazniData",JSON.stringify(arr));
+  localStorage.setItem("wazniD",JSON.stringify(arr));
+  localStorage.setItem("D",JSON.stringify(arr));
+
+  if(input)input.value="";
   if(msg)msg.innerHTML="✅ تم حفظ الخطوات وتحديث كل الصفحات";
+
   refreshEverywhere("steps");
 }
 
