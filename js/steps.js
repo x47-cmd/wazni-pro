@@ -331,18 +331,86 @@ function css(){
   s.id="stepsPhase85Css";
   s.innerHTML=`
 .stepsV50{display:grid;gap:16px;margin-top:16px;padding-bottom:135px}
-.v50Hero{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;border-radius:26px;padding:16px;box-shadow:0 18px 40px rgba(15,118,110,.25);overflow:hidden;position:relative}
-.v50Hero:before{content:"";position:absolute;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.10);left:-70px;top:-90px}
-.v50Top{display:flex;justify-content:space-between;gap:12px;align-items:center;position:relative;z-index:2}
-.v50Hero h2{margin:0;font-size:22px;font-weight:950;line-height:1.35}
-.v50Hero p{margin:7px 0 0;opacity:.94;line-height:1.7;font-size:13px;font-weight:750}
-.v50Score{text-align:center;min-width:76px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);border-radius:20px;padding:10px}
-.v50Score b{font-size:31px;direction:ltr}
-.v50Score span{font-size:11px;font-weight:900}
-.v50Pills{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:13px;position:relative;z-index:2}
-.v50Pill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:9px;text-align:center;font-size:11px;font-weight:800}
-.v50Pill b{display:block;font-size:16px;margin-top:4px}
-
+.v50Hero{
+  background:linear-gradient(135deg,#0f766e,#14b8a6);
+  color:#fff;
+  border-radius:22px;
+  padding:13px 14px;
+  box-shadow:0 14px 30px rgba(15,118,110,.20);
+  overflow:hidden;
+  position:relative
+}
+.v50Hero:before{display:none}
+.v50Top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  position:relative;
+  z-index:2
+}
+.v50Hero h2{
+  margin:0;
+  font-size:17px;
+  font-weight:950;
+  line-height:1.25;
+  letter-spacing:-.4px
+}
+.v50Hero p{
+  margin:6px 0 0;
+  opacity:.95;
+  line-height:1.55;
+  font-size:11.8px;
+  font-weight:750;
+  max-width:230px
+}
+.v50Score{
+  width:58px;
+  height:58px;
+  min-width:58px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:18px;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center
+}
+.v50Score b{
+  font-size:19px;
+  font-weight:950;
+  direction:ltr;
+  line-height:1
+}
+.v50Score span{
+  font-size:8.5px;
+  font-weight:900;
+  margin-top:4px
+}
+.v50Pills{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:9px;
+  position:relative;
+  z-index:2
+}
+.v50Pill{
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:999px;
+  padding:5px 9px;
+  font-size:10px;
+  font-weight:850;
+  text-align:center
+}
+.v50Pill b{
+  display:inline;
+  font-size:10px;
+  margin-top:0
+}
 .v50Decision{background:linear-gradient(135deg,#ecfdf5,#fff);border:1px solid #d7f4eb;border-radius:24px;padding:16px;line-height:1.8;box-shadow:0 10px 25px rgba(0,0,0,.05);font-weight:850}
 body.dark .v50Decision{background:linear-gradient(135deg,#0b1b18,#10201d)}
 
@@ -399,12 +467,12 @@ function build(){
   <div class="v50Hero">
     <div class="v50Top">
       <div>
-        <h2>منظومة النشاط واللياقة 👣</h2>
-        <p>خطوات اليوم، النشاط، التحليل، الإنجازات، والتقارير في مركز واحد مرتبط بالرئيسية والتحليل.</p>
+        <h2>👣 خطواتي اليوم</h2>
+<p>متابعة الخطوات، النشاط، الحرق، والجاهزية اليومية.</p>
       </div>
       <div class="v50Score">
         <b id="v50Score">0%</b>
-        <span>Elite Score</span>
+        <span>النشاط</span>
       </div>
     </div>
 
