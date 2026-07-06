@@ -1,7 +1,6 @@
 /* =========================================================
-   Liyaqti Home Intelligence Center V14
-   Final Polish + Compact Premium + Streak + ETA + Actions
-   + Quick Weight Entry for Active Weight Loss Goal
+   Liyaqti Home Intelligence Center
+   Phase 8.5 - Unified Quick Entry + Cross Page Linking
 ========================================================= */
 
 (function(){
@@ -10,13 +9,20 @@ function q(id){return document.getElementById(id)}
 function num(v,f=0){v=Number(v);return isNaN(v)?f:v}
 function fmt(v){return Math.round(num(v)).toLocaleString("en-US")}
 
-function getD(){try{return Array.isArray(D)?D:[]}catch(e){return []}}
-function getS(){try{return S||{}}catch(e){return {}}}
-function getSD(){try{return Array.isArray(SD)?SD:[]}catch(e){return []}}
-function getAD(){try{return Array.isArray(AD)?AD:JSON.parse(localStorage.wazniActivities||"[]")}catch(e){return []}}
+function getD(){
+  try{
+    if(window.LiyaqtiStore) return LiyaqtiStore.getWeightData();
+    return Array.isArray(D)?D:[];
+  }catch(e){return []}
+}
+
+function getS(){try{return S||JSON.parse(localStorage.getItem("wazniS")||"{}")}catch(e){return {}}}
 
 function todayISO(){
-  try{if(typeof isoDate==="function")return isoDate()}catch(e){}
+  try{
+    if(window.LiyaqtiStore)return LiyaqtiStore.todayISO();
+    if(typeof isoDate==="function")return isoDate();
+  }catch(e){}
   let d=new Date();
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
@@ -41,14 +47,31 @@ function isWeightLossGoal(){
 
 function stepsToday(){
   try{
+    if(window.LiyaqtiStore)return num(LiyaqtiStore.getTodaySteps());
     if(typeof currentSteps==="function")return num(currentSteps().steps);
   }catch(e){}
-  let t=todayISO();
-  let x=getSD().find(a=>a.d===t);
-  return num(x&&x.steps);
+  return 0;
 }
 
 function nutritionToday(){
+  try{
+    if(window.LiyaqtiStore){
+      let n=LiyaqtiStore.getTodayNutrition();
+      let settings=JSON.parse(localStorage.getItem("liyaqtiNutritionSettings")||"{}");
+      let target=num(settings.calories||settings.targetCalories||settings.dailyCalories,2200);
+      return {
+        eaten:num(n.calories),
+        target,
+        remain:Math.max(0,target-num(n.calories)),
+        protein:num(n.protein),
+        carbs:num(n.carbs),
+        fat:num(n.fat),
+        water:0,
+        pct:target?Math.min(100,num(n.calories)/target*100):0
+      };
+    }
+  }catch(e){}
+
   let t=todayISO();
   let eaten=0,protein=0,carbs=0,fat=0,water=0,target=2200;
 
@@ -56,23 +79,9 @@ function nutritionToday(){
     let data=JSON.parse(localStorage.getItem("liyaqtiNutritionData")||"{}");
     let settings=JSON.parse(localStorage.getItem("liyaqtiNutritionSettings")||"{}");
 
-    target=num(
-      settings.calories||
-      settings.targetCalories||
-      settings.dailyCalories||
-      data.targetCalories||
-      data.dailyTarget,
-      2200
-    );
+    target=num(settings.calories||settings.targetCalories||settings.dailyCalories||data.targetCalories||data.dailyTarget,2200);
 
-    let pools=[
-      data.meals,
-      data.logs,
-      data.entries,
-      data.todayMeals,
-      data.foods,
-      data.items
-    ].filter(Array.isArray);
+    let pools=[data.meals,data.logs,data.entries,data.todayMeals,data.foods,data.items].filter(Array.isArray);
 
     pools.flat().forEach(x=>{
       let d=(x.date||x.d||x.day||x.createdAt||"").slice(0,10);
@@ -103,7 +112,7 @@ function core(){
 
   let start=num(s.start,93);
   let goal=num(s.goal,75);
-  let cur=d.length?num(d[d.length-1].w,start):start;
+  let cur=d.length?num(d[d.length-1].w||d[d.length-1].weight,start):start;
 
   let lost=start-cur;
   let total=start-goal;
@@ -111,15 +120,17 @@ function core(){
   let pct=total?Math.max(0,Math.min(100,lost/total*100)):0;
 
   let diff=0;
-  if(d.length>1)diff=num(d[d.length-1].w)-num(d[d.length-2].w);
+  if(d.length>1)diff=num(d[d.length-1].w||d[d.length-1].weight)-num(d[d.length-2].w||d[d.length-2].weight);
 
-  let best=d.length?Math.min(...d.map(x=>num(x.w,cur))):cur;
-  let high=d.length?Math.max(...d.map(x=>num(x.w,cur))):cur;
+  let best=d.length?Math.min(...d.map(x=>num(x.w||x.weight,cur))):cur;
+  let high=d.length?Math.max(...d.map(x=>num(x.w||x.weight,cur))):cur;
 
   let weekly=0;
   if(d.length>=2){
     let first=d[0],last=d[d.length-1];
-    let days=Math.max(1,Math.ceil((new Date(last.d)-new Date(first.d))/(1000*60*60*24)));
+    let fd=String(first.d||first.date||first.dt||"").slice(0,10);
+    let ld=String(last.d||last.date||last.dt||"").slice(0,10);
+    let days=Math.max(1,Math.ceil((new Date(ld)-new Date(fd))/(1000*60*60*24)));
     weekly=(start-cur)/days*7;
   }
 
@@ -142,7 +153,7 @@ function stepsCore(){
 }
 
 function streak(){
-  let dates=getD().map(x=>x.d).filter(Boolean).sort();
+  let dates=getD().map(x=>String(x.d||x.date||x.dt||"").slice(0,10)).filter(Boolean).sort();
   if(!dates.length)return 0;
 
   let set=new Set(dates);
@@ -219,7 +230,7 @@ function priority(c,st,nut){
 }
 
 function aiCoach(c,st,nut,score){
-  if(score>=85)return "أداؤك ممتاز اليوم. حافظ على نفس النظام ولا ترفع الضغط على نفسك.";
+  if(score>=85)return "أداؤك ممتاز اليوم. حافظ على نفس النظام.";
   if(c.diff>0)return "وزنك ارتفع قليلاً. غالباً سوائل أو ملح. ركز على الماء والمشي.";
   if(st.steps<3000)return "أهم قرار اليوم: ابدأ بمشي 20 دقيقة وارفع خطواتك تدريجياً.";
   if(st.steps<8000)return "أنت قريب من تحسين يومك. حاول تكمل هدف 8000 خطوة.";
@@ -234,21 +245,14 @@ function lastAchievement(){
     let a=JSON.parse(localStorage.getItem("achievements")||"[]");
     if(a.length)return "آخر إنجاز محفوظ";
   }catch(e){}
-  let ad=getAD();
-  if(ad.length)return "أول نشاط مسجل";
   return "ابدأ أول إنجاز";
 }
 
-function saveWeightStorage(arr){
-  try{D=arr}catch(e){}
-  try{localStorage.setItem("wazniData",JSON.stringify(arr))}catch(e){}
-  try{localStorage.setItem("wazniD",JSON.stringify(arr))}catch(e){}
-  try{localStorage.setItem("D",JSON.stringify(arr))}catch(e){}
-}
+/* ---------- Quick Saves ---------- */
 
 function homeSaveWeight(){
-  let input=q("homeWeightInputV14");
-  let msg=q("homeWeightMsgV14");
+  let input=q("homeWeightInputV15");
+  let msg=q("homeQuickMsgV15");
   let w=num(input&&input.value);
 
   if(!w || w<30 || w>250){
@@ -256,32 +260,94 @@ function homeSaveWeight(){
     return;
   }
 
-  let t=todayISO();
-  let arr=getD().slice();
+  let ok=false;
+  if(window.LiyaqtiStore) ok=LiyaqtiStore.saveWeight(w,todayISO());
 
-  let found=false;
-  arr=arr.map(x=>{
-    if((x.d||"").slice(0,10)===t){
-      found=true;
-      return Object.assign({},x,{d:t,w:w});
-    }
-    return x;
-  });
-
-  if(!found){
-    arr.push({d:t,w:w});
+  if(!ok){
+    let arr=getD().slice();
+    let t=todayISO();
+    let found=false;
+    arr=arr.map(x=>{
+      let d=String(x.d||x.date||x.dt||"").slice(0,10);
+      if(d===t){
+        found=true;
+        return Object.assign({},x,{d:t,date:t,dt:t,w:w,weight:w});
+      }
+      return x;
+    });
+    if(!found)arr.push({d:t,date:t,dt:t,w:w,weight:w});
+    arr.sort((a,b)=>String(a.d||a.date||a.dt).localeCompare(String(b.d||b.date||b.dt)));
+    try{D=arr}catch(e){}
+    localStorage.setItem("wazniData",JSON.stringify(arr));
+    localStorage.setItem("wazniD",JSON.stringify(arr));
+    localStorage.setItem("D",JSON.stringify(arr));
   }
 
-  arr.sort((a,b)=>new Date(a.d)-new Date(b.d));
-  saveWeightStorage(arr);
+  if(input)input.value="";
+  if(msg)msg.innerHTML="✅ تم حفظ الوزن وتحديث كل الصفحات";
+  refreshEverywhere("weight");
+}
 
-  if(msg)msg.innerHTML=found?"✅ تم تحديث وزن اليوم":"✅ تم تسجيل وزن اليوم";
+function homeSaveSteps(){
+  let input=q("homeStepsInputV15");
+  let msg=q("homeQuickMsgV15");
+  let steps=Math.round(num(input&&input.value));
 
+  if(!steps || steps<1 || steps>100000){
+    if(msg)msg.innerHTML="⚠️ أدخل عدد خطوات صحيح";
+    return;
+  }
+
+  if(window.LiyaqtiStore){
+    LiyaqtiStore.saveSteps(steps,todayISO());
+  }else{
+    localStorage.setItem("homeTodaySteps",String(steps));
+  }
+
+  if(input)input.value="";
+  if(msg)msg.innerHTML="✅ تم حفظ الخطوات وتحديث كل الصفحات";
+  refreshEverywhere("steps");
+}
+
+function homeSaveMeal(){
+  let name=q("homeMealNameV15");
+  let cal=q("homeMealCaloriesV15");
+  let msg=q("homeQuickMsgV15");
+
+  let mealName=String(name&&name.value||"").trim();
+  let calories=Math.round(num(cal&&cal.value));
+
+  if(!mealName){
+    if(msg)msg.innerHTML="⚠️ اكتب اسم الوجبة";
+    return;
+  }
+
+  if(!calories || calories<1 || calories>5000){
+    if(msg)msg.innerHTML="⚠️ أدخل سعرات صحيحة";
+    return;
+  }
+
+  if(window.LiyaqtiStore){
+    LiyaqtiStore.saveMeal({
+      name:mealName,
+      calories:calories,
+      date:todayISO()
+    });
+  }
+
+  if(name)name.value="";
+  if(cal)cal.value="";
+  if(msg)msg.innerHTML="✅ تم حفظ الوجبة وتحديث التغذية والرئيسية";
+  refreshEverywhere("nutrition");
+}
+
+function refreshEverywhere(type){
   try{window.dispatchEvent(new Event("liyaqtiWeightChanged"))}catch(e){}
   try{window.dispatchEvent(new Event("liyaqtiGoalChanged"))}catch(e){}
+  try{window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{detail:{type:type||"update"}}))}catch(e){}
 
   try{
-    if(typeof render==="function")render();
+    if(window.LiyaqtiStore)LiyaqtiStore.refreshAll();
     else renderHome();
   }catch(e){
     renderHome();
@@ -289,6 +355,8 @@ function homeSaveWeight(){
 }
 
 window.homeSaveWeight=homeSaveWeight;
+window.homeSaveSteps=homeSaveSteps;
+window.homeSaveMeal=homeSaveMeal;
 
 function pageGo(id,i){
   let tab=document.querySelectorAll(".tab")[i];
@@ -303,10 +371,7 @@ function renderHome(){
   let c=core();
 
   let freshS = {};
-  try{
-    freshS = JSON.parse(localStorage.getItem("wazniS")) || {};
-  }catch(e){}
-
+  try{freshS = JSON.parse(localStorage.getItem("wazniS")) || {}}catch(e){}
   try{S = Object.assign(S || {}, freshS)}catch(e){}
 
   c = core();
@@ -317,15 +382,14 @@ function renderHome(){
   let p=priority(c,st,nut);
   let sDays=streak();
   let chartHasData=d.length>=2;
-  let showWeightEntry=isWeightLossGoal();
+  let showQuickEntry=isWeightLossGoal();
 
   root.innerHTML=`
 <style>
 .home13{display:grid;gap:11px;margin-top:12px;padding-bottom:135px}
 .h13Hero{border-radius:22px;padding:13px 14px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;box-shadow:0 14px 30px rgba(15,118,110,.20);overflow:hidden}
 .h13HeroTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.h13Kicker{font-size:9.5px;font-weight:900;opacity:.78;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.h13Title{font-size:18px;font-weight:950;margin-top:3px;line-height:1.25;letter-spacing:-.4px}
+.h13Title{font-size:18px;font-weight:950;margin-top:0;line-height:1.25;letter-spacing:-.4px}
 .h13Msg{font-size:11.8px;font-weight:750;line-height:1.55;margin-top:6px;opacity:.95;max-width:230px}
 .h13Score{width:58px;height:58px;border-radius:18px;background:#ffffff22;border:1px solid #ffffff3b;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
 .h13ScoreNum{font-size:20px;font-weight:950;line-height:1}
@@ -341,12 +405,16 @@ function renderHome(){
 .h13Fill{height:100%;background:linear-gradient(90deg,#0f766e,#14b8a6);border-radius:99px}
 .h13Section{font-size:15.5px;font-weight:950;margin-bottom:9px}
 
-.h13WeightBox{background:linear-gradient(135deg,#ecfdf5,#ffffff);border-color:#bbf7d0}
-body.dark .h13WeightBox{background:linear-gradient(135deg,#0b1b18,#10201d)}
-.h13WeightRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px}
-.h13WeightInput{width:100%;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:15px;padding:12px;font-size:15px;font-weight:900;outline:none}
+.h13QuickBox{background:linear-gradient(135deg,#ecfdf5,#ffffff);border-color:#bbf7d0}
+body.dark .h13QuickBox{background:linear-gradient(135deg,#0b1b18,#10201d)}
+.h13QuickGrid{display:grid;gap:9px;margin-top:10px}
+.h13QuickItem{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px}
+.h13QuickTitle{font-size:12.5px;font-weight:950;color:var(--txt);margin-bottom:7px}
+.h13QuickRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.h13QuickMeal{display:grid;grid-template-columns:1.2fr .8fr auto;gap:8px;align-items:center}
+.h13Input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:15px;padding:12px;font-size:15px;font-weight:900;outline:none}
 .h13SaveBtn{border:0;border-radius:15px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font-size:12px;font-weight:950;padding:13px 15px;white-space:nowrap}
-.h13WeightMsg{font-size:11.5px;font-weight:900;color:var(--pri);margin-top:8px;min-height:17px}
+.h13QuickMsg{font-size:11.5px;font-weight:900;color:var(--pri);margin-top:8px;min-height:17px}
 
 .h13MiniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .h13Mini{background:#f8faf9;border:1px solid var(--line);border-radius:18px;padding:10px 8px;text-align:center;min-height:92px}
@@ -382,14 +450,14 @@ body.dark .h13Action{background:#0b1b18}
 @media(max-width:430px){
   .h13Msg{max-width:210px}
   .h13Title{font-size:17px}
-  .h13Kicker{max-width:200px}
 }
 @media(max-width:390px){
   .h13Grid{grid-template-columns:1fr}
   .h13Modules{grid-template-columns:1fr}
   .h13MiniGrid{grid-template-columns:1fr}
   .h13Actions{grid-template-columns:1fr}
-  .h13WeightRow{grid-template-columns:1fr}
+  .h13QuickRow{grid-template-columns:1fr}
+  .h13QuickMeal{grid-template-columns:1fr}
 }
 </style>
 
@@ -398,7 +466,6 @@ body.dark .h13Action{background:#0b1b18}
   <div class="h13Hero">
     <div class="h13HeroTop">
       <div>
-        <div class="h13Kicker">Liyaqti Home Intelligence Center V14</div>
         <div class="h13Title">ملخصك الصحي اليوم</div>
         <div class="h13Msg">${aiCoach(c,st,nut,score)}</div>
       </div>
@@ -439,16 +506,42 @@ body.dark .h13Action{background:#0b1b18}
   </div>
 
   ${
-    showWeightEntry
+    showQuickEntry
     ? `
-  <div class="h13Card h13WeightBox">
-    <div class="h13Section">⚖️ تسجيل وزن اليوم</div>
-    <div class="h13Text">هدفك النشط هو خسارة الوزن، تقدر تسجل وزن اليوم مباشرة من الرئيسية.</div>
-    <div class="h13WeightRow">
-      <input id="homeWeightInputV14" class="h13WeightInput" type="number" step="0.1" inputmode="decimal" placeholder="مثال: ${c.cur.toFixed(1)}" value="">
-      <button class="h13SaveBtn" onclick="homeSaveWeight()">حفظ الوزن</button>
+  <div class="h13Card h13QuickBox">
+    <div class="h13Section">⚡ تسجيل سريع اليوم</div>
+    <div class="h13Text">لخسارة الوزن أهم 3 أشياء: الوزن، الخطوات، والوجبات. أي رقم تسجله هنا يتحدث في كل الصفحات.</div>
+
+    <div class="h13QuickGrid">
+
+      <div class="h13QuickItem">
+        <div class="h13QuickTitle">⚖️ وزن اليوم</div>
+        <div class="h13QuickRow">
+          <input id="homeWeightInputV15" class="h13Input" type="number" step="0.1" inputmode="decimal" placeholder="مثال: ${c.cur.toFixed(1)}">
+          <button class="h13SaveBtn" onclick="homeSaveWeight()">حفظ الوزن</button>
+        </div>
+      </div>
+
+      <div class="h13QuickItem">
+        <div class="h13QuickTitle">👣 خطوات اليوم</div>
+        <div class="h13QuickRow">
+          <input id="homeStepsInputV15" class="h13Input" type="number" inputmode="numeric" placeholder="مثال: 8000">
+          <button class="h13SaveBtn" onclick="homeSaveSteps()">حفظ الخطوات</button>
+        </div>
+      </div>
+
+      <div class="h13QuickItem">
+        <div class="h13QuickTitle">🍎 إضافة وجبة سريعة</div>
+        <div class="h13QuickMeal">
+          <input id="homeMealNameV15" class="h13Input" type="text" placeholder="اسم الوجبة">
+          <input id="homeMealCaloriesV15" class="h13Input" type="number" inputmode="numeric" placeholder="السعرات">
+          <button class="h13SaveBtn" onclick="homeSaveMeal()">حفظ الوجبة</button>
+        </div>
+      </div>
+
     </div>
-    <div id="homeWeightMsgV14" class="h13WeightMsg"></div>
+
+    <div id="homeQuickMsgV15" class="h13QuickMsg"></div>
   </div>
     `
     : ``
@@ -483,9 +576,9 @@ body.dark .h13Action{background:#0b1b18}
   <div class="h13Card">
     <div class="h13Section">إجراءات سريعة</div>
     <div class="h13Actions">
-      <button class="h13Action" onclick="homeGoPage('goalPage',1)">⚖️ سجل وزن</button>
-      <button class="h13Action" onclick="homeGoPage('dash',2)">🍎 سجل وجبة</button>
-      <button class="h13Action" onclick="homeGoPage('stepsPage',3)">👣 سجل خطوات</button>
+      <button class="h13Action" onclick="homeGoPage('goalPage',1)">⚖️ هدفي</button>
+      <button class="h13Action" onclick="homeGoPage('dash',2)">🍎 التغذية</button>
+      <button class="h13Action" onclick="homeGoPage('stepsPage',3)">👣 خطواتي</button>
     </div>
   </div>
 
@@ -569,9 +662,9 @@ function drawChart(ok){
   window.homeChartV13Obj=new Chart(canvas,{
     type:"line",
     data:{
-      labels:data.map(x=>(x.d||"").slice(5)),
+      labels:data.map(x=>String(x.d||x.date||x.dt||"").slice(5)),
       datasets:[{
-        data:data.map(x=>num(x.w)),
+        data:data.map(x=>num(x.w||x.weight)),
         tension:.35,
         pointRadius:4,
         borderWidth:3
@@ -586,28 +679,20 @@ function drawChart(ok){
   });
 }
 
+window.renderHome=renderHome;
 window.renderHomeDashboard=renderHome;
 
-window.addEventListener("liyaqtiGoalChanged", function(){
-  renderHome();
-});
-
-window.addEventListener("liyaqtiWeightChanged", function(){
-  renderHome();
-});
-
-window.addEventListener("storage", function(){
-  renderHome();
-});
+window.addEventListener("liyaqtiGoalChanged",renderHome);
+window.addEventListener("liyaqtiWeightChanged",renderHome);
+window.addEventListener("liyaqti:dataUpdated",renderHome);
+window.addEventListener("storage",renderHome);
 
 let oldRender=null;
 try{oldRender=render}catch(e){}
 
 if(typeof oldRender==="function"){
   window.render=function(){
-    try{
-      S = JSON.parse(localStorage.getItem("wazniS") || "{}");
-    }catch(e){}
+    try{S = JSON.parse(localStorage.getItem("wazniS") || "{}")}catch(e){}
     oldRender();
     renderHome();
   };
