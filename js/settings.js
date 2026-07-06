@@ -1,3 +1,8 @@
+/* =========================================================
+   Liyaqti Settings Hub V11
+   Clean + Top Login + Firebase Sync Ready
+========================================================= */
+
 (function () {
   const page = document.getElementById("settings");
   if (!page) return;
@@ -53,11 +58,13 @@
       accent: "teal",
       fontSize: "normal",
       compactMode: true,
-      defaultOpen: "profile",
+      defaultOpen: "account",
       showHomeCards: true,
       chartsStyle: "premium",
       mockLogin: false,
-      mockUserEmail: ""
+      mockUserEmail: "",
+      cloudLogin: false,
+      lastSync: ""
     });
   }
 
@@ -67,726 +74,136 @@
     const style = document.createElement("style");
     style.id = "liyaqtiSettingsHubStyle";
     style.innerHTML = `
-      #settings{
-        padding-bottom:180px;
-      }
-
-      .settingsHub{
-        display:flex;
-        flex-direction:column;
-        gap:16px;
-      }
+      #settings{padding-bottom:180px}
+      .settingsHub{display:flex;flex-direction:column;gap:16px}
 
       .settingsHero{
-        position:relative;
-        overflow:hidden;
-        border-radius:34px;
-        padding:24px;
-        color:#fff;
-        background:
-          radial-gradient(circle at top left,rgba(255,255,255,.22),transparent 34%),
-          linear-gradient(135deg,#064e3b,#0f766e 45%,#14b8a6);
-        box-shadow:0 22px 46px rgba(15,118,110,.25);
-      }
-
-      .settingsHeroTop{
-        display:flex;
-        align-items:flex-start;
-        justify-content:space-between;
-        gap:14px;
-      }
-
-      .settingsHero h2{
-        margin:0 0 8px;
-        font-size:28px;
-        font-weight:950;
-        letter-spacing:-.3px;
-      }
-
-      .settingsHero p{
-        margin:0;
-        opacity:.92;
-        line-height:1.8;
-        font-size:14px;
-      }
-
-      .settingsLogo{
-        width:68px;
-        height:68px;
-        border-radius:24px;
-        background:rgba(255,255,255,.18);
-        border:1px solid rgba(255,255,255,.2);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:32px;
-        font-weight:950;
-        backdrop-filter:blur(12px);
-        flex:0 0 auto;
-      }
-
-      .settingsHeroStats{
-        display:grid;
-        grid-template-columns:repeat(4,1fr);
-        gap:10px;
-        margin-top:18px;
-      }
-
-      .settingsStat{
-        background:rgba(255,255,255,.14);
-        border:1px solid rgba(255,255,255,.18);
-        border-radius:20px;
-        padding:12px;
-        backdrop-filter:blur(10px);
-      }
-
-      .settingsStat b{
-        display:block;
-        font-size:18px;
-        font-weight:950;
-      }
-
-      .settingsStat span{
-        font-size:11px;
-        opacity:.86;
-      }
-
-      .settingsProfileCard,
-      .settingsPanel,
-      .settingsAccordion{
-        background:var(--card,#fff);
-        border:1px solid var(--line,#e5e7eb);
-        border-radius:28px;
-        box-shadow:0 14px 35px rgba(15,23,42,.06);
-      }
-
-      .settingsProfileCard{
-        padding:18px;
-      }
-
-      .profileFlex{
-        display:flex;
-        align-items:center;
-        gap:14px;
-      }
-
-      .settingsAvatar{
-        width:72px;
-        height:72px;
-        border-radius:25px;
-        background:linear-gradient(135deg,#0f766e,#14b8a6);
-        color:#fff;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:32px;
-        font-weight:950;
-        box-shadow:0 12px 28px rgba(15,118,110,.22);
-        flex:0 0 auto;
-      }
-
-      .settingsProfileInfo{
-        flex:1;
-        min-width:0;
-      }
-
-      .settingsProfileInfo h3{
-        margin:0 0 5px;
-        font-size:22px;
-        font-weight:950;
-        color:var(--txt,#111827);
-      }
-
-      .settingsProfileInfo p{
-        margin:0;
-        color:var(--muted,#667085);
-        font-size:13px;
-        line-height:1.7;
-      }
-
-      .syncBadge{
-        border:0;
-        background:#ecfdf5;
-        color:#0f766e;
-        padding:8px 12px;
-        border-radius:999px;
-        font-size:12px;
-        font-weight:950;
-        white-space:nowrap;
-      }
-
-      .settingsQuickGrid{
-        display:grid;
-        grid-template-columns:repeat(4,1fr);
-        gap:10px;
-        margin-top:14px;
-      }
-
-      .quickItem{
-        border:1px solid var(--line,#e5e7eb);
-        border-radius:18px;
-        padding:11px 10px;
-        background:rgba(15,118,110,.04);
-      }
-
-      .quickItem b{
-        display:block;
-        color:var(--txt,#111827);
-        font-size:15px;
-        font-weight:950;
-      }
-
-      .quickItem span{
-        color:var(--muted,#667085);
-        font-size:11px;
-      }
-
-      .settingsPanel{
-        padding:16px;
-      }
-
-      .settingsPanelTitle{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        margin-bottom:12px;
-      }
-
-      .settingsPanelTitle h3{
-        margin:0;
-        color:var(--txt,#111827);
-        font-size:21px;
-        font-weight:950;
-      }
-
-      .settingsPanelTitle span{
-        color:var(--muted,#667085);
-        font-size:12px;
-        white-space:nowrap;
-      }
-
-      .settingsHealthGrid{
-        display:grid;
-        grid-template-columns:repeat(2,1fr);
-        gap:10px;
-      }
-
-      .healthCheck{
-        border-radius:18px;
-        padding:12px;
-        border:1px solid var(--line,#e5e7eb);
-        background:rgba(255,255,255,.7);
-      }
-
-      body.dark .healthCheck{
-        background:rgba(255,255,255,.04);
-      }
-
-      .healthCheck b{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:10px;
-        color:var(--txt,#111827);
-        font-size:14px;
-      }
-
-      .healthCheck small{
-        display:block;
-        color:var(--muted,#667085);
-        margin-top:6px;
-        line-height:1.6;
-      }
-
-      .statusDot{
-        width:11px;
-        height:11px;
-        border-radius:50%;
-        display:inline-block;
-        background:#22c55e;
-        flex:0 0 auto;
-      }
-
-      .statusDot.warn{background:#f59e0b}
-      .statusDot.bad{background:#ef4444}
-
-      .accordionList{
-        display:flex;
-        flex-direction:column;
-        gap:12px;
-      }
-
-      .settingsAccordion{
-        overflow:hidden;
-      }
-
-      .accHead{
-        width:100%;
-        border:0;
-        background:transparent;
-        padding:16px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        cursor:pointer;
-        text-align:inherit;
-        color:var(--txt,#111827);
-      }
-
-      .accTitle{
-        display:flex;
-        align-items:center;
-        gap:12px;
-        min-width:0;
-      }
-
-      .accIcon{
-        width:46px;
-        height:46px;
-        border-radius:18px;
-        background:#ecfdf5;
-        color:#0f766e;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:23px;
-        flex:0 0 auto;
-      }
-
-      .accTitle b{
-        display:block;
-        color:var(--txt,#111827);
-        font-size:17px;
-        font-weight:950;
-      }
-
-      .accTitle span{
-        display:block;
-        color:var(--muted,#667085);
-        font-size:12px;
-        margin-top:3px;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-        max-width:230px;
-      }
-
-      .accRight{
-        display:flex;
-        align-items:center;
-        gap:8px;
-      }
-
-      .accChevron{
-        width:30px;
-        height:30px;
-        border-radius:12px;
-        background:rgba(100,116,139,.1);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        color:var(--muted,#667085);
-        transition:.2s ease;
-        font-weight:950;
-      }
-
-      .settingsAccordion.open .accChevron{
-        transform:rotate(180deg);
-      }
-
-      .accBody{
-        display:none;
-        padding:0 16px 16px;
-      }
-
-      .settingsAccordion.open .accBody{
-        display:block;
-      }
-
-      .divider{
-        height:1px;
-        background:var(--line,#e5e7eb);
-        margin-bottom:14px;
-      }
-
-      .settingsForm{
-        display:grid;
-        grid-template-columns:repeat(2,1fr);
-        gap:12px;
-      }
-
-      .settingsField{
-        display:flex;
-        flex-direction:column;
-        gap:7px;
-      }
-
-      .settingsField.full{
-        grid-column:1/-1;
-      }
-
-      .settingsField label{
-        font-weight:900;
-        color:var(--muted,#667085);
-        font-size:13px;
-      }
-
-      .settingsField input,
-      .settingsField select,
-      .settingsField textarea{
-        width:100%;
-        border:1px solid var(--line,#e5e7eb);
-        background:var(--bg,#f8fafc);
-        color:var(--txt,#111827);
-        border-radius:18px;
-        padding:14px 15px;
-        font-size:16px;
-        outline:none;
-        min-height:50px;
-      }
-
-      .settingsField textarea{
-        min-height:86px;
-        resize:vertical;
-        line-height:1.7;
-      }
-
-      .settingsField input:focus,
-      .settingsField select:focus,
-      .settingsField textarea:focus{
-        border-color:#0f766e;
-        box-shadow:0 0 0 4px rgba(15,118,110,.10);
-      }
-
-      .miniHint{
-        font-size:11px;
-        color:var(--muted,#667085);
-        line-height:1.6;
-      }
-
-      .settingsActions{
-        display:flex;
-        gap:10px;
-        flex-wrap:wrap;
-        margin-top:14px;
-      }
-
-      .settingsBtn{
-        border:0;
-        border-radius:18px;
-        padding:14px 18px;
-        font-weight:950;
-        font-size:14px;
-        cursor:pointer;
-        min-height:48px;
-      }
-
-      .settingsBtn.primary{
-        background:#0f766e;
-        color:#fff;
-      }
-
-      .settingsBtn.soft{
-        background:#ecfdf5;
-        color:#0f766e;
-      }
-
-      .settingsBtn.gray{
-        background:#f1f5f9;
-        color:#475569;
-      }
-
-      .settingsBtn.danger{
-        background:#fee2e2;
-        color:#991b1b;
-      }
-
-      .settingsBtn.dark{
-        background:#111827;
-        color:#fff;
-      }
-
-      .settingsRows{
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-      }
-
-      .settingsRow{
-        border:1px solid var(--line,#e5e7eb);
-        border-radius:20px;
-        padding:14px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        background:rgba(255,255,255,.55);
-      }
-
-      body.dark .settingsRow{
-        background:rgba(255,255,255,.04);
-      }
-
-      .settingsRow b{
-        color:var(--txt,#111827);
-        font-size:14px;
-      }
-
-      .settingsRow span{
-        color:var(--muted,#667085);
-        font-size:12px;
-        line-height:1.6;
-      }
-
-      .pill{
-        border-radius:999px;
-        padding:7px 11px;
-        font-size:11px;
-        font-weight:950;
-        white-space:nowrap;
-        background:#f1f5f9;
-        color:#64748b;
-      }
-
-      .pill.ready{
-        background:#ecfdf5;
-        color:#0f766e;
-      }
-
-      .pill.warn{
-        background:#fffbeb;
-        color:#b45309;
-      }
-
-      .pill.danger{
-        background:#fee2e2;
-        color:#991b1b;
-      }
-
-      .toggleLine{
-        border:1px solid var(--line,#e5e7eb);
-        border-radius:20px;
-        padding:13px 14px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-      }
-
-      .toggleLine b{
-        color:var(--txt,#111827);
-        display:block;
-        font-size:14px;
-      }
-
-      .toggleLine span{
-        display:block;
-        color:var(--muted,#667085);
-        font-size:12px;
-        margin-top:3px;
-        line-height:1.6;
-      }
-
-      .switch{
-        position:relative;
-        width:54px;
-        height:31px;
-        flex:0 0 auto;
-      }
-
-      .switch input{
-        opacity:0;
-        width:0;
-        height:0;
-      }
-
-      .slider{
-        position:absolute;
-        cursor:pointer;
-        inset:0;
-        background:#cbd5e1;
-        transition:.2s;
-        border-radius:999px;
-      }
-
-      .slider:before{
-        content:"";
-        position:absolute;
-        height:25px;
-        width:25px;
-        left:3px;
-        bottom:3px;
-        background:white;
-        transition:.2s;
-        border-radius:50%;
-        box-shadow:0 4px 12px rgba(0,0,0,.18);
-      }
-
-      .switch input:checked + .slider{
-        background:#0f766e;
-      }
-
-      .switch input:checked + .slider:before{
-        transform:translateX(23px);
-      }
-
-      html[dir="rtl"] .slider:before{
-        left:auto;
-        right:3px;
-      }
-
-      html[dir="rtl"] .switch input:checked + .slider:before{
-        transform:translateX(-23px);
-      }
-
-      .livePreview{
-        border-radius:22px;
-        padding:16px;
-        background:linear-gradient(135deg,rgba(15,118,110,.10),rgba(20,184,166,.06));
-        border:1px solid rgba(15,118,110,.16);
-        margin-top:14px;
-      }
-
-      .livePreview h4{
-        margin:0 0 8px;
-        color:var(--txt,#111827);
-        font-size:16px;
-        font-weight:950;
-      }
-
-      .livePreview p{
-        margin:0;
-        color:var(--muted,#667085);
-        line-height:1.8;
-        font-size:13px;
-      }
-
-      .backupBox{
-        border:2px dashed rgba(15,118,110,.35);
-        background:rgba(15,118,110,.04);
-        border-radius:22px;
-        padding:16px;
-      }
-
-      .backupBox input{
-        display:none;
-      }
-
-      .backupLabel{
-        display:block;
-        cursor:pointer;
-        color:#0f766e;
-        font-weight:950;
-        text-align:center;
-      }
-
-      .dangerZone{
-        border-color:#fecaca;
-        background:#fff7f7;
-      }
-
-      body.dark .dangerZone{
-        background:rgba(127,29,29,.18);
-      }
-
-      .settingsToast{
-        position:fixed;
-        right:18px;
-        left:18px;
-        bottom:96px;
-        z-index:9999;
-        background:#0f766e;
-        color:white;
-        padding:14px 16px;
-        border-radius:20px;
-        box-shadow:0 20px 45px rgba(15,23,42,.22);
-        font-weight:900;
-        text-align:center;
-        transform:translateY(120px);
-        opacity:0;
-        transition:.25s ease;
-      }
-
-      .settingsToast.show{
-        transform:translateY(0);
-        opacity:1;
-      }
-
-      .modalOverlay{
-        position:fixed;
-        inset:0;
-        background:rgba(15,23,42,.50);
-        z-index:99999;
-        display:flex;
-        align-items:flex-end;
-        justify-content:center;
-        padding:16px;
-      }
-
-      .settingsModal{
-        width:100%;
-        max-width:520px;
-        background:var(--card,#fff);
-        color:var(--txt,#111827);
-        border-radius:28px;
-        padding:20px;
-        box-shadow:0 25px 60px rgba(0,0,0,.25);
-        border:1px solid var(--line,#e5e7eb);
-      }
-
-      .settingsModal h3{
-        margin:0 0 8px;
-        font-size:22px;
-        font-weight:950;
-      }
-
-      .settingsModal p{
-        margin:0;
-        color:var(--muted,#667085);
-        line-height:1.8;
-      }
-
-      .modalActions{
-        display:flex;
-        gap:10px;
-        margin-top:16px;
-      }
-
-      .modalActions button{
-        flex:1;
-      }
+        position:relative;overflow:hidden;border-radius:34px;padding:24px;color:#fff;
+        background:radial-gradient(circle at top left,rgba(255,255,255,.22),transparent 34%),
+        linear-gradient(135deg,#064e3b,#0f766e 45%,#14b8a6);
+        box-shadow:0 22px 46px rgba(15,118,110,.25)
+      }
+      .settingsHeroTop{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+      .settingsHero h2{margin:0 0 8px;font-size:28px;font-weight:950}
+      .settingsHero p{margin:0;opacity:.92;line-height:1.8;font-size:14px}
+      .settingsLogo{width:68px;height:68px;border-radius:24px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:950;flex:0 0 auto}
+      .settingsHeroStats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+      .settingsStat{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:12px}
+      .settingsStat b{display:block;font-size:18px;font-weight:950}
+      .settingsStat span{font-size:11px;opacity:.86}
+
+      .settingsProfileCard,.settingsPanel,.settingsAccordion{
+        background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);
+        border-radius:28px;box-shadow:0 14px 35px rgba(15,23,42,.06)
+      }
+      .settingsProfileCard,.settingsPanel{padding:18px}
+      .topLoginCard{border:2px solid rgba(15,118,110,.18);background:linear-gradient(180deg,#fff,#f0fdfa)}
+      body.dark .topLoginCard{background:rgba(15,118,110,.08)}
+
+      .profileFlex{display:flex;align-items:center;gap:14px}
+      .settingsAvatar{width:72px;height:72px;border-radius:25px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:950;flex:0 0 auto}
+      .settingsProfileInfo{flex:1;min-width:0}
+      .settingsProfileInfo h3{margin:0 0 5px;font-size:22px;font-weight:950;color:var(--txt,#111827)}
+      .settingsProfileInfo p{margin:0;color:var(--muted,#667085);font-size:13px;line-height:1.7}
+      .syncBadge{border:0;background:#ecfdf5;color:#0f766e;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:950;white-space:nowrap}
+
+      .settingsQuickGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+      .quickItem{border:1px solid var(--line,#e5e7eb);border-radius:18px;padding:11px 10px;background:rgba(15,118,110,.04)}
+      .quickItem b{display:block;color:var(--txt,#111827);font-size:15px;font-weight:950}
+      .quickItem span{color:var(--muted,#667085);font-size:11px}
+
+      .settingsPanelTitle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+      .settingsPanelTitle h3{margin:0;color:var(--txt,#111827);font-size:21px;font-weight:950}
+      .settingsPanelTitle span{color:var(--muted,#667085);font-size:12px;white-space:nowrap}
+
+      .settingsHealthGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+      .healthCheck{border-radius:18px;padding:12px;border:1px solid var(--line,#e5e7eb);background:rgba(255,255,255,.7)}
+      body.dark .healthCheck{background:rgba(255,255,255,.04)}
+      .healthCheck b{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--txt,#111827);font-size:14px}
+      .healthCheck small{display:block;color:var(--muted,#667085);margin-top:6px;line-height:1.6}
+      .statusDot{width:11px;height:11px;border-radius:50%;display:inline-block;background:#22c55e;flex:0 0 auto}
+      .statusDot.warn{background:#f59e0b}.statusDot.bad{background:#ef4444}
+
+      .accordionList{display:flex;flex-direction:column;gap:12px}
+      .settingsAccordion{overflow:hidden}
+      .accHead{width:100%;border:0;background:transparent;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;text-align:inherit;color:var(--txt,#111827)}
+      .accTitle{display:flex;align-items:center;gap:12px;min-width:0}
+      .accIcon{width:46px;height:46px;border-radius:18px;background:#ecfdf5;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:23px;flex:0 0 auto}
+      .accTitle b{display:block;color:var(--txt,#111827);font-size:17px;font-weight:950}
+      .accTitle span{display:block;color:var(--muted,#667085);font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px}
+      .accRight{display:flex;align-items:center;gap:8px}
+      .accChevron{width:30px;height:30px;border-radius:12px;background:rgba(100,116,139,.1);display:flex;align-items:center;justify-content:center;color:var(--muted,#667085);transition:.2s;font-weight:950}
+      .settingsAccordion.open .accChevron{transform:rotate(180deg)}
+      .accBody{display:none;padding:0 16px 16px}
+      .settingsAccordion.open .accBody{display:block}
+      .divider{height:1px;background:var(--line,#e5e7eb);margin-bottom:14px}
+
+      .settingsForm{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+      .settingsField{display:flex;flex-direction:column;gap:7px}
+      .settingsField.full{grid-column:1/-1}
+      .settingsField label{font-weight:900;color:var(--muted,#667085);font-size:13px}
+      .settingsField input,.settingsField select,.settingsField textarea{
+        width:100%;border:1px solid var(--line,#e5e7eb);background:var(--bg,#f8fafc);
+        color:var(--txt,#111827);border-radius:18px;padding:14px 15px;font-size:16px;outline:none;min-height:50px
+      }
+      .settingsField textarea{min-height:86px;resize:vertical;line-height:1.7}
+      .settingsField input:focus,.settingsField select:focus,.settingsField textarea:focus{border-color:#0f766e;box-shadow:0 0 0 4px rgba(15,118,110,.10)}
+
+      .settingsActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+      .settingsBtn{border:0;border-radius:18px;padding:14px 18px;font-weight:950;font-size:14px;cursor:pointer;min-height:48px}
+      .settingsBtn.primary{background:#0f766e;color:#fff}
+      .settingsBtn.soft{background:#ecfdf5;color:#0f766e}
+      .settingsBtn.gray{background:#f1f5f9;color:#475569}
+      .settingsBtn.danger{background:#fee2e2;color:#991b1b}
+      .settingsBtn.dark{background:#111827;color:#fff}
+
+      .settingsRows{display:flex;flex-direction:column;gap:10px}
+      .settingsRow{border:1px solid var(--line,#e5e7eb);border-radius:20px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.55)}
+      body.dark .settingsRow{background:rgba(255,255,255,.04)}
+      .settingsRow b{color:var(--txt,#111827);font-size:14px}
+      .settingsRow span{color:var(--muted,#667085);font-size:12px;line-height:1.6}
+      .pill{border-radius:999px;padding:7px 11px;font-size:11px;font-weight:950;white-space:nowrap;background:#f1f5f9;color:#64748b}
+      .pill.ready{background:#ecfdf5;color:#0f766e}
+      .pill.warn{background:#fffbeb;color:#b45309}
+      .pill.danger{background:#fee2e2;color:#991b1b}
+
+      .toggleLine{border:1px solid var(--line,#e5e7eb);border-radius:20px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+      .toggleLine b{color:var(--txt,#111827);display:block;font-size:14px}
+      .toggleLine span{display:block;color:var(--muted,#667085);font-size:12px;margin-top:3px;line-height:1.6}
+      .switch{position:relative;width:54px;height:31px;flex:0 0 auto}
+      .switch input{opacity:0;width:0;height:0}
+      .slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;transition:.2s;border-radius:999px}
+      .slider:before{content:"";position:absolute;height:25px;width:25px;left:3px;bottom:3px;background:white;transition:.2s;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+      .switch input:checked + .slider{background:#0f766e}
+      .switch input:checked + .slider:before{transform:translateX(23px)}
+      html[dir="rtl"] .slider:before{left:auto;right:3px}
+      html[dir="rtl"] .switch input:checked + .slider:before{transform:translateX(-23px)}
+
+      .livePreview{border-radius:22px;padding:16px;background:linear-gradient(135deg,rgba(15,118,110,.10),rgba(20,184,166,.06));border:1px solid rgba(15,118,110,.16);margin-top:14px}
+      .livePreview h4{margin:0 0 8px;color:var(--txt,#111827);font-size:16px;font-weight:950}
+      .livePreview p{margin:0;color:var(--muted,#667085);line-height:1.8;font-size:13px}
+
+      .backupBox{border:2px dashed rgba(15,118,110,.35);background:rgba(15,118,110,.04);border-radius:22px;padding:16px}
+      .backupBox input{display:none}
+      .backupLabel{display:block;cursor:pointer;color:#0f766e;font-weight:950;text-align:center}
+      .dangerZone{border-color:#fecaca;background:#fff7f7}
+      body.dark .dangerZone{background:rgba(127,29,29,.18)}
+
+      .settingsToast{position:fixed;right:18px;left:18px;bottom:96px;z-index:9999;background:#0f766e;color:white;padding:14px 16px;border-radius:20px;box-shadow:0 20px 45px rgba(15,23,42,.22);font-weight:900;text-align:center;transform:translateY(120px);opacity:0;transition:.25s}
+      .settingsToast.show{transform:translateY(0);opacity:1}
+      .modalOverlay{position:fixed;inset:0;background:rgba(15,23,42,.50);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+      .settingsModal{width:100%;max-width:520px;background:var(--card,#fff);color:var(--txt,#111827);border-radius:28px;padding:20px;box-shadow:0 25px 60px rgba(0,0,0,.25);border:1px solid var(--line,#e5e7eb)}
+      .settingsModal h3{margin:0 0 8px;font-size:22px;font-weight:950}
+      .settingsModal p{margin:0;color:var(--muted,#667085);line-height:1.8}
+      .modalActions{display:flex;gap:10px;margin-top:16px}.modalActions button{flex:1}
 
       @media(max-width:720px){
-        .settingsHeroStats,
-        .settingsQuickGrid{
-          grid-template-columns:repeat(2,1fr);
-        }
-
-        .settingsForm,
-        .settingsHealthGrid{
-          grid-template-columns:1fr;
-        }
-
-        .settingsHero h2{
-          font-size:24px;
-        }
-
-        .settingsLogo{
-          width:58px;
-          height:58px;
-          border-radius:21px;
-          font-size:28px;
-        }
-
-        .accTitle span{
-          max-width:190px;
-        }
-
-        .settingsActions .settingsBtn{
-          flex:1 1 auto;
-        }
+        .settingsHeroStats,.settingsQuickGrid{grid-template-columns:repeat(2,1fr)}
+        .settingsForm,.settingsHealthGrid{grid-template-columns:1fr}
+        .settingsHero h2{font-size:24px}
+        .settingsLogo{width:58px;height:58px;border-radius:21px;font-size:28px}
+        .accTitle span{max-width:190px}
+        .settingsActions .settingsBtn{flex:1 1 auto}
       }
     `;
     document.head.appendChild(style);
@@ -804,7 +221,6 @@
 
     saveJSON(LS_SETTINGS, S);
     window.S = S;
-
     saveJSON(LS_APP, app);
   }
 
@@ -822,28 +238,11 @@
     const done = Math.abs(startWeight - currentWeight);
     const progress = total ? Math.max(0, Math.min(100, (done / total) * 100)) : 0;
     const bmi = height && currentWeight ? currentWeight / Math.pow(height / 100, 2) : 0;
-
     const today = new Date().toISOString().slice(0, 10);
     const todaySteps = SD.find(x => x.d === today)?.steps || 0;
+    const nutritionCount = Array.isArray(nutrition.meals) ? nutrition.meals.length : Object.keys(nutrition || {}).length;
 
-    const nutritionCount = Array.isArray(nutrition.meals)
-      ? nutrition.meals.length
-      : Object.keys(nutrition || {}).length;
-
-    return {
-      S,
-      D,
-      SD,
-      nutrition,
-      currentWeight,
-      startWeight,
-      goalWeight,
-      height,
-      progress,
-      bmi,
-      todaySteps,
-      nutritionCount
-    };
+    return { S, D, SD, nutrition, currentWeight, startWeight, goalWeight, height, progress, bmi, todaySteps, nutritionCount };
   }
 
   function fieldValue(id) {
@@ -867,10 +266,10 @@
     const app = getAppSettings();
     const data = calcDashboard();
     const S = data.S;
-
+    const cloud = window.LiyaqtiSync?.status?.() || {};
     const userName = safe(S.name, "مستخدم Liyaqti");
-    const email = safe(S.email || app.mockUserEmail, "لا يوجد بريد");
-    const syncStatus = app.mockLogin ? "متصل تجريبي" : "محلي";
+    const email = safe(cloud.email || S.email || app.mockUserEmail, "لا يوجد بريد");
+    const syncStatus = cloud.loggedIn ? "Cloud" : "محلي";
     const completion = profileCompletion(S);
     const dataHealth = dataHealthScore(data);
     const previewText = buildPreviewText(data);
@@ -886,7 +285,6 @@
             </div>
             <div class="settingsLogo">L</div>
           </div>
-
           <div class="settingsHeroStats">
             ${heroStat(`${safe(data.currentWeight, "--")}`, "الوزن الحالي")}
             ${heroStat(`${safe(data.goalWeight, "--")}`, "الهدف")}
@@ -894,6 +292,8 @@
             ${heroStat(`${dataHealth}%`, "صحة البيانات")}
           </div>
         </section>
+
+        ${topLoginCard(app, S)}
 
         <section class="settingsProfileCard">
           <div class="profileFlex">
@@ -922,9 +322,8 @@
             ${healthCheck("بيانات الوزن", data.D.length ? "ممتاز، توجد تسجيلات وزن." : "لا توجد تسجيلات وزن بعد.", data.D.length ? "ok" : "warn")}
             ${healthCheck("إعدادات الهدف", data.startWeight && data.goalWeight ? "البداية والهدف موجودين." : "اكمل وزن البداية والهدف.", data.startWeight && data.goalWeight ? "ok" : "warn")}
             ${healthCheck("الطول و BMI", data.height ? "الطول موجود ويمكن حساب BMI." : "أضف الطول لتحسين التحليل.", data.height ? "ok" : "warn")}
-            ${healthCheck("النسخ الاحتياطي", "استخدم تصدير JSON لحفظ نسخة خارجية.", "ok")}
+            ${healthCheck("النسخ الاحتياطي", cloud.loggedIn ? "المزامنة السحابية جاهزة." : "سجّل دخولك لتفعيل النسخ السحابي.", cloud.loggedIn ? "ok" : "warn")}
           </div>
-
           <div class="livePreview">
             <h4>👁️ معاينة مباشرة</h4>
             <p id="settingsLivePreview">${previewText}</p>
@@ -940,8 +339,8 @@
           ${accordion("notifications", "🔔", "الإشعارات", "تذكير الوزن، الماء، الوجبات، النشاط والنوم", app.defaultOpen, notificationsContent(S))}
           ${accordion("ai", "🤖", "الذكاء الاصطناعي", "AI Coach، التحليل التلقائي والتوصيات", app.defaultOpen, aiContent(S))}
           ${accordion("appearance", "🎨", "المظهر والتجربة", "اللغة، الثيم، حجم الخط، الرئيسية والشارتات", app.defaultOpen, appearanceContent(app))}
-          ${accordion("account", "🔐", "تسجيل الدخول والحساب", "حساب تجريبي مؤقت وتجهيز للسحابة", app.defaultOpen, accountContent(app, S))}
-          ${accordion("sync", "☁️", "المزامنة والحساب السحابي", "آخر مزامنة، الأجهزة، Apple وGoogle Login", app.defaultOpen, syncContent(app))}
+          ${accordion("account", "🔐", "تسجيل الدخول والحساب", "حساب سحابي حقيقي وتجهيز للمنصة", app.defaultOpen, accountContent(app, S))}
+          ${accordion("sync", "☁️", "المزامنة والحساب السحابي", "آخر مزامنة، الأجهزة، Cloud Sync", app.defaultOpen, syncContent(app))}
           ${accordion("backup", "💾", "النسخ الاحتياطي والبيانات", "تصدير واستيراد JSON وإحصائيات البيانات", app.defaultOpen, backupContent(data))}
           ${accordion("privacy", "🔒", "الخصوصية والأمان", "Face ID، PIN، التشفير والصلاحيات", app.defaultOpen, privacyContent(app))}
           ${accordion("integrations", "🔗", "التكاملات", "Apple Health، Apple Watch، Google Fit والأجهزة", app.defaultOpen, integrationsContent())}
@@ -956,31 +355,16 @@
   }
 
   function heroStat(value, label) {
-    return `
-      <div class="settingsStat">
-        <b>${value}</b>
-        <span>${label}</span>
-      </div>
-    `;
+    return `<div class="settingsStat"><b>${value}</b><span>${label}</span></div>`;
   }
 
   function quickItem(value, label) {
-    return `
-      <div class="quickItem">
-        <b>${value}</b>
-        <span>${label}</span>
-      </div>
-    `;
+    return `<div class="quickItem"><b>${value}</b><span>${label}</span></div>`;
   }
 
   function healthCheck(title, text, status) {
     const cls = status === "ok" ? "" : status === "bad" ? "bad" : "warn";
-    return `
-      <div class="healthCheck">
-        <b>${title}<i class="statusDot ${cls}"></i></b>
-        <small>${text}</small>
-      </div>
-    `;
+    return `<div class="healthCheck"><b>${title}<i class="statusDot ${cls}"></i></b><small>${text}</small></div>`;
   }
 
   function accordion(id, icon, title, subtitle, openId, content, danger = false) {
@@ -991,43 +375,66 @@
         <button class="accHead" type="button" onclick="toggleSettingsAccordion('${id}')">
           <div class="accTitle">
             <div class="accIcon">${icon}</div>
-            <div>
-              <b>${title}</b>
-              <span>${subtitle}</span>
-            </div>
+            <div><b>${title}</b><span>${subtitle}</span></div>
           </div>
           <div class="accRight">
             <em class="pill ${danger ? "danger" : "ready"}">${idLabel(id)}</em>
             <div class="accChevron">⌄</div>
           </div>
         </button>
-        <div class="accBody">
-          <div class="divider"></div>
-          ${content}
-        </div>
+        <div class="accBody"><div class="divider"></div>${content}</div>
       </section>
     `;
   }
 
   function idLabel(id) {
     const map = {
-      profile: "V2",
-      health: "V2",
-      goals: "V2",
-      nutrition: "V2",
-      activity: "V3",
-      notifications: "V3",
-      ai: "V3",
-      appearance: "V3",
-      account: "V4",
-      sync: "V4/V5",
-      backup: "V4",
-      privacy: "V4",
-      integrations: "V5",
-      about: "Info",
-      maintenance: "خطر"
+      profile: "V2", health: "V2", goals: "V2", nutrition: "V2",
+      activity: "V3", notifications: "V3", ai: "V3", appearance: "V3",
+      account: "V4", sync: "V4/V5", backup: "V4", privacy: "V4",
+      integrations: "V5", about: "Info", maintenance: "خطر"
     };
     return map[id] || "Settings";
+  }
+
+  function topLoginCard(app, S) {
+    const cloud = window.LiyaqtiSync?.status?.() || {};
+    const isCloud = cloud.loggedIn;
+    const email = safe(cloud.email || S.email || app.mockUserEmail, "");
+
+    return `
+      <section class="settingsPanel topLoginCard">
+        <div class="settingsPanelTitle">
+          <h3>🔐 الحساب والمزامنة</h3>
+          <span>${isCloud ? "متصل بالسحابة" : "سجّل دخولك أولاً"}</span>
+        </div>
+
+        <div class="settingsRows">
+          ${row("حالة الحساب", isCloud ? "مسجل دخول بحساب سحابي حقيقي." : "سجّل دخولك حتى تحفظ بياناتك بالسحابة وتستخدمها من أي جهاز.", isCloud ? "نشط" : "محلي")}
+          ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
+          ${row("Multi Device", isCloud ? "أي جهاز يسجل بنفس الحساب يقدر يسترجع نفس البيانات." : "يتفعل بعد تسجيل الدخول.", isCloud ? "جاهز" : "قريباً")}
+        </div>
+
+        <div class="settingsForm" style="margin-top:12px">
+          ${input("cloudEmail", "البريد الإلكتروني", email, "example@email.com")}
+          ${input("cloudPassword", "كلمة المرور", "", "6 أحرف أو أكثر", "password")}
+        </div>
+
+        <div class="settingsActions">
+          <button class="settingsBtn primary" onclick="liyaqtiCloudLogin()">تسجيل دخول</button>
+          <button class="settingsBtn soft" onclick="liyaqtiCloudRegister()">إنشاء حساب</button>
+          <button class="settingsBtn gray" onclick="liyaqtiCloudLogout()">تسجيل خروج</button>
+        </div>
+
+        ${isCloud ? `
+          <div class="settingsActions">
+            <button class="settingsBtn primary" onclick="liyaqtiCloudBackup()">رفع للسحابة</button>
+            <button class="settingsBtn soft" onclick="liyaqtiCloudRestore()">استرجاع من السحابة</button>
+            <button class="settingsBtn dark" onclick="liyaqtiSmartSync()">مزامنة ذكية</button>
+          </div>
+        ` : ""}
+      </section>
+    `;
   }
 
   function profileContent(S) {
@@ -1038,15 +445,10 @@
         ${input("setPhone", "رقم الهاتف", safe(S.phone), "+971")}
         ${input("setBirthDate", "تاريخ الميلاد", safe(S.birthDate), "", "date")}
         ${input("setAge", "العمر", safe(S.age), "29", "number")}
-        ${select("setGender", "الجنس", safe(S.gender), [
-          ["", "غير محدد"],
-          ["male", "ذكر"],
-          ["female", "أنثى"]
-        ])}
+        ${select("setGender", "الجنس", safe(S.gender), [["", "غير محدد"], ["male", "ذكر"], ["female", "أنثى"]])}
         ${input("setCountry", "الدولة", safe(S.country, "UAE"), "UAE")}
         ${input("setTimezone", "المنطقة الزمنية", safe(S.timezone, "Asia/Dubai"), "Asia/Dubai")}
-      </div>
-      ${saveButtons()}
+      </div>${saveButtons()}
     `;
   }
 
@@ -1058,36 +460,18 @@
         ${input("setGoal", "الوزن المستهدف", safe(S.goal), "75", "number")}
         ${input("setWaist", "محيط الخصر cm", safe(S.waist), "اختياري", "number")}
         ${input("setBodyFat", "نسبة الدهون %", safe(S.bodyFat), "اختياري", "number")}
-        ${select("setWeightUnit", "وحدة الوزن", safe(S.weightUnit, "kg"), [
-          ["kg", "Kilogram - kg"],
-          ["lb", "Pound - lb"]
-        ])}
-        ${select("setHeightUnit", "وحدة الطول", safe(S.heightUnit, "cm"), [
-          ["cm", "Centimeter - cm"],
-          ["ft", "Feet - ft"]
-        ])}
-        ${select("setActivity", "مستوى النشاط", safe(S.activity, "low"), [
-          ["low", "خفيف"],
-          ["medium", "متوسط"],
-          ["high", "عالي"]
-        ])}
+        ${select("setWeightUnit", "وحدة الوزن", safe(S.weightUnit, "kg"), [["kg", "Kilogram - kg"], ["lb", "Pound - lb"]])}
+        ${select("setHeightUnit", "وحدة الطول", safe(S.heightUnit, "cm"), [["cm", "Centimeter - cm"], ["ft", "Feet - ft"]])}
+        ${select("setActivity", "مستوى النشاط", safe(S.activity, "low"), [["low", "خفيف"], ["medium", "متوسط"], ["high", "عالي"]])}
         ${textarea("setHealthNotes", "الأمراض / الحساسية / الأدوية", safe(S.healthNotes), "اختياري")}
-      </div>
-      ${saveButtons()}
+      </div>${saveButtons()}
     `;
   }
 
   function goalsContent(S) {
     return `
       <div class="settingsForm">
-        ${select("setGoalType", "نوع الهدف", safe(S.goalType, "loss"), [
-          ["loss", "نزول وزن"],
-          ["gain", "زيادة وزن"],
-          ["muscle", "بناء عضل"],
-          ["fitness", "هدف رياضي"],
-          ["steps", "هدف خطوات"],
-          ["custom", "هدف مخصص"]
-        ])}
+        ${select("setGoalType", "نوع الهدف", safe(S.goalType, "loss"), [["loss", "نزول وزن"], ["gain", "زيادة وزن"], ["muscle", "بناء عضل"], ["fitness", "هدف رياضي"], ["steps", "هدف خطوات"], ["custom", "هدف مخصص"]])}
         ${input("setGoalDate", "تاريخ الوصول للهدف", safe(S.goalDate), "", "date")}
         ${input("setStepsGoal", "هدف الخطوات", safe(S.stepsGoal, 8000), "8000", "number")}
         ${input("setCaloriesGoal", "هدف السعرات", safe(S.caloriesGoal), "1800", "number")}
@@ -1095,54 +479,29 @@
         ${input("setWaterGoal", "هدف الماء L", safe(S.waterGoal), "2.5", "number")}
         ${input("setTrainingDays", "أيام التدريب أسبوعياً", safe(S.trainingDays), "4", "number")}
         ${input("setSleepGoal", "هدف النوم ساعات", safe(S.sleepGoal), "7", "number")}
-      </div>
-      ${saveButtons()}
+      </div>${saveButtons()}
     `;
   }
 
   function nutritionContent(S) {
     return `
       <div class="settingsForm">
-        ${select("setDietType", "النظام الغذائي", safe(S.dietType, "normal"), [
-          ["normal", "عادي"],
-          ["balanced", "متوازن"],
-          ["highProtein", "عالي البروتين"],
-          ["lowCarb", "Low Carb"],
-          ["keto", "Keto"],
-          ["vegetarian", "نباتي"]
-        ])}
+        ${select("setDietType", "النظام الغذائي", safe(S.dietType, "normal"), [["normal", "عادي"], ["balanced", "متوازن"], ["highProtein", "عالي البروتين"], ["lowCarb", "Low Carb"], ["keto", "Keto"], ["vegetarian", "نباتي"]])}
         ${input("setMealsCount", "عدد الوجبات", safe(S.mealsCount, 3), "3", "number")}
-        ${select("setFasting", "الصيام المتقطع", safe(S.fasting, "off"), [
-          ["off", "غير مفعل"],
-          ["16-8", "16:8"],
-          ["14-10", "14:10"],
-          ["ramadan", "رمضان"]
-        ])}
+        ${select("setFasting", "الصيام المتقطع", safe(S.fasting, "off"), [["off", "غير مفعل"], ["16-8", "16:8"], ["14-10", "14:10"], ["ramadan", "رمضان"]])}
         ${input("setBreakfastTime", "وقت أول وجبة", safe(S.breakfastTime), "08:00", "time")}
         ${input("setLastMealTime", "وقت آخر وجبة", safe(S.lastMealTime), "21:00", "time")}
         ${input("setFoodPrefs", "الأطعمة المفضلة", safe(S.foodPrefs), "مثال: رز، دجاج، سلطة")}
         ${textarea("setFoodAvoid", "أطعمة لا تفضلها / حساسية", safe(S.foodAvoid), "اختياري")}
-      </div>
-      ${saveButtons()}
+      </div>${saveButtons()}
     `;
   }
 
   function activityContent(S) {
     return `
       <div class="settingsForm">
-        ${select("setMainSport", "الرياضة المفضلة", safe(S.mainSport, "walking"), [
-          ["walking", "مشي"],
-          ["running", "ركض"],
-          ["cycling", "دراجة"],
-          ["gym", "نادي"],
-          ["swimming", "سباحة"],
-          ["mixed", "متنوع"]
-        ])}
-        ${select("setCaloriesMode", "طريقة حساب السعرات", safe(S.caloriesMode, "auto"), [
-          ["auto", "تلقائي"],
-          ["steps", "حسب الخطوات"],
-          ["activity", "حسب النشاط"]
-        ])}
+        ${select("setMainSport", "الرياضة المفضلة", safe(S.mainSport, "walking"), [["walking", "مشي"], ["running", "ركض"], ["cycling", "دراجة"], ["gym", "نادي"], ["swimming", "سباحة"], ["mixed", "متنوع"]])}
+        ${select("setCaloriesMode", "طريقة حساب السعرات", safe(S.caloriesMode, "auto"), [["auto", "تلقائي"], ["steps", "حسب الخطوات"], ["activity", "حسب النشاط"]])}
         ${input("setBmr", "BMR يدوي", safe(S.bmr), "اختياري", "number")}
         ${input("setTdee", "TDEE يدوي", safe(S.tdee), "اختياري", "number")}
       </div>
@@ -1150,8 +509,7 @@
         ${row("Apple Health", "ربط الخطوات والوزن والنشاط من الآيفون.", "قريباً")}
         ${row("Apple Watch", "مزامنة التمارين والنبض والسعرات.", "قريباً")}
         ${row("Google Fit", "دعم أندرويد مستقبلاً.", "V5")}
-      </div>
-      ${saveButtons()}
+      </div>${saveButtons()}
     `;
   }
 
@@ -1167,8 +525,7 @@
       </div>
       <div class="settingsForm" style="margin-top:12px">
         ${input("setNotifyTime", "وقت التنبيه الأساسي", safe(S.notifyTime, "20:00"), "", "time")}
-      </div>
-      ${saveButtons()}
+      </div>${saveButtons()}
     `;
   }
 
@@ -1181,13 +538,8 @@
         ${toggle("aiMonthly", "تحليل شهري", "ملخص شهري شامل.", S.aiMonthly)}
       </div>
       <div class="settingsForm" style="margin-top:12px">
-        ${select("setAiLevel", "مستوى النصائح", safe(S.aiLevel, "balanced"), [
-          ["simple", "مختصر"],
-          ["balanced", "متوازن"],
-          ["advanced", "تفصيلي"]
-        ])}
-      </div>
-      ${saveButtons()}
+        ${select("setAiLevel", "مستوى النصائح", safe(S.aiLevel, "balanced"), [["simple", "مختصر"], ["balanced", "متوازن"], ["advanced", "تفصيلي"]])}
+      </div>${saveButtons()}
     `;
   }
 
@@ -1199,31 +551,11 @@
         ${toggle("appShowHomeCards", "إظهار كروت الرئيسية", "تحكم مستقبلي في بطاقات الصفحة الرئيسية.", app.showHomeCards)}
       </div>
       <div class="settingsForm" style="margin-top:12px">
-        ${select("appLanguage", "اللغة", safe(app.language, "ar"), [
-          ["ar", "العربية"],
-          ["en", "English"]
-        ])}
-        ${select("appTheme", "الثيم", safe(app.theme, "system"), [
-          ["system", "حسب الجهاز"],
-          ["light", "فاتح"],
-          ["dark", "داكن"]
-        ])}
-        ${select("appAccent", "لون التطبيق", safe(app.accent, "teal"), [
-          ["teal", "أخضر Liyaqti"],
-          ["blue", "أزرق"],
-          ["purple", "بنفسجي"],
-          ["black", "أسود"]
-        ])}
-        ${select("appFontSize", "حجم الخط", safe(app.fontSize, "normal"), [
-          ["small", "صغير"],
-          ["normal", "عادي"],
-          ["large", "كبير"]
-        ])}
-        ${select("appChartsStyle", "شكل الرسوم", safe(app.chartsStyle, "premium"), [
-          ["simple", "بسيط"],
-          ["premium", "Premium"],
-          ["compact", "مختصر"]
-        ])}
+        ${select("appLanguage", "اللغة", safe(app.language, "ar"), [["ar", "العربية"], ["en", "English"]])}
+        ${select("appTheme", "الثيم", safe(app.theme, "system"), [["system", "حسب الجهاز"], ["light", "فاتح"], ["dark", "داكن"]])}
+        ${select("appAccent", "لون التطبيق", safe(app.accent, "teal"), [["teal", "أخضر Liyaqti"], ["blue", "أزرق"], ["purple", "بنفسجي"], ["black", "أسود"]])}
+        ${select("appFontSize", "حجم الخط", safe(app.fontSize, "normal"), [["small", "صغير"], ["normal", "عادي"], ["large", "كبير"]])}
+        ${select("appChartsStyle", "شكل الرسوم", safe(app.chartsStyle, "premium"), [["simple", "بسيط"], ["premium", "Premium"], ["compact", "مختصر"]])}
       </div>
       <div class="settingsActions">
         <button class="settingsBtn primary" onclick="saveAppearanceSettings()">حفظ المظهر</button>
@@ -1233,49 +565,26 @@
   }
 
   function accountContent(app, S) {
-  const cloud = window.LiyaqtiSync?.status?.() || {};
-  const isCloud = cloud.loggedIn;
-  const email = safe(cloud.email || S.email || app.mockUserEmail, "");
-
-  return `
-    <div class="settingsRows">
-      ${row("الحالة الحالية", isCloud ? "مسجل دخول بحساب سحابي حقيقي." : "غير مسجل دخول حالياً.", isCloud ? "نشط" : "محلي")}
-      ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
-      ${row("نوع الحساب", isCloud ? "Firebase Auth" : "Local Storage فقط", isCloud ? "جاهز" : "محلي")}
-    </div>
-
-    <div class="settingsForm" style="margin-top:12px">
-      ${input("cloudEmail", "البريد الإلكتروني", email, "example@email.com")}
-      ${input("cloudPassword", "كلمة المرور", "", "6 أحرف أو أكثر", "password")}
-    </div>
-
-    <div class="settingsActions">
-      <button class="settingsBtn primary" onclick="liyaqtiCloudLogin()">تسجيل دخول</button>
-      <button class="settingsBtn soft" onclick="liyaqtiCloudRegister()">إنشاء حساب</button>
-      <button class="settingsBtn gray" onclick="liyaqtiCloudLogout()">تسجيل خروج</button>
-    </div>
-  `;
-}
+    return topLoginCard(app, S);
+  }
 
   function syncContent(app) {
-  const cloud = window.LiyaqtiSync?.status?.() || {};
-  const isCloud = cloud.loggedIn;
-
-  return `
-    <div class="settingsRows">
-      ${row("حالة المزامنة", isCloud ? "متصل بالسحابة وجاهز للمزامنة." : "سجّل دخول أولاً لتفعيل المزامنة.", isCloud ? "جاهز" : "محلي")}
-      ${row("الحساب", safe(cloud.email, "غير مسجل"), isCloud ? "Cloud" : "Local")}
-      ${row("آخر مزامنة", safe(app.lastSync, "لم تتم أي مزامنة بعد."), "Info")}
-      ${row("Multi Device", "أي جهاز يسجل بنفس الحساب يقدر يسترجع نفس البيانات.", isCloud ? "جاهز" : "قريباً")}
-    </div>
-
-    <div class="settingsActions">
-      <button class="settingsBtn primary" onclick="liyaqtiCloudBackup()">رفع للسحابة</button>
-      <button class="settingsBtn soft" onclick="liyaqtiCloudRestore()">استرجاع من السحابة</button>
-      <button class="settingsBtn dark" onclick="liyaqtiSmartSync()">مزامنة ذكية</button>
-    </div>
-  `;
-}
+    const cloud = window.LiyaqtiSync?.status?.() || {};
+    const isCloud = cloud.loggedIn;
+    return `
+      <div class="settingsRows">
+        ${row("حالة المزامنة", isCloud ? "متصل بالسحابة وجاهز للمزامنة." : "سجّل دخول أولاً لتفعيل المزامنة.", isCloud ? "جاهز" : "محلي")}
+        ${row("الحساب", safe(cloud.email, "غير مسجل"), isCloud ? "Cloud" : "Local")}
+        ${row("آخر مزامنة", safe(app.lastSync, "لم تتم أي مزامنة بعد."), "Info")}
+        ${row("Multi Device", "أي جهاز يسجل بنفس الحساب يقدر يسترجع نفس البيانات.", isCloud ? "جاهز" : "قريباً")}
+      </div>
+      <div class="settingsActions">
+        <button class="settingsBtn primary" onclick="liyaqtiCloudBackup()">رفع للسحابة</button>
+        <button class="settingsBtn soft" onclick="liyaqtiCloudRestore()">استرجاع من السحابة</button>
+        <button class="settingsBtn dark" onclick="liyaqtiSmartSync()">مزامنة ذكية</button>
+      </div>
+    `;
+  }
 
   function backupContent(data) {
     return `
@@ -1285,12 +594,10 @@
         ${row("بيانات التغذية", `${data.nutritionCount} عنصر/سجل محفوظ`, "Local")}
         ${row("حجم البيانات", `${estimateStorageSize()} KB تقريباً`, "Info")}
       </div>
-
       <div class="settingsActions">
         <button class="settingsBtn primary" onclick="exportLiyaqtiData()">تصدير JSON</button>
         <button class="settingsBtn soft" onclick="document.getElementById('importLiyaqtiFile').click()">استيراد JSON</button>
       </div>
-
       <div class="backupBox" style="margin-top:12px">
         <input id="importLiyaqtiFile" type="file" accept="application/json" onchange="importLiyaqtiData(event)">
         <label class="backupLabel" for="importLiyaqtiFile">📥 اضغط هنا لاختيار ملف النسخة الاحتياطية</label>
@@ -1329,11 +636,11 @@
     return `
       <div class="settingsRows">
         ${row("اسم التطبيق", "Liyaqti | لياقتي", "Premium")}
-        ${row("الإصدار", "Settings Hub Accordion V10", "جاهز")}
+        ${row("الإصدار", "Settings Hub Accordion V11", "جاهز")}
         ${row("المطور", "Yousif Alhosani", "Owner")}
         ${row("الوصف", "رفيقك الذكي للصحة، الوزن، التغذية واللياقة.", "Liyaqti")}
         ${row("آخر تحديث", new Date().toLocaleDateString("ar-AE"), "اليوم")}
-        ${row("What's New", "تحويل الإعدادات إلى Settings Hub بأقسام Accordion.", "New")}
+        ${row("What's New", "إضافة تسجيل دخول واضح في بداية الإعدادات وربط Firebase Sync.", "New")}
       </div>
       <div class="settingsActions">
         <button class="settingsBtn soft" onclick="showToast('شكراً لاقتراحاتك، بنضيف نموذج تواصل لاحقاً')">إرسال اقتراح</button>
@@ -1360,21 +667,11 @@
   }
 
   function input(id, label, value, placeholder = "", type = "text") {
-    return `
-      <div class="settingsField">
-        <label>${label}</label>
-        <input id="${id}" type="${type}" value="${safe(value)}" placeholder="${placeholder}" data-auto-save="1">
-      </div>
-    `;
+    return `<div class="settingsField"><label>${label}</label><input id="${id}" type="${type}" value="${safe(value)}" placeholder="${placeholder}" data-auto-save="1"></div>`;
   }
 
   function textarea(id, label, value, placeholder = "") {
-    return `
-      <div class="settingsField full">
-        <label>${label}</label>
-        <textarea id="${id}" placeholder="${placeholder}" data-auto-save="1">${safe(value)}</textarea>
-      </div>
-    `;
+    return `<div class="settingsField full"><label>${label}</label><textarea id="${id}" placeholder="${placeholder}" data-auto-save="1">${safe(value)}</textarea></div>`;
   }
 
   function select(id, label, current, options) {
@@ -1391,10 +688,7 @@
   function toggle(id, title, desc, isChecked) {
     return `
       <div class="toggleLine">
-        <div>
-          <b>${title}</b>
-          <span>${desc}</span>
-        </div>
+        <div><b>${title}</b><span>${desc}</span></div>
         <label class="switch">
           <input id="${id}" type="checkbox" ${isChecked ? "checked" : ""} data-auto-save="1">
           <span class="slider"></span>
@@ -1404,14 +698,11 @@
   }
 
   function row(title, desc, status) {
-    const ready = ["جاهز", "نشط", "Local", "Premium", "Owner", "Liyaqti", "اليوم", "آمن", "New"].includes(status);
+    const ready = ["جاهز", "نشط", "Local", "Cloud", "Premium", "Owner", "Liyaqti", "اليوم", "آمن", "New"].includes(status);
     const danger = ["خطر"].includes(status);
     return `
       <div class="settingsRow">
-        <div>
-          <b>${title}</b><br>
-          <span>${desc}</span>
-        </div>
+        <div><b>${title}</b><br><span>${desc}</span></div>
         <em class="pill ${danger ? "danger" : ready ? "ready" : "warn"}">${status}</em>
       </div>
     `;
@@ -1447,12 +738,7 @@
 
   function buildPreviewText(data) {
     const S = data.S;
-    const cur = data.currentWeight || S.start || "--";
-    const goal = S.goal || "--";
-    const stepsGoal = S.stepsGoal || 8000;
-    const protein = S.proteinGoal || "--";
-    const water = S.waterGoal || "--";
-    return `وزنك الحالي ${cur} كجم، هدفك ${goal} كجم، هدف الخطوات ${stepsGoal} خطوة، البروتين ${protein}g، والماء ${water}L.`;
+    return `وزنك الحالي ${data.currentWeight || S.start || "--"} كجم، هدفك ${S.goal || "--"} كجم، هدف الخطوات ${S.stepsGoal || 8000} خطوة، البروتين ${S.proteinGoal || "--"}g، والماء ${S.waterGoal || "--"}L.`;
   }
 
   function collectMainSettings() {
@@ -1515,14 +801,11 @@
     document.querySelectorAll("#settings [data-auto-save='1']").forEach(el => {
       el.addEventListener("input", () => {
         updateLivePreview();
-        const app = getAppSettings();
-        if (app.autoSave) debouncedAutoSave();
+        if (getAppSettings().autoSave) debouncedAutoSave();
       });
-
       el.addEventListener("change", () => {
         updateLivePreview();
-        const app = getAppSettings();
-        if (app.autoSave) debouncedAutoSave();
+        if (getAppSettings().autoSave) debouncedAutoSave();
       });
     });
   }
@@ -1545,6 +828,7 @@
       if (typeof render === "function") render();
       if (typeof renderHomeDashboard === "function") renderHomeDashboard();
       if (typeof renderSteps === "function") renderSteps();
+      if (typeof renderAdvancedReports === "function") renderAdvancedReports();
     } catch (e) {}
   }
 
@@ -1569,10 +853,7 @@
     if (!current) return;
 
     const willOpen = !current.classList.contains("open");
-
-    document.querySelectorAll("#settings .settingsAccordion").forEach(x => {
-      x.classList.remove("open");
-    });
+    document.querySelectorAll("#settings .settingsAccordion").forEach(x => x.classList.remove("open"));
 
     if (willOpen) {
       current.classList.add("open");
@@ -1582,10 +863,7 @@
   };
 
   window.openSettingsSection = function (id) {
-    document.querySelectorAll("#settings .settingsAccordion").forEach(x => {
-      x.classList.remove("open");
-    });
-
+    document.querySelectorAll("#settings .settingsAccordion").forEach(x => x.classList.remove("open"));
     const el = document.querySelector(`#settings [data-acc="${id}"]`);
     if (el) {
       el.classList.add("open");
@@ -1672,71 +950,10 @@
     showToast("✅ تم حفظ إعدادات الخصوصية");
   };
 
-  window.mockLogin = function () {
-    const email = fieldValue("mockEmail");
-    if (!email) return showToast("اكتب البريد أولاً");
-
-    const app = {
-      ...getAppSettings(),
-      mockLogin: true,
-      mockUserEmail: email,
-      lastSync: new Date().toLocaleString("ar-AE")
-    };
-
-    const S = {
-      ...getSettings(),
-      email
-    };
-
-    saveJSON(LS_APP, app);
-    saveJSON(LS_SETTINGS, S);
-    window.S = S;
-
-    showToast("✅ تم تسجيل الدخول التجريبي");
-    renderSettings();
-  };
-
-  window.mockLogout = function () {
-    const app = {
-      ...getAppSettings(),
-      mockLogin: false
-    };
-    saveJSON(LS_APP, app);
-    showToast("تم تسجيل الخروج التجريبي");
-    renderSettings();
-  };
-
-  window.confirmDeleteAccount = function () {
-    showConfirm(
-      "حذف الحساب التجريبي؟",
-      "سيتم حذف حالة تسجيل الدخول التجريبية فقط، ولن يتم حذف بيانات الوزن أو التغذية.",
-      () => {
-        const app = {
-          ...getAppSettings(),
-          mockLogin: false,
-          mockUserEmail: ""
-        };
-        saveJSON(LS_APP, app);
-        showToast("تم حذف الحساب التجريبي");
-        renderSettings();
-      }
-    );
-  };
-
-  window.fakeSyncNow = function () {
-    const app = {
-      ...getAppSettings(),
-      lastSync: new Date().toLocaleString("ar-AE")
-    };
-    saveJSON(LS_APP, app);
-    showToast("✅ تمت المزامنة التجريبية محلياً");
-    renderSettings();
-  };
-
   window.exportLiyaqtiData = function () {
     const data = {
       app: "Liyaqti",
-      version: "Settings Hub Accordion V10",
+      version: "Settings Hub Accordion V11",
       exportedAt: new Date().toISOString(),
       settings: readJSON(LS_SETTINGS, {}),
       appSettings: readJSON(LS_APP, {}),
@@ -1745,10 +962,7 @@
       nutrition: readJSON(LS_NUTRITION, {})
     };
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json"
-    });
-
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -1770,30 +984,15 @@
     reader.onload = function () {
       try {
         const data = JSON.parse(reader.result);
-
-        showConfirm(
-          "استيراد النسخة الاحتياطية؟",
-          "سيتم استبدال بيانات الإعدادات والوزن والخطوات والتغذية حسب الملف.",
-          () => {
-            if (data.settings) {
-              saveJSON(LS_SETTINGS, data.settings);
-              window.S = data.settings;
-            }
-            if (data.appSettings) saveJSON(LS_APP, data.appSettings);
-            if (data.weights) {
-              saveJSON(LS_WEIGHTS, data.weights);
-              window.D = data.weights;
-            }
-            if (data.steps) {
-              saveJSON(LS_STEPS, data.steps);
-              window.SD = data.steps;
-            }
-            if (data.nutrition) saveJSON(LS_NUTRITION, data.nutrition);
-
-            showToast("✅ تم استيراد النسخة بنجاح");
-            setTimeout(() => location.reload(), 900);
-          }
-        );
+        showConfirm("استيراد النسخة الاحتياطية؟", "سيتم استبدال بيانات الإعدادات والوزن والخطوات والتغذية حسب الملف.", () => {
+          if (data.settings) { saveJSON(LS_SETTINGS, data.settings); window.S = data.settings; }
+          if (data.appSettings) saveJSON(LS_APP, data.appSettings);
+          if (data.weights) { saveJSON(LS_WEIGHTS, data.weights); window.D = data.weights; }
+          if (data.steps) { saveJSON(LS_STEPS, data.steps); window.SD = data.steps; }
+          if (data.nutrition) saveJSON(LS_NUTRITION, data.nutrition);
+          showToast("✅ تم استيراد النسخة بنجاح");
+          setTimeout(() => location.reload(), 900);
+        });
       } catch (e) {
         showToast("ملف غير صالح");
       }
@@ -1804,54 +1003,40 @@
 
   window.recalculateLiyaqti = function () {
     refreshMainApp();
-    try {
-      if (typeof draw === "function") draw();
-    } catch (e) {}
+    try { if (typeof draw === "function") draw(); } catch (e) {}
     showToast("✅ تم إعادة احتساب التحليلات");
   };
 
   window.clearSettingsCache = function () {
-    showConfirm(
-      "تنظيف الكاش؟",
-      "سيتم حذف إعدادات الواجهة فقط مثل آخر قسم مفتوح والمظهر التجريبي.",
-      () => {
-        localStorage.removeItem(LS_APP);
-        showToast("تم تنظيف الكاش");
-        renderSettings();
-      }
-    );
+    showConfirm("تنظيف الكاش؟", "سيتم حذف إعدادات الواجهة فقط مثل آخر قسم مفتوح والمظهر التجريبي.", () => {
+      localStorage.removeItem(LS_APP);
+      showToast("تم تنظيف الكاش");
+      renderSettings();
+    });
   };
 
   window.confirmClearWeightSteps = function () {
-    showConfirm(
-      "مسح الوزن والخطوات؟",
-      "سيتم حذف تسجيلات الوزن والخطوات فقط. باقي الإعدادات والتغذية لن تتأثر.",
-      () => {
-        saveJSON(LS_WEIGHTS, []);
-        saveJSON(LS_STEPS, []);
-        window.D = [];
-        window.SD = [];
-        refreshMainApp();
-        showToast("تم مسح الوزن والخطوات");
-        renderSettings();
-      }
-    );
+    showConfirm("مسح الوزن والخطوات؟", "سيتم حذف تسجيلات الوزن والخطوات فقط. باقي الإعدادات والتغذية لن تتأثر.", () => {
+      saveJSON(LS_WEIGHTS, []);
+      saveJSON(LS_STEPS, []);
+      window.D = [];
+      window.SD = [];
+      refreshMainApp();
+      showToast("تم مسح الوزن والخطوات");
+      renderSettings();
+    });
   };
 
   window.confirmClearEverything = function () {
-    showConfirm(
-      "مسح كل بيانات Liyaqti؟",
-      "هذا الإجراء يحذف الوزن، الخطوات، التغذية، الإعدادات، وبيانات التطبيق المحلية.",
-      () => {
-        Object.keys(localStorage).forEach(k => {
-          if (k.toLowerCase().includes("wazni") || k.toLowerCase().includes("liyaqti")) {
-            localStorage.removeItem(k);
-          }
-        });
-        showToast("تم مسح كل البيانات");
-        setTimeout(() => location.reload(), 900);
-      }
-    );
+    showConfirm("مسح كل بيانات Liyaqti؟", "هذا الإجراء يحذف الوزن، الخطوات، التغذية، الإعدادات، وبيانات التطبيق المحلية.", () => {
+      Object.keys(localStorage).forEach(k => {
+        if (k.toLowerCase().includes("wazni") || k.toLowerCase().includes("liyaqti")) {
+          localStorage.removeItem(k);
+        }
+      });
+      showToast("تم مسح كل البيانات");
+      setTimeout(() => location.reload(), 900);
+    });
   };
 
   window.showToast = function (message, duration = 2200) {
@@ -1867,9 +1052,7 @@
     toast.classList.add("show");
 
     clearTimeout(window.__settingsToastTimer);
-    window.__settingsToastTimer = setTimeout(() => {
-      toast.classList.remove("show");
-    }, duration);
+    window.__settingsToastTimer = setTimeout(() => toast.classList.remove("show"), duration);
   };
 
   function showConfirm(title, message, onConfirm) {
@@ -1891,176 +1074,88 @@
     `;
 
     document.body.appendChild(overlay);
-
     document.getElementById("settingsConfirmBtn").onclick = function () {
       overlay.remove();
       onConfirm();
     };
   }
-window.liyaqtiCloudLogin = async function () {
-  try {
-    const email = fieldValue("cloudEmail");
-    const password = fieldValue("cloudPassword");
 
+  window.liyaqtiCloudLogin = async function () {
+    try {
+      const email = fieldValue("cloudEmail");
+      const password = fieldValue("cloudPassword");
+      if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+      showToast("جاري تسجيل الدخول...");
+      await window.LiyaqtiSync.login(email, password);
+      renderSettings();
+    } catch (e) {
+      showToast(e.message || "تعذر تسجيل الدخول");
+    }
+  };
+
+  window.liyaqtiCloudRegister = async function () {
+    try {
+      const email = fieldValue("cloudEmail");
+      const password = fieldValue("cloudPassword");
+      if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+      showToast("جاري إنشاء الحساب...");
+      await window.LiyaqtiSync.register(email, password);
+      renderSettings();
+    } catch (e) {
+      showToast(e.message || "تعذر إنشاء الحساب");
+    }
+  };
+
+  window.liyaqtiCloudLogout = async function () {
+    try {
+      if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+      await window.LiyaqtiSync.logout();
+      renderSettings();
+    } catch (e) {
+      showToast(e.message || "تعذر تسجيل الخروج");
+    }
+  };
+
+  window.liyaqtiCloudBackup = async function () {
+    try {
+      if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+      showToast("جاري الرفع للسحابة...");
+      await window.LiyaqtiSync.backupNow(true);
+      showToast("✅ تم رفع البيانات للسحابة");
+      renderSettings();
+    } catch (e) {
+      showToast(e.message || "تعذر رفع البيانات للسحابة");
+    }
+  };
+
+  window.liyaqtiCloudRestore = async function () {
     if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
 
-    await window.LiyaqtiSync.login(email, password);
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر تسجيل الدخول");
-  }
-};
-
-window.liyaqtiCloudRegister = async function () {
-  try {
-    const email = fieldValue("cloudEmail");
-    const password = fieldValue("cloudPassword");
-
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.register(email, password);
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر إنشاء الحساب");
-  }
-};
-
-window.liyaqtiCloudLogout = async function () {
-  try {
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.logout();
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر تسجيل الخروج");
-  }
-};
-
-window.liyaqtiCloudBackup = async function () {
-  try {
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.backupNow(true);
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر رفع النسخة");
-  }
-};
-
-window.liyaqtiCloudRestore = async function () {
-  if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-  showConfirm(
-    "استرجاع النسخة السحابية؟",
-    "سيتم استبدال بيانات هذا الجهاز بآخر نسخة محفوظة في السحابة.",
-    async () => {
+    showConfirm("استرجاع النسخة السحابية؟", "سيتم استبدال بيانات هذا الجهاز بآخر نسخة محفوظة في السحابة.", async () => {
       try {
         await window.LiyaqtiSync.restoreCloud();
       } catch (e) {
-        showToast(e.message || "تعذر الاسترجاع");
+        showToast(e.message || "تعذر الاسترجاع من السحابة");
       }
+    });
+  };
+
+  window.liyaqtiSmartSync = async function () {
+    try {
+      if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+      showToast("جاري تنفيذ المزامنة الذكية...");
+      await window.LiyaqtiSync.smartSync(true);
+      showToast("✅ تمت المزامنة الذكية");
+      renderSettings();
+    } catch (e) {
+      showToast(e.message || "تعذر تنفيذ المزامنة الذكية");
     }
-  );
-};
+  };
 
-window.liyaqtiSmartSync = async function () {
-  try {
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+  window.addEventListener("liyaqti-auth-change", function () {
+    try { renderSettings(); } catch (e) {}
+  });
 
-    await window.LiyaqtiSync.smartSync();
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر تنفيذ المزامنة الذكية");
-  }
-};
-
-window.addEventListener("liyaqti-auth-change", function () {
-  try {
-    renderSettings();
-  } catch (e) {}
-});
-window.liyaqtiCloudLogin = async function () {
-  try {
-    const email = fieldValue("cloudEmail");
-    const password = fieldValue("cloudPassword");
-
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.login(email, password);
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر تسجيل الدخول");
-  }
-};
-
-window.liyaqtiCloudRegister = async function () {
-  try {
-    const email = fieldValue("cloudEmail");
-    const password = fieldValue("cloudPassword");
-
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.register(email, password);
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر إنشاء الحساب");
-  }
-};
-
-window.liyaqtiCloudLogout = async function () {
-  try {
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.logout();
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر تسجيل الخروج");
-  }
-};
-
-window.liyaqtiCloudBackup = async function () {
-  try {
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.backupNow(true);
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر رفع النسخة");
-  }
-};
-
-window.liyaqtiCloudRestore = async function () {
-  if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-  showConfirm(
-    "استرجاع النسخة السحابية؟",
-    "سيتم استبدال بيانات هذا الجهاز بآخر نسخة محفوظة في السحابة.",
-    async () => {
-      try {
-        await window.LiyaqtiSync.restoreCloud();
-      } catch (e) {
-        showToast(e.message || "تعذر الاسترجاع");
-      }
-    }
-  );
-};
-
-window.liyaqtiSmartSync = async function () {
-  try {
-    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
-
-    await window.LiyaqtiSync.smartSync();
-    renderSettings();
-  } catch (e) {
-    showToast(e.message || "تعذر تنفيذ المزامنة الذكية");
-  }
-};
-
-window.addEventListener("liyaqti-auth-change", function () {
-  try {
-    renderSettings();
-  } catch (e) {}
-});
   applyAppearanceSettings();
   renderSettings();
 })();
