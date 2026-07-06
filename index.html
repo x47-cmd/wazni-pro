@@ -635,11 +635,7 @@ if(!isNaN(p))return isoDate(new Date(p));
 return v;
 }
 
-date.value=isoDate();
-start.value=S.start;
-goal.value=S.goal;
-height.value=S.height;
-name.value=S.name;
+if(date) date.value=isoDate();
 
 D=D.map(x=>({...x,d:normDate(x.d)})).sort((a,b)=>a.d.localeCompare(b.d));
 SD=SD.map(x=>({...x,d:normDate(x.d),steps:+x.steps||0})).sort((a,b)=>a.d.localeCompare(b.d));
