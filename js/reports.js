@@ -6,7 +6,6 @@
 let liyaqtiReportRange = 30;
 let liyaqtiReportTab = "executive";
 let liyaqtiReportCharts = [];
-let liyaqtiReportTabsScroll = 0;
 
 // ---------- Core Helpers ----------
 function rpNum(v){
@@ -1352,30 +1351,10 @@ function renderAdvancedReports(){
 
   const page = document.getElementById("reports");
   if(!page) return;
-  const oldTabs = page.querySelector(".rp30-tabs");
-if(oldTabs){
-    liyaqtiReportTabsScroll = oldTabs.scrollLeft;
-}
 
   const s = rpStats();
 
   page.innerHTML = `
-  requestAnimationFrame(() => {
-
-    const tabs = page.querySelector(".rp30-tabs");
-    const active = page.querySelector(".rp30-tab.on");
-
-    if(tabs && active){
-
-        active.scrollIntoView({
-            behavior:"instant",
-            inline:"center",
-            block:"nearest"
-        });
-
-    }
-
-});
     <div class="rp30-wrap">
 
       <div class="rp30-hero">
@@ -1409,7 +1388,7 @@ if(oldTabs){
         ${rpRangeBtn("all","الكل")}
       </div>
 
-      <div class="rp30-tabs">
+      <div class="rp30-tabs" id="rp30Tabs">
         ${rpTab("executive","نظرة تنفيذية")}
         ${rpTab("weight","الوزن")}
         ${rpTab("goal","الهدف")}
@@ -1437,6 +1416,23 @@ if(oldTabs){
   if(liyaqtiReportTab === "calendar") c.innerHTML = rpCalendar(s);
   if(liyaqtiReportTab === "powerbi") c.innerHTML = rpPowerBI(s);
   if(liyaqtiReportTab === "coach") c.innerHTML = rpCoach(s);
+
+  requestAnimationFrame(()=>{
+    const tabs = document.getElementById("rp30Tabs");
+    const active = tabs ? tabs.querySelector(".rp30-tab.on") : null;
+
+    if(tabs && active){
+      const target =
+        active.offsetLeft -
+        (tabs.clientWidth / 2) +
+        (active.clientWidth / 2);
+
+      tabs.scrollTo({
+        left: target,
+        behavior: "auto"
+      });
+    }
+  });
 
   rpDestroyCharts();
 
