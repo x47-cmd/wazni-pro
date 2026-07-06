@@ -1013,5 +1013,10 @@ window.pg=function(id,b){
   if(id==="goalPage")setTimeout(renderGoalV90,80);
 };
 
+window.addEventListener("liyaqtiWeightChanged",renderGoalV90);
+window.addEventListener("liyaqtiStepsChanged",renderGoalV90);
+window.addEventListener("liyaqtiNutritionChanged",renderGoalV90);
+window.addEventListener("liyaqti:dataUpdated",renderGoalV90);
+
 setTimeout(renderGoalV90,150);
 })();
