@@ -68,7 +68,7 @@
     style.id = "liyaqtiSettingsHubStyle";
     style.innerHTML = `
       #settings{
-        padding-bottom:115px;
+        padding-bottom:180px;
       }
 
       .settingsHub{
