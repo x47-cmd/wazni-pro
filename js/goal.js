@@ -580,6 +580,22 @@ window.goalV90SaveGoal=function(){
     obj.stepGoal=n(document.getElementById("g90StepGoal").value,8000);
     obj.weeklyDays=n(document.getElementById("g90WeeklyDays").value,5);
   }
+  
+  try{
+  window.S = S;
+  localStorage.setItem("wazniS", JSON.stringify(S));
+
+  if(typeof window.renderHomeDashboard==="function"){
+    window.renderHomeDashboard();
+  }
+
+  if(typeof window.render==="function"){
+    window.render();
+  }
+
+  window.dispatchEvent(new Event("liyaqtiGoalChanged"));
+}catch(e){}
+
   if(t==="custom"){
     obj.customName=document.getElementById("g90CustomName").value||"هدفي الخاص";
     obj.progress=n(document.getElementById("g90CustomProgress").value,50);
