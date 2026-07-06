@@ -79,10 +79,28 @@ function tasks(){let t=read(K.TASK,{});if(!t[today()])t[today()]={};write(K.TASK
 function achievements(){return read(K.ACH,[])}
 
 function weights(){
-  return (window.D||read(K.W,[]))
-  .filter(x=>x&&x.w)
-  .map(x=>({d:x.d,w:n(x.w),st:n(x.st),cal:n(x.cal)}))
-  .sort((a,b)=>String(a.d).localeCompare(String(b.d)));
+  let arr=[];
+  try{
+    ["wazni","wazniData","wazniD","D"].forEach(k=>{
+      let v=localStorage.getItem(k);
+      if(!v)return;
+      try{
+        let j=JSON.parse(v);
+        if(Array.isArray(j))arr=arr.concat(j);
+      }catch(e){}
+    });
+  }catch(e){}
+
+  if(window.D&&Array.isArray(window.D))arr=arr.concat(window.D);
+
+  let map={};
+  arr.forEach(x=>{
+    let d=String(x.d||x.date||x.dt||x.day||"").slice(0,10);
+    let w=n(x.w||x.weight||x.kg);
+    if(d&&w>0)map[d]={d,w,st:n(x.st||x.steps),cal:n(x.cal||x.calories)};
+  });
+
+  return Object.values(map).sort((a,b)=>String(a.d).localeCompare(String(b.d)));
 }
 
 function steps(){
@@ -501,11 +519,43 @@ let s=document.createElement("style");
 s.id="goalV90Style";
 s.textContent=`
 .g90{display:grid;gap:16px;padding-bottom:20px}
-.g90Hero{color:white;border-radius:34px;padding:24px;background:linear-gradient(135deg,var(--g90c),#14b8a6);box-shadow:0 25px 60px rgba(15,118,110,.25)}
-.g90Hero h2{margin:0;font-size:28px;font-weight:950}
-.g90Hero p{margin:10px 0 0;line-height:1.8;font-weight:800;color:#effffb}
-.g90Chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-.g90Chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:9px 13px;font-weight:950}
+.g90Hero{
+  color:white;
+  border-radius:22px;
+  padding:14px 16px;
+  background:linear-gradient(135deg,var(--g90c),#14b8a6);
+  box-shadow:0 14px 30px rgba(15,118,110,.20);
+  overflow:hidden
+}
+.g90Hero h2{
+  margin:0;
+  font-size:18px;
+  font-weight:950;
+  line-height:1.25;
+  letter-spacing:-.4px
+}
+.g90Hero p{
+  margin:7px 0 0;
+  line-height:1.55;
+  font-size:12px;
+  font-weight:800;
+  color:#effffb;
+  opacity:.95
+}
+.g90Chips{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:10px
+}
+.g90Chip{
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:11px;
+  font-weight:950
+}
 .g90Card{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.07)}
 .g90Grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .g90Mini{background:#f8faf9;border:1px solid var(--line);border-radius:24px;padding:16px;min-height:92px}
@@ -779,15 +829,14 @@ function renderGoalV90(){
   root.innerHTML=`
   <div class="g90">
     <section class="g90Hero">
-      <h2>${mt.icon} ${mt.title}</h2>
-      <p>${mt.desc}</p>
-      <div class="g90Chips">
-        <div class="g90Chip">${mt.name}</div>
-        <div class="g90Chip">${mt.focus}</div>
-        <div class="g90Chip">مؤشر الهدف ${c.totalScore}%</div>
-        <div class="g90Chip">${risk(c)}</div>
-      </div>
-    </section>
+  <h2>${mt.icon} ${mt.title}</h2>
+  <p>${mt.desc}</p>
+  <div class="g90Chips">
+    <div class="g90Chip">${mt.focus}</div>
+    <div class="g90Chip">مؤشر الهدف ${c.totalScore}%</div>
+    <div class="g90Chip">${risk(c)}</div>
+  </div>
+</section>
 
     <section class="g90Card">
       <div class="g90Title">🧭 قرار ${mt.name}</div>
