@@ -207,8 +207,8 @@ function lastAchievement(){
 ========================= */
 
 function homeSaveWeight(){
-  const input=document.getElementById("homeWeightInputV15");
-  const msg=document.getElementById("homeQuickMsgV15");
+  const input=document.getElementById("homeWeightInputV16");
+const msg=document.getElementById("homeQuickMsgV16");
   const w=Number(input?.value);
 
   if(!w || w<30 || w>250){
@@ -248,8 +248,8 @@ function homeSaveWeight(){
 window.homeSaveWeight=homeSaveWeight;
 
 function homeSaveSteps(){
-  let input=q("homeStepsInputV15");
-  let msg=q("homeQuickMsgV15");
+  let input=q("homeStepsInputV16");
+let msg=q("homeQuickMsgV16");
   let steps=Math.round(num(input&&input.value));
 
   if(!steps || steps<1 || steps>100000){
