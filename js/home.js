@@ -244,6 +244,13 @@ function renderHome(){
   if(!root)return;
 
   let c=core();
+let freshS = {};
+try{
+  freshS = JSON.parse(localStorage.getItem("wazniS")) || {};
+}catch(e){}
+
+S = Object.assign(S || {}, freshS);
+c = core();
   let st=stepsCore();
   let nut=nutritionToday();
   let score=healthScore(c,st,nut);
