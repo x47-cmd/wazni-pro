@@ -1235,17 +1235,17 @@
   function accountContent(app, S) {
   const cloud = window.LiyaqtiSync?.status?.() || {};
   const isCloud = cloud.loggedIn;
-  const email = safe(cloud.email || S.email || app.mockUserEmail, "غير محدد");
+  const email = safe(cloud.email || S.email || app.mockUserEmail, "");
 
   return `
     <div class="settingsRows">
       ${row("الحالة الحالية", isCloud ? "مسجل دخول بحساب سحابي حقيقي." : "غير مسجل دخول حالياً.", isCloud ? "نشط" : "محلي")}
-      ${row("البريد", email, isCloud ? "Cloud" : "Local")}
+      ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
       ${row("نوع الحساب", isCloud ? "Firebase Auth" : "Local Storage فقط", isCloud ? "جاهز" : "محلي")}
     </div>
 
     <div class="settingsForm" style="margin-top:12px">
-      ${input("cloudEmail", "البريد الإلكتروني", safe(email === "غير محدد" ? "" : email), "example@email.com")}
+      ${input("cloudEmail", "البريد الإلكتروني", email, "example@email.com")}
       ${input("cloudPassword", "كلمة المرور", "", "6 أحرف أو أكثر", "password")}
     </div>
 
@@ -1267,8 +1267,6 @@
       ${row("الحساب", safe(cloud.email, "غير مسجل"), isCloud ? "Cloud" : "Local")}
       ${row("آخر مزامنة", safe(app.lastSync, "لم تتم أي مزامنة بعد."), "Info")}
       ${row("Multi Device", "أي جهاز يسجل بنفس الحساب يقدر يسترجع نفس البيانات.", isCloud ? "جاهز" : "قريباً")}
-      ${row("Apple Login", "تسجيل دخول بحساب Apple.", "V5")}
-      ${row("Google Login", "تسجيل دخول بحساب Google.", "V5")}
     </div>
 
     <div class="settingsActions">
@@ -1899,6 +1897,88 @@
       onConfirm();
     };
   }
+window.liyaqtiCloudLogin = async function () {
+  try {
+    const email = fieldValue("cloudEmail");
+    const password = fieldValue("cloudPassword");
+
+    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+
+    await window.LiyaqtiSync.login(email, password);
+    renderSettings();
+  } catch (e) {
+    showToast(e.message || "تعذر تسجيل الدخول");
+  }
+};
+
+window.liyaqtiCloudRegister = async function () {
+  try {
+    const email = fieldValue("cloudEmail");
+    const password = fieldValue("cloudPassword");
+
+    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+
+    await window.LiyaqtiSync.register(email, password);
+    renderSettings();
+  } catch (e) {
+    showToast(e.message || "تعذر إنشاء الحساب");
+  }
+};
+
+window.liyaqtiCloudLogout = async function () {
+  try {
+    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+
+    await window.LiyaqtiSync.logout();
+    renderSettings();
+  } catch (e) {
+    showToast(e.message || "تعذر تسجيل الخروج");
+  }
+};
+
+window.liyaqtiCloudBackup = async function () {
+  try {
+    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+
+    await window.LiyaqtiSync.backupNow(true);
+    renderSettings();
+  } catch (e) {
+    showToast(e.message || "تعذر رفع النسخة");
+  }
+};
+
+window.liyaqtiCloudRestore = async function () {
+  if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+
+  showConfirm(
+    "استرجاع النسخة السحابية؟",
+    "سيتم استبدال بيانات هذا الجهاز بآخر نسخة محفوظة في السحابة.",
+    async () => {
+      try {
+        await window.LiyaqtiSync.restoreCloud();
+      } catch (e) {
+        showToast(e.message || "تعذر الاسترجاع");
+      }
+    }
+  );
+};
+
+window.liyaqtiSmartSync = async function () {
+  try {
+    if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
+
+    await window.LiyaqtiSync.smartSync();
+    renderSettings();
+  } catch (e) {
+    showToast(e.message || "تعذر تنفيذ المزامنة الذكية");
+  }
+};
+
+window.addEventListener("liyaqti-auth-change", function () {
+  try {
+    renderSettings();
+  } catch (e) {}
+});
 window.liyaqtiCloudLogin = async function () {
   try {
     const email = fieldValue("cloudEmail");
