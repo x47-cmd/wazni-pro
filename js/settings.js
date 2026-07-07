@@ -1313,15 +1313,17 @@ saveJSON(LS_APP, app);
 })();
 
 /* =========================================================
-   Liyaqti Hidden Debug Center V1
-   تشخيص التخزين بدون Console
-   File: js/settings.js
+   Liyaqti Developer Center V1
+   Hidden: Tap logo/title 5 times
 ========================================================= */
 (function(){
-  if(window.__liyaqtiDebugCenterV1) return;
-  window.__liyaqtiDebugCenterV1 = true;
+  if(window.__liyaqtiDeveloperCenterV1) return;
+  window.__liyaqtiDeveloperCenterV1 = true;
 
-  const DEBUG_KEYS = [
+  let devTapCount = 0;
+  let devTapTimer = null;
+
+  const KEYS = [
     "wazni",
     "wazniS",
     "wazniSteps",
@@ -1336,40 +1338,29 @@ saveJSON(LS_APP, app);
     "liyaqtiAppSettings"
   ];
 
-  function readJSON(key, fallback){
+  function readJSON(k,fallback){
     try{
-      const raw = localStorage.getItem(key);
+      const raw = localStorage.getItem(k);
       return raw ? JSON.parse(raw) : fallback;
     }catch(e){
       return fallback;
     }
   }
 
-  function today(){
-    return new Date().toISOString().slice(0,10);
-  }
-
-  function sizeOf(key){
-    const raw = localStorage.getItem(key) || "";
-    return Math.round((raw.length / 1024) * 10) / 10;
-  }
-
   function arr(v){
     return Array.isArray(v) ? v : [];
   }
 
-  function sumNutrition(list){
-    list = arr(list);
-    return {
-      cal: Math.round(list.reduce((a,x)=>a+(+x.cal||0),0)),
-      p: Math.round(list.reduce((a,x)=>a+(+x.p||0),0)),
-      c: Math.round(list.reduce((a,x)=>a+(+x.c||0),0)),
-      f: Math.round(list.reduce((a,x)=>a+(+x.f||0),0)),
-      water: Math.round(list.reduce((a,x)=>a+(+x.water||0),0))
-    };
+  function kb(k){
+    const raw = localStorage.getItem(k) || "";
+    return Math.round((raw.length / 1024) * 10) / 10;
   }
 
-  function nutritionByDate(){
+  function sum(list, prop){
+    return Math.round(arr(list).reduce((a,x)=>a+(+x[prop]||0),0));
+  }
+
+  function nutritionDays(){
     const data = arr(readJSON("liyaqtiNutritionData", []));
     const map = {};
 
@@ -1381,122 +1372,167 @@ saveJSON(LS_APP, app);
 
     return Object.entries(map)
       .sort((a,b)=>String(b[0]).localeCompare(String(a[0])))
-      .map(([date,items])=>{
-        const s = sumNutrition(items);
-        return {date, count:items.length, ...s};
-      });
+      .map(([date,items])=>({
+        date,
+        meals: items.length,
+        cal: sum(items,"cal"),
+        p: sum(items,"p"),
+        c: sum(items,"c"),
+        f: sum(items,"f"),
+        water: sum(items,"water")
+      }));
   }
 
-  function weightInfo(){
-    const w = arr(readJSON("wazni", []));
-    return {
-      count: w.length,
-      last: w.length ? w[w.length-1] : null
-    };
+  function devData(){
+    const nutrition = arr(readJSON("liyaqtiNutritionData", []));
+    const foods = arr(readJSON("liyaqtiNutritionFoodLibrary", []));
+    const weights = arr(readJSON("wazni", []));
+    const steps = arr(readJSON("wazniSteps", []));
+    const settings = readJSON("wazniS", {});
+    const nSettings = readJSON("liyaqtiNutritionSettings", {});
+    const app = readJSON("liyaqtiAppSettings", {});
+
+    return {nutrition, foods, weights, steps, settings, nSettings, app};
   }
 
-  function stepsInfo(){
-    const s = arr(readJSON("wazniSteps", []));
-    return {
-      count: s.length,
-      last: s.length ? s[s.length-1] : null
-    };
+  function healthCheck(){
+    const d = devData();
+    const days = nutritionDays();
+
+    let checks = [];
+
+    checks.push({
+      name:"بيانات الوزن",
+      ok:d.weights.length > 0,
+      text:d.weights.length ? `ممتاز، توجد ${d.weights.length} قراءة وزن.` : "لا توجد قراءات وزن."
+    });
+
+    checks.push({
+      name:"بيانات الخطوات",
+      ok:d.steps.length > 0,
+      text:d.steps.length ? `ممتاز، توجد ${d.steps.length} قراءة خطوات.` : "لا توجد قراءات خطوات."
+    });
+
+    checks.push({
+      name:"بيانات التغذية",
+      ok:d.nutrition.length > 0,
+      text:d.nutrition.length ? `ممتاز، توجد ${d.nutrition.length} وجبة محفوظة.` : "لا توجد وجبات محفوظة."
+    });
+
+    checks.push({
+      name:"السجل التاريخي",
+      ok:days.length > 1,
+      text:days.length > 1 ? `ممتاز، التغذية محفوظة عبر ${days.length} أيام.` : `حالياً يوجد ${days.length} يوم فقط.`
+    });
+
+    checks.push({
+      name:"السعرات والماكروز",
+      ok:d.nutrition.some(x=>x.cal || x.p || x.c || x.f),
+      text:d.nutrition.some(x=>x.cal || x.p || x.c || x.f) ? "السعرات والماكروز محفوظة داخل الوجبات." : "بعض الوجبات قد تكون بدون سعرات."
+    });
+
+    checks.push({
+      name:"مكتبة الطعام",
+      ok:d.foods.length > 50,
+      text:d.foods.length ? `المكتبة تحتوي ${d.foods.length} صنف.` : "مكتبة الطعام غير محفوظة."
+    });
+
+    return checks;
   }
 
-  function openDebugCenter(){
-    let old = document.getElementById("liyaqtiDebugModal");
+  function openDeveloperCenter(){
+    const old = document.getElementById("liyaqtiDevCenter");
     if(old) old.remove();
 
-    const nutrition = arr(readJSON("liyaqtiNutritionData", []));
-    const settings = readJSON("liyaqtiNutritionSettings", {});
-    const foods = arr(readJSON("liyaqtiNutritionFoodLibrary", []));
-    const days = nutritionByDate();
-    const w = weightInfo();
-    const st = stepsInfo();
+    injectDevStyle();
+
+    const d = devData();
+    const days = nutritionDays();
+    const checks = healthCheck();
+
+    const totalKB = KEYS.reduce((a,k)=>a+kb(k),0).toFixed(1);
 
     const modal = document.createElement("div");
-    modal.id = "liyaqtiDebugModal";
+    modal.id = "liyaqtiDevCenter";
     modal.innerHTML = `
-      <div class="ldBg">
-        <div class="ldBox">
-          <div class="ldHead">
+      <div class="ldevBg">
+        <div class="ldevBox">
+
+          <div class="ldevHead">
             <div>
-              <small>Hidden Developer Tool</small>
-              <h2>🧪 مركز تشخيص Liyaqti</h2>
-              <p>يفحص التخزين المحلي، التغذية، الوزن، الخطوات، وحالة السجل التاريخي.</p>
+              <small>Developer Mode</small>
+              <h2>🛠️ مركز المطور</h2>
+              <p>تشخيص التخزين، التغذية، الوزن، الخطوات، والمزامنة.</p>
             </div>
-            <button onclick="document.getElementById('liyaqtiDebugModal').remove()">×</button>
+            <button onclick="document.getElementById('liyaqtiDevCenter').remove()">×</button>
           </div>
 
-          <div class="ldGrid">
-            <div>
-              <span>وجبات محفوظة</span>
-              <b>${nutrition.length}</b>
-            </div>
-            <div>
-              <span>أيام تغذية</span>
-              <b>${days.length}</b>
-            </div>
-            <div>
-              <span>مكتبة الطعام</span>
-              <b>${foods.length}</b>
-            </div>
-            <div>
-              <span>هدف السعرات</span>
-              <b>${settings.calories || "--"}</b>
-            </div>
-            <div>
-              <span>سجلات الوزن</span>
-              <b>${w.count}</b>
-            </div>
-            <div>
-              <span>سجلات الخطوات</span>
-              <b>${st.count}</b>
-            </div>
+          <div class="ldevGrid">
+            <div><span>الوجبات</span><b>${d.nutrition.length}</b></div>
+            <div><span>أيام التغذية</span><b>${days.length}</b></div>
+            <div><span>الوزن</span><b>${d.weights.length}</b></div>
+            <div><span>الخطوات</span><b>${d.steps.length}</b></div>
+            <div><span>مكتبة الطعام</span><b>${d.foods.length}</b></div>
+            <div><span>حجم التخزين</span><b>${totalKB} KB</b></div>
           </div>
 
-          <div class="ldCard">
-            <h3>📅 السجل الغذائي حسب التاريخ</h3>
+          <section class="ldevCard">
+            <h3>✅ فحص صحة البيانات</h3>
+            ${checks.map(x=>`
+              <div class="ldevCheck">
+                <i class="${x.ok ? "ok" : "bad"}"></i>
+                <div>
+                  <b>${x.name}</b>
+                  <span>${x.text}</span>
+                </div>
+              </div>
+            `).join("")}
+          </section>
+
+          <section class="ldevCard">
+            <h3>📅 التغذية حسب الأيام</h3>
             ${
               days.length
-              ? days.slice(0,30).map(d=>`
-                <div class="ldDay">
-                  <b>${d.date}</b>
-                  <span>${d.count} وجبة • ${d.cal} سعرة • P ${d.p}g • C ${d.c}g • F ${d.f}g • 💧 ${d.water}</span>
+              ? days.slice(0,40).map(x=>`
+                <div class="ldevDay">
+                  <b>${x.date}</b>
+                  <span>${x.meals} وجبة • ${x.cal} سعرة • P ${x.p}g • C ${x.c}g • F ${x.f}g • ماء ${x.water}</span>
                 </div>
               `).join("")
-              : `<div class="ldEmpty">لا توجد بيانات تغذية محفوظة.</div>`
+              : `<div class="ldevEmpty">لا توجد بيانات تغذية.</div>`
             }
-          </div>
+          </section>
 
-          <div class="ldCard">
-            <h3>💾 مفاتيح التخزين</h3>
-            ${DEBUG_KEYS.map(k=>{
+          <section class="ldevCard">
+            <h3>💾 Local Storage</h3>
+            ${KEYS.map(k=>{
               const raw = localStorage.getItem(k);
-              const val = readJSON(k, null);
+              const val = readJSON(k,null);
               const count = Array.isArray(val) ? val.length : (val && typeof val === "object" ? Object.keys(val).length : 0);
               return `
-                <div class="ldKey">
+                <div class="ldevKey">
                   <b>${k}</b>
-                  <span>${raw ? "موجود" : "غير موجود"} • ${sizeOf(k)} KB • عناصر: ${count}</span>
+                  <span>${raw ? "موجود" : "غير موجود"} • ${kb(k)} KB • عناصر: ${count}</span>
                 </div>
               `;
             }).join("")}
-          </div>
+          </section>
 
-          <div class="ldCard">
-            <h3>✅ نتيجة الفحص</h3>
-            <div class="ldResult">
-              ${nutrition.length && days.length ? "✅ التغذية محفوظة تاريخياً حسب التاريخ." : "⚠️ التغذية غير كافية للفحص."}<br>
-              ${days.length >= 2 ? "✅ يوجد أكثر من يوم، التقارير السنوية والشهرية ممكنة." : "ℹ️ حالياً يوجد يوم واحد فقط. أضف بيانات في يوم ثاني للتأكد النهائي."}<br>
-              ${nutrition.some(x=>x.cal || x.p || x.c || x.f) ? "✅ السعرات والماكروز محفوظة داخل الوجبات." : "⚠️ بعض الوجبات قد تكون محفوظة بدون سعرات/ماكروز."}
+          <section class="ldevCard">
+            <h3>☁️ المزامنة</h3>
+            <div class="ldevResult">
+              الحالة: ${d.app?.lastSync ? "يوجد سجل مزامنة" : "لا يوجد سجل مزامنة واضح"}<br>
+              آخر مزامنة: ${d.app?.lastSync || d.app?.lastSmartSync || "--"}<br>
+              آخر استرجاع: ${d.app?.lastCloudRestore || "--"}
             </div>
+          </section>
+
+          <div class="ldevActions">
+            <button onclick="window.liyaqtiDevCopy()">نسخ تقرير</button>
+            <button onclick="window.liyaqtiDevRefresh()">تحديث</button>
+            <button class="danger" onclick="document.getElementById('liyaqtiDevCenter').remove()">إغلاق</button>
           </div>
 
-          <div class="ldActions">
-            <button onclick="window.liyaqtiDebugCopy()">نسخ تقرير التشخيص</button>
-            <button class="danger" onclick="window.liyaqtiDebugClose()">إغلاق</button>
-          </div>
         </div>
       </div>
     `;
@@ -1504,260 +1540,260 @@ saveJSON(LS_APP, app);
     document.body.appendChild(modal);
   }
 
-  window.liyaqtiDebugClose = function(){
-    const m = document.getElementById("liyaqtiDebugModal");
-    if(m) m.remove();
+  window.liyaqtiDevRefresh = function(){
+    const old = document.getElementById("liyaqtiDevCenter");
+    if(old) old.remove();
+    openDeveloperCenter();
   };
 
-  window.liyaqtiDebugCopy = function(){
-    const nutrition = arr(readJSON("liyaqtiNutritionData", []));
-    const days = nutritionByDate();
+  window.liyaqtiDevCopy = function(){
+    const d = devData();
+    const days = nutritionDays();
 
-    const text = [
-      "Liyaqti Debug Report",
-      "--------------------",
-      "Nutrition Records: " + nutrition.length,
+    const report = [
+      "Liyaqti Developer Report",
+      "-------------------------",
+      "Nutrition Records: " + d.nutrition.length,
       "Nutrition Days: " + days.length,
+      "Weight Records: " + d.weights.length,
+      "Steps Records: " + d.steps.length,
+      "Food Library: " + d.foods.length,
       "",
-      ...days.slice(0,30).map(d=>`${d.date}: ${d.count} meals, ${d.cal} kcal, P ${d.p}g, C ${d.c}g, F ${d.f}g, Water ${d.water}`),
+      "Nutrition Days:",
+      ...days.map(x=>`${x.date}: ${x.meals} meals, ${x.cal} kcal, P ${x.p}, C ${x.c}, F ${x.f}, Water ${x.water}`),
       "",
       "Storage:",
-      ...DEBUG_KEYS.map(k=>`${k}: ${localStorage.getItem(k) ? "exists" : "missing"} - ${sizeOf(k)} KB`)
+      ...KEYS.map(k=>`${k}: ${localStorage.getItem(k) ? "exists" : "missing"} - ${kb(k)} KB`)
     ].join("\n");
 
-    navigator.clipboard?.writeText(text);
-    alert("تم نسخ تقرير التشخيص ✅");
+    navigator.clipboard?.writeText(report);
+    alert("تم نسخ تقرير المطور ✅");
   };
 
-  window.openLiyaqtiDebugCenter = openDebugCenter;
-
-  function injectDebugStyle(){
-    if(document.getElementById("liyaqtiDebugStyle")) return;
+  function injectDevStyle(){
+    if(document.getElementById("liyaqtiDevCenterStyle")) return;
 
     const st = document.createElement("style");
-    st.id = "liyaqtiDebugStyle";
+    st.id = "liyaqtiDevCenterStyle";
     st.innerHTML = `
-      .ldBg{
+      .ldevBg{
         position:fixed;
         inset:0;
-        background:rgba(15,23,42,.55);
-        z-index:99999;
+        background:rgba(15,23,42,.58);
+        z-index:999999;
         display:flex;
         align-items:flex-end;
+        direction:rtl;
       }
 
-      .ldBox{
+      .ldevBox{
         width:100%;
         max-height:92vh;
         overflow:auto;
         background:#fff;
         border-radius:28px 28px 0 0;
         padding:18px;
-        direction:rtl;
         color:#0f172a;
-        box-shadow:0 -20px 60px rgba(0,0,0,.22);
+        box-shadow:0 -24px 70px rgba(0,0,0,.25);
       }
 
-      .ldHead{
+      .ldevHead{
         display:flex;
         justify-content:space-between;
-        gap:12px;
         align-items:flex-start;
+        gap:12px;
         margin-bottom:14px;
       }
 
-      .ldHead small{
+      .ldevHead small{
         color:#0f766e;
-        font-weight:900;
         font-size:12px;
-      }
-
-      .ldHead h2{
-        margin:4px 0;
-        font-size:22px;
         font-weight:950;
       }
 
-      .ldHead p{
+      .ldevHead h2{
+        margin:4px 0;
+        font-size:24px;
+        font-weight:950;
+      }
+
+      .ldevHead p{
         margin:0;
         color:#64748b;
         line-height:1.6;
-        font-weight:700;
         font-size:13px;
+        font-weight:750;
       }
 
-      .ldHead button{
+      .ldevHead button{
         border:0;
+        background:#f1f5f9;
         width:42px;
         height:42px;
         border-radius:14px;
-        background:#f1f5f9;
         font-size:26px;
-        font-weight:900;
+        font-weight:950;
       }
 
-      .ldGrid{
+      .ldevGrid{
         display:grid;
         grid-template-columns:repeat(2,1fr);
         gap:10px;
       }
 
-      .ldGrid div,
-      .ldCard{
-        border:1px solid #e5e7eb;
+      .ldevGrid div{
         background:#f8fafc;
-        border-radius:20px;
-        padding:13px;
+        border:1px solid #e5e7eb;
+        border-radius:18px;
+        padding:12px;
       }
 
-      .ldGrid span{
+      .ldevGrid span{
         display:block;
         color:#64748b;
         font-size:12px;
         font-weight:900;
       }
 
-      .ldGrid b{
+      .ldevGrid b{
         display:block;
-        color:#0f766e;
-        font-size:24px;
         margin-top:4px;
-      }
-
-      .ldCard{
-        margin-top:12px;
-        background:#fff;
-      }
-
-      .ldCard h3{
-        margin:0 0 10px;
-        font-size:17px;
+        color:#0f766e;
+        font-size:22px;
         font-weight:950;
       }
 
-      .ldDay,
-      .ldKey{
+      .ldevCard{
+        margin-top:12px;
+        background:#fff;
+        border:1px solid #e5e7eb;
+        border-radius:22px;
+        padding:14px;
+      }
+
+      .ldevCard h3{
+        margin:0 0 10px;
+        font-size:18px;
+        font-weight:950;
+      }
+
+      .ldevCheck,
+      .ldevDay,
+      .ldevKey{
+        display:flex;
+        gap:10px;
+        align-items:flex-start;
+        background:#f8fafc;
         border:1px solid #e5e7eb;
         border-radius:16px;
         padding:11px;
         margin-top:8px;
-        background:#f8fafc;
       }
 
-      .ldDay b,
-      .ldKey b{
+      .ldevDay,
+      .ldevKey{
+        display:block;
+      }
+
+      .ldevCheck i{
+        width:13px;
+        height:13px;
+        border-radius:50%;
+        margin-top:5px;
+        flex:0 0 auto;
+      }
+
+      .ldevCheck i.ok{background:#22c55e}
+      .ldevCheck i.bad{background:#f97316}
+
+      .ldevCheck b,
+      .ldevDay b,
+      .ldevKey b{
         display:block;
         font-size:14px;
         font-weight:950;
       }
 
-      .ldDay span,
-      .ldKey span{
+      .ldevCheck span,
+      .ldevDay span,
+      .ldevKey span{
         display:block;
-        margin-top:4px;
         color:#64748b;
         font-size:12px;
         font-weight:800;
         line-height:1.5;
+        margin-top:4px;
       }
 
-      .ldResult{
+      .ldevResult{
         background:#ecfdf5;
         border:1px solid #bbf7d0;
-        color:#065f46;
         border-radius:16px;
         padding:12px;
+        color:#065f46;
         line-height:1.8;
         font-weight:850;
         font-size:13px;
       }
 
-      .ldEmpty{
+      .ldevEmpty{
         color:#64748b;
-        padding:18px;
         text-align:center;
+        padding:18px;
         border:1px dashed #cbd5e1;
         border-radius:16px;
         font-weight:900;
       }
 
-      .ldActions{
+      .ldevActions{
         display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:10px;
-        margin:14px 0 10px;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:8px;
+        margin:14px 0 12px;
       }
 
-      .ldActions button{
+      .ldevActions button{
         border:0;
-        border-radius:16px;
+        border-radius:15px;
+        padding:13px 8px;
         background:linear-gradient(135deg,#0f766e,#14b8a6);
         color:white;
-        padding:13px;
+        font-size:13px;
         font-weight:950;
-        font-size:14px;
       }
 
-      .ldActions button.danger{
+      .ldevActions button.danger{
         background:#f1f5f9;
         color:#0f172a;
       }
     `;
+
     document.head.appendChild(st);
   }
 
-  function addHiddenButton(){
-    const page = document.getElementById("settings");
-    if(!page) return;
-    if(document.getElementById("liyaqtiDebugOpenBtn")) return;
+  function logoTap(){
+    devTapCount++;
 
-    const box = document.createElement("div");
-    box.id = "liyaqtiDebugOpenBtn";
-    box.innerHTML = `
-      <div style="
-        margin:14px 0 120px;
-        padding:14px;
-        border:1px dashed #cbd5e1;
-        border-radius:20px;
-        background:#f8fafc;
-        text-align:center;
-        direction:rtl;
-      ">
-        <button onclick="openLiyaqtiDebugCenter()" style="
-          width:100%;
-          border:0;
-          border-radius:16px;
-          padding:14px;
-          background:#0f172a;
-          color:white;
-          font-weight:950;
-          font-size:14px;
-        ">🧪 تشخيص النظام</button>
-      </div>
-    `;
+    clearTimeout(devTapTimer);
+    devTapTimer = setTimeout(()=>devTapCount = 0, 1400);
 
-    page.appendChild(box);
+    if(devTapCount >= 5){
+      devTapCount = 0;
+      openDeveloperCenter();
+    }
   }
 
-  const oldPg = window.pg;
-  window.pg = function(id,b){
-    if(typeof oldPg === "function") oldPg(id,b);
+  document.addEventListener("click", function(e){
+    const target = e.target.closest("h1,h2,.logo,.appLogo,.brand,.brandLogo,[class*='logo'],[class*='Logo']");
+    if(!target) return;
 
-    if(id === "settings"){
-      setTimeout(()=>{
-        injectDebugStyle();
-        addHiddenButton();
-      },300);
+    const text = (target.textContent || "").toLowerCase();
+    const cls = (target.className || "").toString().toLowerCase();
+
+    if(text.includes("liyaqti") || text.includes("لياقتي") || cls.includes("logo")){
+      logoTap();
     }
-  };
+  }, true);
 
-  document.addEventListener("DOMContentLoaded",()=>{
-    injectDebugStyle();
-
-    setTimeout(()=>{
-      const page = document.getElementById("settings");
-      if(page && page.classList.contains("on")) addHiddenButton();
-    },600);
-  });
+  window.openLiyaqtiDeveloperCenter = openDeveloperCenter;
 })();
-
