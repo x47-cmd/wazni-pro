@@ -584,22 +584,27 @@ lastDataReload: ""
 }
 
   function syncContent(app) {
-    const cloud = window.LiyaqtiSync?.status?.() || {};
-    const isCloud = cloud.loggedIn;
-    return `
-      <div class="settingsRows">
-        ${row("حالة المزامنة", isCloud ? "متصل بالسحابة وجاهز للمزامنة." : "سجّل دخول أولاً لتفعيل المزامنة.", isCloud ? "جاهز" : "محلي")}
-        ${row("الحساب", safe(cloud.email, "غير مسجل"), isCloud ? "Cloud" : "Local")}
-        ${row("آخر مزامنة", safe(app.lastSync, "لم تتم أي مزامنة بعد."), "Info")}
-        ${row("Multi Device", "أي جهاز يسجل بنفس الحساب يقدر يسترجع نفس البيانات.", isCloud ? "جاهز" : "قريباً")}
-      </div>
-      <div class="settingsActions">
-        <button class="settingsBtn primary" onclick="liyaqtiCloudBackup()">رفع للسحابة</button>
-        <button class="settingsBtn soft" onclick="liyaqtiCloudRestore()">استرجاع من السحابة</button>
-        <button class="settingsBtn dark" onclick="liyaqtiSmartSync()">مزامنة ذكية</button>
-      </div>
-    `;
-  }
+  const cloud = window.LiyaqtiSync?.status?.() || {};
+  const isCloud = cloud.loggedIn;
+
+  return `
+    <div class="settingsRows">
+      ${row("حالة المزامنة", isCloud ? "متصل بالسحابة وجاهز للمزامنة." : "سجّل دخول أولاً لتفعيل المزامنة.", isCloud ? "جاهز" : "محلي")}
+      ${row("الحساب", safe(cloud.email, "غير مسجل"), isCloud ? "Cloud" : "Local")}
+      ${row("Firebase", window.LiyaqtiSync ? "Cloud Sync V2 يعمل داخل التطبيق." : "ملف sync.js غير مربوط.", window.LiyaqtiSync ? "جاهز" : "قريباً")}
+      ${row("آخر رفع", safe(app.lastCloudBackup, "لم يتم الرفع بعد."), "Info")}
+      ${row("آخر استرجاع", safe(app.lastCloudRestore, "لم يتم الاسترجاع بعد."), "Info")}
+      ${row("آخر مزامنة ذكية", safe(app.lastSmartSync || app.lastSync, "لم تتم مزامنة بعد."), "Info")}
+      ${row("Multi Device", "أي جهاز يسجل بنفس الحساب يقدر يسترجع نفس البيانات.", isCloud ? "جاهز" : "قريباً")}
+    </div>
+
+    <div class="settingsActions">
+      <button class="settingsBtn primary" onclick="liyaqtiCloudBackup()">رفع للسحابة</button>
+      <button class="settingsBtn soft" onclick="liyaqtiCloudRestore()">استرجاع من السحابة</button>
+      <button class="settingsBtn dark" onclick="liyaqtiSmartSync()">مزامنة ذكية</button>
+    </div>
+  `;
+}
 
   function backupContent(data) {
     return `
@@ -665,21 +670,24 @@ lastDataReload: ""
   }
 
   function maintenanceContent() {
-    return `
-      <div class="settingsRows">
-        ${row("إعادة احتساب التحليلات", "تحديث الحسابات والرسوم والملخصات.", "آمن")}
-        ${row("تنظيف الكاش", "حذف إعدادات الواجهة المؤقتة فقط.", "آمن")}
-        ${row("مسح الوزن والخطوات", "حذف بيانات الوزن والخطوات فقط.", "خطر")}
-        ${row("مسح كل البيانات", "حذف جميع بيانات التطبيق من Local Storage.", "خطر")}
-      </div>
-      <div class="settingsActions">
-        <button class="settingsBtn primary" onclick="recalculateLiyaqti()">إعادة احتساب</button>
-        <button class="settingsBtn gray" onclick="clearSettingsCache()">تنظيف الكاش</button>
-        <button class="settingsBtn danger" onclick="confirmClearWeightSteps()">مسح الوزن والخطوات</button>
-        <button class="settingsBtn danger" onclick="confirmClearEverything()">مسح كل البيانات</button>
-      </div>
-    `;
-  }
+  return `
+    <div class="settingsRows">
+      ${row("إعادة تحميل البيانات", "إعادة قراءة الوزن والخطوات والإعدادات من Local Storage.", "آمن")}
+      ${row("إعادة احتساب التحليلات", "تحديث الحسابات والرسوم والملخصات.", "آمن")}
+      ${row("تنظيف الكاش", "حذف إعدادات الواجهة المؤقتة فقط.", "آمن")}
+      ${row("مسح الوزن والخطوات", "حذف بيانات الوزن والخطوات فقط.", "خطر")}
+      ${row("مسح كل البيانات", "حذف جميع بيانات التطبيق من Local Storage.", "خطر")}
+    </div>
+
+    <div class="settingsActions">
+      <button class="settingsBtn soft" onclick="reloadLiyaqtiLocalData()">إعادة تحميل البيانات</button>
+      <button class="settingsBtn primary" onclick="recalculateLiyaqti()">إعادة احتساب</button>
+      <button class="settingsBtn gray" onclick="clearSettingsCache()">تنظيف الكاش</button>
+      <button class="settingsBtn danger" onclick="confirmClearWeightSteps()">مسح الوزن والخطوات</button>
+      <button class="settingsBtn danger" onclick="confirmClearEverything()">مسح كل البيانات</button>
+    </div>
+  `;
+}
 
   function input(id, label, value, placeholder = "", type = "text") {
     return `<div class="settingsField"><label>${label}</label><input id="${id}" type="${type}" value="${safe(value)}" placeholder="${placeholder}" data-auto-save="1"></div>`;
@@ -1015,6 +1023,24 @@ lastDataReload: ""
 
     reader.readAsText(file);
   };
+  
+  window.reloadLiyaqtiLocalData = function () {
+  try {
+    window.S = readJSON(LS_SETTINGS, {});
+    window.D = readJSON(LS_WEIGHTS, []);
+    window.SD = readJSON(LS_STEPS, []);
+
+    const app = getAppSettings();
+    app.lastDataReload = new Date().toLocaleString("ar-AE");
+    saveJSON(LS_APP, app);
+
+    refreshMainApp();
+    showToast("✅ تم إعادة تحميل البيانات من Local Storage");
+    renderSettings();
+  } catch (e) {
+    showToast("تعذر إعادة تحميل البيانات");
+  }
+};
 
   window.recalculateLiyaqti = function () {
     refreshMainApp();
@@ -1136,6 +1162,10 @@ lastDataReload: ""
       if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
       showToast("جاري الرفع للسحابة...");
       await window.LiyaqtiSync.backupNow(true);
+      const app = getAppSettings();
+app.lastCloudBackup = new Date().toLocaleString("ar-AE");
+app.lastSync = app.lastCloudBackup;
+saveJSON(LS_APP, app);
       showToast("✅ تم رفع البيانات للسحابة");
       renderSettings();
     } catch (e) {
@@ -1149,6 +1179,12 @@ lastDataReload: ""
     showConfirm("استرجاع النسخة السحابية؟", "سيتم استبدال بيانات هذا الجهاز بآخر نسخة محفوظة في السحابة.", async () => {
       try {
         await window.LiyaqtiSync.restoreCloud();
+        const app = getAppSettings();
+app.lastCloudRestore = new Date().toLocaleString("ar-AE");
+app.lastSync = app.lastCloudRestore;
+saveJSON(LS_APP, app);
+showToast("✅ تم الاسترجاع من السحابة");
+renderSettings();
       } catch (e) {
         showToast(e.message || "تعذر الاسترجاع من السحابة");
       }
@@ -1160,6 +1196,10 @@ lastDataReload: ""
       if (!window.LiyaqtiSync) return showToast("ملف sync.js غير مربوط");
       showToast("جاري تنفيذ المزامنة الذكية...");
       await window.LiyaqtiSync.smartSync(true);
+      const app = getAppSettings();
+app.lastSmartSync = new Date().toLocaleString("ar-AE");
+app.lastSync = app.lastSmartSync;
+saveJSON(LS_APP, app);
       showToast("✅ تمت المزامنة الذكية");
       renderSettings();
     } catch (e) {
