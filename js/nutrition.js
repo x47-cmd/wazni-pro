@@ -651,6 +651,120 @@ function getWeightTrendText(){
 /* =========================
    Main Render V30
 ========================= */
+
+function nutritionQuickCenter(){
+  let s=nSum();
+  let presets=["ماء","نسكافيه المعتاد","بيض مسلوق","توست أسمر","صدر دجاج","رز أبيض","سلطة خضار","تونة ماء","روب قليل الدسم","موز"];
+
+  return `
+  <section class="niQuickCenter">
+    <div class="niQuickHead">
+      <div>
+        <small>Quick Nutrition</small>
+        <h3>⚡ إضافة سريعة اليوم</h3>
+        <p>اختصر تسجيل الماء والوجبات الأساسية بضغطة واحدة.</p>
+      </div>
+      <button onclick="addWater()">💧 ماء</button>
+    </div>
+
+    <div class="niQuickStats">
+      <div><span>السعرات</span><b>${fmt(s.cal,NS.calories,"سعرة")}</b></div>
+      <div><span>البروتين</span><b>${fmt(s.p,NS.protein,"g")}</b></div>
+      <div><span>الماء</span><b>${fmt(s.water,NS.water,"كوب")}</b></div>
+      <div><span>الوجبات</span><b>${nToday().length}</b></div>
+    </div>
+
+    <div class="niPresetGrid">
+      ${presets.map(name=>`
+        <button onclick="nutritionAddPreset('${name}')">${name}</button>
+      `).join("")}
+    </div>
+
+    <div class="niInlineAdd">
+      <input id="nutritionInlineText" placeholder="مثال: رز، دجاج، شاورما، KFC، ماء">
+      <button onclick="nutritionInlineAdd()">إضافة</button>
+    </div>
+  </section>`;
+}
+
+function addWater(){
+  N.push({
+    id:Date.now(),
+    date:nDate(),
+    name:"ماء",
+    meal:"snack",
+    amount:250,
+    cal:0,p:0,c:0,f:0,fiber:0,sugar:0,sodium:0,
+    water:1,
+    quality:"clean",
+    source:"يدوي",
+    confidence:"high",
+    cat:"مشروبات"
+  });
+  nSave();
+  fireNutritionSync();
+  renderNutrition();
+}
+
+function nutritionAddPreset(name){
+  if(name==="ماء"){
+    addWater();
+    return;
+  }
+
+  let food=foodLibrary.find(x=>normalizeArabicText(x.name)===normalizeArabicText(name))
+    || foodLibrary.find(x=>normalizeArabicText(x.name).includes(normalizeArabicText(name)));
+
+  if(!food){
+    alert("ما حصلت هذا الصنف في المكتبة");
+    return;
+  }
+
+  addMealObject(food,food.grams||100);
+  nSave();
+  fireNutritionSync();
+  nTab="meals";
+  localStorage.setItem("liyaqtiNutritionActiveTab","meals");
+  renderNutrition();
+}
+
+function nutritionInlineAdd(){
+  let input=document.getElementById("nutritionInlineText");
+  let q=normalizeArabicText(input?.value||"");
+  if(!q)return;
+
+  if(q.includes("ماء")||q.includes("ماي")||q.includes("water")){
+    addWater();
+    if(input)input.value="";
+    return;
+  }
+
+  let food=foodLibrary.find(x=>{
+    let full=normalizeArabicText(`${x.name} ${x.cat} ${x.aliases||""}`);
+    return full.includes(q)||foodAliases(x).some(a=>a.includes(q)||q.includes(a));
+  });
+
+  if(!food){
+    alert("ما حصلت الوجبة، جرّب اسم أبسط");
+    return;
+  }
+
+  addMealObject(food,food.grams||100);
+  nSave();
+  fireNutritionSync();
+  if(input)input.value="";
+  nTab="meals";
+  localStorage.setItem("liyaqtiNutritionActiveTab","meals");
+  renderNutrition();
+}
+
+function fireNutritionSync(){
+  try{window.dispatchEvent(new Event("liyaqtiNutritionChanged"))}catch(e){}
+  try{window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{detail:{type:"nutrition"}}))}catch(e){}
+  try{if(typeof renderHome==="function")renderHome()}catch(e){}
+  try{if(typeof renderAdvancedReports==="function")renderAdvancedReports()}catch(e){}
+}
+
 function renderNutrition(){
   let page=document.getElementById("dash");
   if(!page)return;
@@ -667,9 +781,8 @@ function renderNutrition(){
   <div class="ni">
     <section class="niHero">
       <div class="niHeroText">
-        <div class="niEyebrow">LIYAQTI NUTRITION INTELLIGENCE PRO V30</div>
-        <h2>🍎 مركز التغذية الاستراتيجي</h2>
-        <p>نظام تغذية ذكي: تسجيل، مطاعم، محاكاة، توقعات، صحة، مشتريات، أهداف تكيفية، وتحليل تنفيذي.</p>
+        <h2>🍎 تغذيتي اليوم</h2>
+<p>تسجيل سريع، ماء، وجبات، سعرات، بروتين، وتحليل اليوم.</p>
         <div class="niHeroPills">
           <span>${nToday().length} وجبات</span>
           <span>${remain} سعرة متبقية</span>
@@ -704,6 +817,7 @@ function renderNutrition(){
       </div>
     </section>
 
+${nutritionQuickCenter()}
     <section class="niSearch">
       <div class="niSearchHead">
         <div><small>Smart Food Search</small><h3>🔎 إضافة سريعة</h3></div>
@@ -1968,6 +2082,7 @@ function addCalculatedMeal(){
   calcItems.forEach((x,i)=>addMealObject(x.food,x.amount,Date.now()+i,x));
   calcItems=[];
   nSave();
+  fireNutritionSync();
   nTab="meals";
   localStorage.setItem("liyaqtiNutritionActiveTab","meals");
   renderNutrition();
@@ -1980,7 +2095,7 @@ function addMealObject(food,amount,id=Date.now(),scaled=null){
   let sc=scaled||scaleFood(food,amount);
   N.push({
     id,date:nDate(),name:food.name,meal:food.meal,amount:+amount||food.grams,
-    cal:sc.cal,p:sc.p,c:sc.c,f:sc.f,fiber:sc.fiber,sugar:sc.sugar,sodium:sc.sodium,water:0,
+    water:normalizeArabicText(food.name).includes("ماء") ? 1 : 0,
     quality:food.quality||"medium",source:food.source||"تقديري",confidence:food.confidence||"medium",cat:food.cat||"عام"
   });
 }
@@ -1992,6 +2107,7 @@ function quickAddWithAmount(i){
   if(amount===null)return;
   addMealObject(x,amount);
   nSave();
+  fireNutritionSync();
   nTab="meals";
   localStorage.setItem("liyaqtiNutritionActiveTab","meals");
   renderNutrition();
@@ -2068,6 +2184,7 @@ function saveMealFromModal(){
   if(editingMealId)N=N.map(x=>x.id===editingMealId?item:x);
   else N.push(item);
   nSave();
+  fireNutritionSync();
   closeMealModal();
   nTab="meals";
   localStorage.setItem("liyaqtiNutritionActiveTab","meals");
@@ -2287,6 +2404,131 @@ function injectNutritionStyle(){
   .niStrategic{background:linear-gradient(135deg,#064e3b,#0f172a);color:#fff;border:0}.niStrategicHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.niStrategicHead span{font-size:10.5px;color:#bffaf2;font-weight:900}.niStrategicHead h3{font-size:18px;margin:4px 0 0;color:#fff}.niStrategicHead b{font-size:25px;background:#ffffff1f;border:1px solid #ffffff33;border-radius:17px;padding:10px 12px}.niStrategyGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.niStrategyGrid div,.niStrategyList div{background:#ffffff12;border:1px solid #ffffff20;border-radius:16px;padding:11px}.niStrategyGrid small{display:block;color:#bffaf2;font-weight:950;margin-bottom:5px}.niStrategyGrid p{margin:0;color:#f8fafc;line-height:1.7;font-size:12.5px;font-weight:700}.niStrategyList{display:grid;gap:8px;margin-top:10px;color:#fff;font-size:12.5px;font-weight:850}
   .niFloat{position:fixed;right:20px;bottom:112px;width:50px;height:50px;border:0;border-radius:50%;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;font-size:28px;font-weight:950;z-index:9998;box-shadow:0 12px 28px #0004}
   .niModalBg,.niPanelBg{position:fixed;inset:0;background:#0007;z-index:10000;display:flex;align-items:flex-end}.niModal,.niPanel{background:var(--card);border-radius:26px 26px 0 0;padding:16px;width:100%;max-height:88vh;overflow:auto}.niPanel{height:88vh}.niModalHead,.niPanelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.niModalHead h3,.niPanelHead h3{font-size:20px;margin:0;color:var(--txt)}.niModalHead button,.niPanelHead button{border:0;background:#f1f5f9;border-radius:14px;font-size:25px;width:42px;height:42px}
+  .niQuickCenter{
+  background:linear-gradient(135deg,#ecfdf5,#fff);
+  border:1px solid #bbf7d0;
+  border-radius:23px;
+  padding:14px;
+  box-shadow:0 9px 22px #0000000d
+}
+.niQuickHead{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin-bottom:10px
+}
+.niQuickHead h3{
+  margin:0;
+  font-size:17px;
+  font-weight:950;
+  color:var(--txt)
+}
+.niQuickHead p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  line-height:1.5
+}
+.niQuickHead small{
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900
+}
+.niQuickHead button,
+.niPresetGrid button,
+.niInlineAdd button{
+  border:0;
+  border-radius:15px;
+  background:linear-gradient(135deg,#0f766e,#14b8a6);
+  color:#fff;
+  font-weight:950;
+  padding:11px 13px
+}
+.niQuickStats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+  margin-bottom:10px
+}
+.niQuickStats div{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:10px;
+  text-align:center
+}
+.niQuickStats span{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900
+}
+.niQuickStats b{
+  display:block;
+  color:var(--pri);
+  font-size:13px;
+  margin-top:4px
+}
+.niPresetGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px
+}
+.niPresetGrid button{
+  background:#fff;
+  color:#0f766e;
+  border:1px solid #bbf7d0
+}
+.niInlineAdd{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  margin-top:10px
+}
+.niInlineAdd input{
+  width:100%;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--txt);
+  font-weight:900;
+  padding:0 12px;
+  height:46px
+}
+.niHero{
+  border-radius:22px!important;
+  padding:13px 14px!important
+}
+.niHero h2{
+  font-size:18px!important;
+  margin:0 0 5px!important
+}
+.niHero p{
+  font-size:11.8px!important;
+  max-width:230px
+}
+.niEyebrow{
+  display:none!important
+}
+.niScoreBox{
+  min-width:58px!important;
+  width:58px!important;
+  height:58px!important;
+  border-radius:18px!important;
+  padding:5px!important
+}
+.niScoreBox small{
+  display:none!important
+}
+.niScoreBox b{
+  font-size:18px!important;
+  margin:0!important
+}
+.niScoreBox span{
+  font-size:8.5px!important
+}
   @media(max-width:600px){.niHero{display:grid;grid-template-columns:1fr auto;padding:15px}.niHero h2{font-size:20px}.niHero p{font-size:11.5px}.niScoreBox{min-width:78px}.niExecDash,.niMini,.niKpis,.niQuick,.niFoodResults{grid-template-columns:repeat(2,1fr)}.niAction{display:block}.niAction button{width:100%;margin-top:10px}.niGrid2{grid-template-columns:1fr}.niForm,.niSettings,.niStrategyGrid{grid-template-columns:1fr}.niMealItem,.niFoodRow{display:block}.niMealActions{margin-top:8px;text-align:right}.niPanel{height:92vh;max-height:92vh}}
   `;
   document.head.appendChild(s);
