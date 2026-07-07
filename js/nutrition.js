@@ -2230,12 +2230,29 @@ function addCalculatedMeal(){
 /* =========================
    CRUD
 ========================= */
-function addMealObject(food,amount,id=Date.now(),scaled=null){
-  let sc=scaled||scaleFood(food,amount);
+function addMealObject(food, amount, id = Date.now(), scaled = null){
+  let sc = scaled || scaleFood(food, amount);
+
   N.push({
-    id,date:nDate(),name:food.name,meal:food.meal,amount:+amount||food.grams,
-    water:normalizeArabicText(food.name).includes("ماء") ? 1 : 0,
-    quality:food.quality||"medium",source:food.source||"تقديري",confidence:food.confidence||"medium",cat:food.cat||"عام"
+    id: id,
+    date: nDate(),
+    name: food.name,
+    meal: food.meal || "snack",
+    amount: +amount || food.grams || 100,
+
+    cal: sc.cal,
+    p: sc.p,
+    c: sc.c,
+    f: sc.f,
+    fiber: sc.fiber,
+    sugar: sc.sugar,
+    sodium: sc.sodium,
+
+    water: normalizeArabicText(food.name).includes("ماء") ? 1 : 0,
+    quality: food.quality || "medium",
+    source: food.source || "تقديري",
+    confidence: food.confidence || "medium",
+    cat: food.cat || "عام"
   });
 }
 
@@ -2257,6 +2274,7 @@ function quickAddByName(name){
   if(!x)return;
   addMealObject(x,x.grams);
   nSave();
+  fireNutritionSync();
   nTab="meals";
   localStorage.setItem("liyaqtiNutritionActiveTab","meals");
   renderNutrition();
@@ -2331,10 +2349,40 @@ function saveMealFromModal(){
 }
 
 function editNutritionMeal(id){openMealModal(id)}
-function deleteNutritionMeal(id){if(!confirm("حذف الوجبة؟"))return;N=N.filter(x=>x.id!==id);nSave();renderNutrition()}
-function copyMealToToday(id){let x=N.find(a=>a.id===id);if(!x)return;N.push({...x,id:Date.now(),date:nDate()});nSave();renderNutrition()}
-function copyYesterdayMeals(){let y=N.filter(x=>x.date===nYesterday());if(!y.length)return alert("مافي وجبات أمس.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutrition()}
-function copyYesterdayMealType(type){let y=N.filter(x=>x.date===nYesterday()&&x.meal===type);if(!y.length)return alert("مافي وجبات أمس من هذا النوع.");y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));nSave();renderNutrition()}
+function deleteNutritionMeal(id){
+  if(!confirm("حذف الوجبة؟"))return;
+  N=N.filter(x=>x.id!==id);
+  nSave();
+  fireNutritionSync();
+  renderNutrition();
+}
+
+function copyMealToToday(id){
+  let x=N.find(a=>a.id===id);
+  if(!x)return;
+  N.push({...x,id:Date.now(),date:nDate()});
+  nSave();
+  fireNutritionSync();
+  renderNutrition();
+}
+
+function copyYesterdayMeals(){
+  let y=N.filter(x=>x.date===nYesterday());
+  if(!y.length)return alert("مافي وجبات أمس.");
+  y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));
+  nSave();
+  fireNutritionSync();
+  renderNutrition();
+}
+
+function copyYesterdayMealType(type){
+  let y=N.filter(x=>x.date===nYesterday()&&x.meal===type);
+  if(!y.length)return alert("مافي وجبات أمس من هذا النوع.");
+  y.forEach((x,i)=>N.push({...x,id:Date.now()+i,date:nDate()}));
+  nSave();
+  fireNutritionSync();
+  renderNutrition();
+}
 
 function openFoodModal(i=null){
   editingFoodIndex=i;
