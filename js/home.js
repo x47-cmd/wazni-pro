@@ -206,7 +206,8 @@ function lastAchievement(){
    Saves
 ========================= */
 
-function homeSaveWeight(){
+function homeSaveWeight(e){
+  if(e) e.preventDefault();
   const input=document.getElementById("homeWeightInputV16");
 const msg=document.getElementById("homeQuickMsgV16");
   const w=Number(input?.value);
@@ -247,7 +248,8 @@ const msg=document.getElementById("homeQuickMsgV16");
 
 window.homeSaveWeight=homeSaveWeight;
 
-function homeSaveSteps(){
+function homeSaveSteps(e){
+  if(e) e.preventDefault();
   const input=document.getElementById("homeStepsInputV16");
   const msg=document.getElementById("homeQuickMsgV16");
   const steps=Math.round(Number(input?.value));
@@ -401,7 +403,8 @@ function foodSearch(qs){
   }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,12).map(x=>x.f);
 }
 
-function homeOpenNutritionQuickAdd(){
+function homeOpenNutritionQuickAdd(e){
+  if(e) e.preventDefault();
   selectedHomeFood=null;
   let modal=q("homeMealModalV16");
   if(!modal){
@@ -436,7 +439,7 @@ function homeOpenNutritionQuickAdd(){
           <option value="snack">سناك</option>
         </select>
 
-        <button class="hm16Main" onclick="homeAddSelectedFood()">إضافة المختار</button>
+        <button type="button" class="hm16Main" onclick="homeAddSelectedFood(event)">إضافة المختار</button>
       </div>
     </div>
   </div>`;
@@ -476,7 +479,8 @@ function homeSelectFood(i){
   if(btn)btn.classList.add("on");
 }
 
-function homeAddSelectedFood(){
+function homeAddSelectedFood(e){
+  if(e) e.preventDefault();
   if(!selectedHomeFood){
     let first=(window.hm16CurrentResults||[])[0];
     if(first)selectedHomeFood=first;
@@ -649,7 +653,7 @@ body.dark .h16Quick{background:linear-gradient(135deg,#0b1b18,#10201d)}body.dark
         <div class="h16QuickTitle">⚖️ وزن اليوم</div>
         <div class="h16Row">
           <input id="homeWeightInputV16" class="h16Input" type="number" step="0.1" inputmode="decimal" placeholder="مثال: ${c.cur.toFixed(1)}">
-          <button class="h16Save" onclick="homeSaveWeight()">حفظ الوزن</button>
+          <button type="button" class="h16Save" onclick="homeSaveWeight(event)">حفظ الوزن</button>
         </div>
       </div>
 
@@ -657,15 +661,15 @@ body.dark .h16Quick{background:linear-gradient(135deg,#0b1b18,#10201d)}body.dark
         <div class="h16QuickTitle">👣 خطوات اليوم</div>
         <div class="h16Row">
           <input id="homeStepsInputV16" class="h16Input" type="number" inputmode="numeric" placeholder="مثال: 8000">
-          <button class="h16Save" onclick="homeSaveSteps()">حفظ الخطوات</button>
+          <button type="button" class="h16Save" onclick="homeSaveSteps(event)">حفظ الخطوات</button>
         </div>
       </div>
 
       <div class="h16QuickItem">
         <div class="h16QuickTitle">🍎 إضافة وجبة سريعة</div>
         <div class="h16Row">
-          <button class="h16MealBtn" onclick="homeOpenNutritionQuickAdd()">بحث ذكي: رز، دجاج، KFC، شاورما، مجبوس...</button>
-          <button class="h16Save" onclick="homeOpenNutritionQuickAdd()">إضافة وجبة</button>
+          <button type="button" class="h16MealBtn" onclick="homeOpenNutritionQuickAdd(event)">بحث ذكي: رز، دجاج، KFC، شاورما، مجبوس...</button>
+<button type="button" class="h16Save" onclick="homeOpenNutritionQuickAdd(event)">إضافة وجبة</button>
         </div>
       </div>
     </div>
