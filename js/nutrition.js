@@ -2561,3 +2561,148 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
   },300);
 });
+
+/* =========================================================
+   Liyaqti Nutrition V30 Final Polish Patch
+   Safe Area + FAB + Tabs + Toast
+========================================================= */
+(function(){
+  if(window.__liyaqtiNutritionPolishV30) return;
+  window.__liyaqtiNutritionPolishV30 = true;
+
+  function addStyle(){
+    if(document.getElementById("liyaqtiNutritionPolishV30Style")) return;
+
+    const st = document.createElement("style");
+    st.id = "liyaqtiNutritionPolishV30Style";
+    st.innerHTML = `
+      #dash{
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: calc(125px + env(safe-area-inset-bottom));
+        overflow-x:hidden;
+      }
+
+      #dash .nTabs,
+      #dash .nutritionTabs,
+      #dash .nutriTabs,
+      #dash [class*="Tabs"],
+      #dash [class*="tabs"]{
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:none;
+        white-space:nowrap;
+      }
+
+      #dash .nTabs::-webkit-scrollbar,
+      #dash .nutritionTabs::-webkit-scrollbar,
+      #dash .nutriTabs::-webkit-scrollbar,
+      #dash [class*="Tabs"]::-webkit-scrollbar,
+      #dash [class*="tabs"]::-webkit-scrollbar{
+        display:none;
+      }
+
+      #dash button,
+      #dash input,
+      #dash select,
+      #dash textarea{
+        max-width:100%;
+      }
+
+      #dash .fab,
+      #dash .nFab,
+      #dash .nutritionFab,
+      #dash [class*="Fab"],
+      #dash [class*="fab"]{
+        position:fixed !important;
+        right:22px !important;
+        bottom:calc(105px + env(safe-area-inset-bottom)) !important;
+        z-index:80 !important;
+      }
+
+      .liyaqtiToast{
+        position:fixed;
+        left:50%;
+        bottom:calc(108px + env(safe-area-inset-bottom));
+        transform:translateX(-50%) translateY(18px);
+        background:linear-gradient(135deg,#0f766e,#14b8a6);
+        color:white;
+        padding:13px 18px;
+        border-radius:18px;
+        font-weight:950;
+        font-size:15px;
+        box-shadow:0 16px 35px rgba(15,118,110,.28);
+        z-index:9999;
+        opacity:0;
+        pointer-events:none;
+        transition:.25s ease;
+        white-space:nowrap;
+      }
+
+      .liyaqtiToast.on{
+        opacity:1;
+        transform:translateX(-50%) translateY(0);
+      }
+
+      @media(max-width:390px){
+        #dash{
+          padding-top:max(18px, env(safe-area-inset-top));
+        }
+
+        #dash .fab,
+        #dash .nFab,
+        #dash .nutritionFab,
+        #dash [class*="Fab"],
+        #dash [class*="fab"]{
+          right:18px !important;
+          bottom:calc(112px + env(safe-area-inset-bottom)) !important;
+          transform:scale(.92);
+          transform-origin:bottom right;
+        }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function toast(msg){
+    let t = document.querySelector(".liyaqtiToast");
+    if(!t){
+      t = document.createElement("div");
+      t.className = "liyaqtiToast";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg || "تم ✅";
+    t.classList.add("on");
+    clearTimeout(window.__liyaqtiToastTimer);
+    window.__liyaqtiToastTimer = setTimeout(()=>t.classList.remove("on"),1700);
+  }
+
+  window.liyaqtiToast = toast;
+
+  document.addEventListener("click",function(e){
+    const btn = e.target.closest("button");
+    if(!btn) return;
+
+    const txt = (btn.textContent || "").trim();
+
+    if(txt.includes("حفظ الأهداف")){
+      setTimeout(()=>toast("تم حفظ أهداف التغذية ✅"),120);
+    }
+
+    if(txt.includes("حساب أهداف تلقائية")){
+      setTimeout(()=>toast("تم حساب وحفظ الأهداف ✅"),120);
+    }
+
+    if(txt === "إضافة" || txt.includes("إضافة المختار") || txt.includes("حفظ/إضافة الوجبة") || txt.includes("احسب الوجبة")){
+      setTimeout(()=>toast("تم تحديث التغذية ✅"),180);
+    }
+  },true);
+
+  window.addEventListener("liyaqti:dataUpdated",function(e){
+    if(!e.detail || e.detail.type === "nutrition"){
+      toast("تم تحديث التغذية ✅");
+    }
+  });
+
+  addStyle();
+})();
