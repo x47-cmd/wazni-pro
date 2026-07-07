@@ -1,6 +1,6 @@
 /* =========================================================
-   Liyaqti Goal Center V90
-   Full Health Integration
+   Liyaqti Goal Center V91 Pro Polish
+Health Score + Smart Coach + Compact UI
    File: js/goal.js
 ========================================================= */
 
@@ -58,17 +58,7 @@ function meta(t=type()){return META[t]||META.loss}
 function saveS(){
   write(K.S,S);
   localStorage.setItem("wazniS", JSON.stringify(S));
-
-  window.dispatchEvent(new Event("liyaqtiGoalUpdated"));
-  window.dispatchEvent(new Event("storage"));
-
-  if(typeof renderHomeDashboard==="function"){
-    setTimeout(renderHomeDashboard,80);
-  }
-
-  if(typeof renderHome==="function"){
-    setTimeout(renderHome,80);
-  }
+  window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{detail:{type:"goal"}}));
 }
 function profiles(){return read(K.PRO,{})}
 function saveProfiles(p){write(K.PRO,p)}
@@ -445,6 +435,57 @@ function decision(c){
   return"ركز على مهمة واحدة تقربك من هدفك اليوم.";
 }
 
+function smartDecisionCard(c){
+  let tips=[];
+
+  if(!c.nut.today.length) tips.push("🍎 سجل وجبة اليوم");
+  if(c.smartSteps < c.stepGoal) tips.push("👣 كمل خطواتك إلى "+c.stepGoal);
+  if(c.proteinToday < c.proteinTarget) tips.push("🥩 ارفع البروتين");
+  if(c.daysSince>=3) tips.push("⚖️ سجل وزنك اليوم");
+
+  if(!tips.length) tips.push("✅ استمر بنفس الأداء اليوم");
+
+  let success=clamp(
+    c.totalScore+
+    (c.nut.today.length?8:0)+
+    (c.smartSteps>=c.stepGoal?8:0)+
+    (c.proteinToday>=c.proteinTarget?6:0),
+  0,100);
+
+  return `
+    <div class="g91Decision">
+      <div>
+        <div class="g91DecisionTitle">🎯 قرار اليوم</div>
+        <div class="g91DecisionText">${decision(c)}</div>
+      </div>
+      <div class="g91Success">
+        <b>${success}%</b>
+        <span>احتمال نجاح اليوم</span>
+      </div>
+      <div class="g91Tips">
+        ${tips.slice(0,3).map(x=>`<div>${x}</div>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function healthBars(c){
+  let rows=[
+    ["⚖️ الوزن",pct(c.weightScore)],
+    ["👣 النشاط",pct(c.activityScore)],
+    ["🍎 التغذية",pct(c.nutritionScore)],
+    ["🏃 التمرين",pct(c.trainingScore)],
+    ["📌 الثبات",pct(c.consistencyScore)]
+  ];
+
+  return rows.map(x=>`
+    <div class="g91BarRow">
+      <div class="g91BarTop"><b>${x[0]}</b><span>${x[1]}%</span></div>
+      <div class="g91ThinBar"><i style="width:${x[1]}%"></i></div>
+    </div>
+  `).join("");
+}
+
 function heroMetrics(c){
   let s=sport(),b=c.b;
   if(c.m==="loss")return [["الحالي",fmt(c.cur)+" كجم"],["الهدف",fmt(c.target,0)+" كجم"],["المفقود",fmt(c.lost)+" كجم"],["المتبقي",fmt(Math.abs(c.remain))+" كجم"]];
@@ -591,6 +632,29 @@ body.dark .g90Type{background:#0b1b18}
 .g90Card{padding:16px}
 .g90Chart{height:170px}
 }
+.g91Decision{
+  display:grid;
+  gap:12px;
+  border:1px solid #d8eee9;
+  background:linear-gradient(135deg,#ecfdf5,#fff);
+  border-radius:24px;
+  padding:14px;
+}
+.g91DecisionTitle{font-size:20px;font-weight:950;color:var(--txt)}
+.g91DecisionText{margin-top:6px;font-size:15px;font-weight:850;line-height:1.7;color:var(--txt)}
+.g91Success{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;text-align:center}
+.g91Success b{display:block;font-size:32px;color:var(--g90c);font-weight:950}
+.g91Success span{color:var(--muted);font-size:12px;font-weight:850}
+.g91Tips{display:grid;gap:8px}
+.g91Tips div{border:1px solid #d8eee9;border-radius:16px;padding:10px;font-weight:900;background:#fff}
+.g91BarRow{display:grid;gap:7px}
+.g91BarTop{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:900}
+.g91BarTop span{color:var(--g90c);font-weight:950}
+.g91ThinBar{height:10px;background:#dff3ef;border-radius:999px;overflow:hidden}
+.g91ThinBar i{display:block;height:100%;background:linear-gradient(90deg,var(--g90c),#14b8a6);border-radius:999px}
+.g91RingSub{display:block;font-size:11px;color:var(--muted);font-weight:850;margin-top:2px}
+body.dark .g91Decision,
+body.dark .g91Tips div{background:#0b1b18}
 `;
 document.head.appendChild(s);
 }
@@ -840,9 +904,8 @@ function renderGoalV90(){
 </section>
 
     <section class="g90Card">
-      <div class="g90Title">🧭 قرار ${mt.name}</div>
-      <div class="g90Item">${decision(c)}</div>
-    </section>
+  ${smartDecisionCard(c)}
+</section>
 
     <section class="g90Grid">
       ${hMetrics.map(x=>`
@@ -856,12 +919,15 @@ function renderGoalV90(){
     <section class="g90Card">
       <div class="g90Title">🏆 مؤشر ${mt.name}</div>
       <div class="g90Grid">
-        <div><div class="g90Ring" style="--p:${c.totalScore*3.6}deg"><div class="g90RingIn">${c.totalScore}%</div></div></div>
+        <div class="g90RingIn">
+  <div>
+    ${c.totalScore}%
+    <span class="g91RingSub">${c.totalScore>=85?"Elite":c.totalScore>=70?"قوي":c.totalScore>=50?"متوسط":"بداية"}</span>
+  </div>
+</div>
         <div class="g90List" style="margin-top:0">
-          <div class="g90Item">⚖️ الوزن: ${pct(c.weightScore)}%</div>
-          <div class="g90Item">👣 النشاط: ${pct(c.activityScore)}%</div>
-          <div class="g90Item">🍎 التغذية: ${pct(c.nutritionScore)}%</div>
-          <div class="g90Item">🏃 التمرين: ${pct(c.trainingScore)}%</div>
+  ${healthBars(c)}
+</div>
         </div>
       </div>
     </section>
@@ -883,8 +949,8 @@ function renderGoalV90(){
         <div class="g90List">${ai.map(x=>`<div class="g90Item">${x}</div>`).join("")}</div>
       </details>
 
-      <details open>
-        <summary>📊 رسوم ${mt.name}</summary>
+      <details>
+  <summary>📊 رسوم ${mt.name}</summary>
         <div class="g90List">
           <div class="g90Item">${c.m==="steps"?"👣 آخر خطوات":"⚖️ آخر وزن"}</div>
           <div class="g90Chart"><canvas id="g90ChartA"></canvas></div>
@@ -893,8 +959,8 @@ function renderGoalV90(){
         </div>
       </details>
 
-      <details open>
-        <summary>🗓️ خطة ${mt.name}</summary>
+      <details>
+  <summary>🗓️ خطة ${mt.name}</summary>
         <div class="g90List">
           <div class="g90Item">التزامك: ${doneCount}/7 — ${donePct}%</div>
           <div class="g90Bar"><div class="g90Fill" style="width:${donePct}%"></div></div>
@@ -1013,10 +1079,24 @@ window.pg=function(id,b){
   if(id==="goalPage")setTimeout(renderGoalV90,80);
 };
 
-window.addEventListener("liyaqtiWeightChanged",renderGoalV90);
-window.addEventListener("liyaqtiStepsChanged",renderGoalV90);
-window.addEventListener("liyaqtiNutritionChanged",renderGoalV90);
-window.addEventListener("liyaqti:dataUpdated",renderGoalV90);
+let goalRefreshLock=false;
+function safeGoalRefresh(){
+  if(goalRefreshLock)return;
+  goalRefreshLock=true;
+  const y=window.scrollY||0;
+  setTimeout(()=>{
+    try{renderGoalV90()}catch(e){}
+    setTimeout(()=>{
+      window.scrollTo(0,y);
+      goalRefreshLock=false;
+    },60);
+  },80);
+}
+
+window.addEventListener("liyaqtiWeightChanged",safeGoalRefresh);
+window.addEventListener("liyaqtiStepsChanged",safeGoalRefresh);
+window.addEventListener("liyaqtiNutritionChanged",safeGoalRefresh);
+window.addEventListener("liyaqti:dataUpdated",safeGoalRefresh);
 
 setTimeout(renderGoalV90,150);
 })();
