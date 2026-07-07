@@ -58,7 +58,7 @@ function meta(t=type()){return META[t]||META.loss}
 function saveS(){
   write(K.S,S);
   localStorage.setItem("wazniS", JSON.stringify(S));
-  window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{detail:{type:"goal"}}));
+  window.S = S;
 }
 function profiles(){return read(K.PRO,{})}
 function saveProfiles(p){write(K.PRO,p)}
@@ -559,6 +559,7 @@ if(document.getElementById("goalV90Style"))return;
 let s=document.createElement("style");
 s.id="goalV90Style";
 s.textContent=`
+#goalPage,.g90{direction:rtl;text-align:right}
 .g90{display:grid;gap:16px;padding-bottom:20px}
 .g90Hero{
   color:white;
@@ -695,8 +696,11 @@ window.goalV90ToggleTask=function(k){
   renderGoalV90();
 };
 
-window.goalV90SaveGoal=function(){
+window.goalV90SaveGoal=function(e){
+  if(e) e.preventDefault();
+
   let t=type(),obj={};
+
   if(t==="loss"||t==="gain"||t==="gym"){
     obj.start=n(document.getElementById("g90Start").value,S.start);
     obj.target=n(document.getElementById("g90Target").value,S.goal);
@@ -705,101 +709,61 @@ window.goalV90SaveGoal=function(){
     obj.calorieTarget=n(document.getElementById("g90CalTarget")?.value,1900);
     obj.proteinTarget=n(document.getElementById("g90ProteinTarget")?.value,120);
   }
+
   if(t==="steps"){
     obj.stepGoal=n(document.getElementById("g90StepGoal").value,8000);
     obj.weeklyDays=n(document.getElementById("g90WeeklyDays").value,5);
   }
-  
-  try{
-  window.S = S;
-  localStorage.setItem("wazniS", JSON.stringify(S));
-
-  if(typeof window.renderHomeDashboard==="function"){
-    window.renderHomeDashboard();
-  }
-
-  if(typeof window.render==="function"){
-    window.render();
-  }
-
-  window.dispatchEvent(new Event("liyaqtiGoalChanged"));
-}catch(e){}
 
   if(t==="custom"){
     obj.customName=document.getElementById("g90CustomName").value||"هدفي الخاص";
     obj.progress=n(document.getElementById("g90CustomProgress").value,50);
     obj.date=document.getElementById("g90Date").value||"";
   }
+
   setProfile(t,obj);
   syncFromProfile(t);
   addHistory("تم حفظ إعدادات "+meta().name);
-  renderGoalV90();
-  if(typeof render==="function")try{render()}catch(e){}
+
+  safeGoalRefresh();
 };
 
-window.goalV90SaveToday=function(){
+window.goalV90SaveToday=function(e){
+  if(e) e.preventDefault();
+
   let w=n(document.getElementById("g90TodayW").value,0);
   let st=n(document.getElementById("g90TodaySteps").value,0);
   let cal=n(document.getElementById("g90TodayCal").value,0);
+
   if(!w&&!st&&!cal)return alert("اكتب الوزن أو الخطوات أو السعرات");
+
   let d=today(),item={d,w:w||integrated().cur,st,cal};
+
   window.D=(window.D||[]).filter(x=>x.d!==d);
   window.D.push(item);
   window.D.sort((a,b)=>String(a.d).localeCompare(String(b.d)));
+
   write(K.W,window.D);
+  write("wazniData",window.D);
+  write("D",window.D);
+
   if(st>0){
     window.SD=(window.SD||[]).filter(x=>x.d!==d);
     window.SD.push({d,steps:st});
     window.SD.sort((a,b)=>String(a.d).localeCompare(String(b.d)));
+
     write(K.ST,window.SD);
+    write("wazniStepsData",window.SD);
+    write("SD",window.SD);
   }
+
   addHistory("تم تسجيل اليوم في "+meta().name);
-  renderGoalV90();
-  if(typeof render==="function")try{render()}catch(e){}
-};
-
-window.goalV90SaveSport=function(){
-  let obj={
-    distance:n(document.getElementById("g90RunDistance").value,3),
-    targetTime:n(document.getElementById("g90RunTarget").value,15),
-    currentTime:n(document.getElementById("g90RunCurrent").value,0),
-    testDate:document.getElementById("g90RunDate").value||"",
-    stepGoal:n(document.getElementById("g90RunStepGoal").value,8000)
-  };
-  S.sportTest=obj;
-  saveS();
-  setProfile("run",obj);
-  addHistory("تم حفظ إعدادات الاختبار الرياضي");
-  renderGoalV90();
-};
-
-window.goalV90SaveBody=function(){
-  let b={
-    height:n(document.getElementById("g90Height").value,162),
-    waist:n(document.getElementById("g90Waist").value,0),
-    fat:n(document.getElementById("g90Fat").value,0),
-    muscle:n(document.getElementById("g90Muscle").value,0),
-    protein:n(document.getElementById("g90Protein").value,0),
-    sleep:n(document.getElementById("g90Sleep").value,0)
-  };
-  S.height=b.height;
-  saveS();
-  write(K.BODY,b);
-  addHistory("تم تحديث قياسات الجسم");
-  renderGoalV90();
-};
-
-window.goalV90AddNote=function(){
-  let v=(document.getElementById("g90Note").value||"").trim();
-  if(!v)return;
-  let a=notes();
-  a.push({id:Date.now(),d:today(),type:type(),text:v});
-  write(K.NOTE,a.slice(-60));
-  renderGoalV90();
+  safeGoalRefresh();
 };
 
 function settingsHTML(c){
   let p=c.p,t=c.m;
+
   if(t==="run")return `
   <div class="g90Grid">
     <input id="g90RunDistance" class="g90Input" type="number" step=".1" value="${p.distance||3}" placeholder="المسافة km">
@@ -808,16 +772,19 @@ function settingsHTML(c){
     <input id="g90RunDate" class="g90Input" type="date" value="${p.testDate||""}">
     <input id="g90RunStepGoal" class="g90Input" type="number" value="${p.stepGoal||8000}" placeholder="هدف الخطوات">
   </div>
-  <button class="g90Btn" onclick="goalV90SaveSport()">حفظ الاختبار</button>`;
+  <button type="button" class="g90Btn" onclick="goalV90SaveSport(event)">حفظ الاختبار</button>`;
+
   if(t==="steps")return `
   <input id="g90StepGoal" class="g90Input" type="number" value="${p.stepGoal||8000}" placeholder="هدف الخطوات">
   <input id="g90WeeklyDays" class="g90Input" type="number" value="${p.weeklyDays||5}" placeholder="أيام النجاح أسبوعياً">
-  <button class="g90Btn" onclick="goalV90SaveGoal()">حفظ إعدادات الخطوات</button>`;
+  <button type="button" class="g90Btn" onclick="goalV90SaveGoal(event)">حفظ إعدادات الخطوات</button>`;
+
   if(t==="custom")return `
   <input id="g90CustomName" class="g90Input" value="${p.customName||"هدفي الخاص"}" placeholder="اسم الهدف">
   <input id="g90CustomProgress" class="g90Input" type="number" value="${p.progress||50}" placeholder="نسبة التقدم">
   <input id="g90Date" class="g90Input" type="date" value="${p.date||""}">
-  <button class="g90Btn" onclick="goalV90SaveGoal()">حفظ الهدف</button>`;
+  <button type="button" class="g90Btn" onclick="goalV90SaveGoal(event)">حفظ الهدف</button>`;
+
   return `
   <input id="g90Start" class="g90Input" type="number" step=".1" value="${p.start||c.start}" placeholder="وزن البداية">
   <input id="g90Target" class="g90Input" type="number" step=".1" value="${p.target||c.target}" placeholder="الهدف">
@@ -825,7 +792,7 @@ function settingsHTML(c){
   <input id="g90StepGoal" class="g90Input" type="number" value="${p.stepGoal||c.stepGoal}" placeholder="هدف الخطوات">
   <input id="g90CalTarget" class="g90Input" type="number" value="${p.calorieTarget||c.calTarget}" placeholder="هدف السعرات">
   <input id="g90ProteinTarget" class="g90Input" type="number" value="${p.proteinTarget||c.proteinTarget}" placeholder="هدف البروتين">
-  <button class="g90Btn" onclick="goalV90SaveGoal()">حفظ إعدادات ${meta().name}</button>`;
+  <button type="button" class="g90Btn" onclick="goalV90SaveGoal(event)">حفظ إعدادات ${meta().name}</button>`;
 }
 
 function drawCharts(c){
@@ -994,7 +961,7 @@ function renderGoalV90(){
           <input id="g90TodayW" class="g90Input" type="number" step=".1" placeholder="وزن اليوم">
           <input id="g90TodaySteps" class="g90Input" type="number" placeholder="خطوات اليوم">
           <input id="g90TodayCal" class="g90Input" type="number" placeholder="السعرات">
-          <button class="g90Btn" onclick="goalV90SaveToday()">حفظ التسجيل</button>
+          <button class="g90Btn" onclick="goalV90SaveToday(event)">حفظ التسجيل</button>
         </div>
       </details>
 
