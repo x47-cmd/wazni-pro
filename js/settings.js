@@ -354,7 +354,8 @@ diagnosticScore: ""
         ${accordion("privacy", "🔒", "الخصوصية والأمان", "Face ID، PIN، التشفير والصلاحيات", app.defaultOpen, privacyContent(app))}
         ${accordion("integrations", "🔗", "التكاملات", "Apple Health، Apple Watch، Google Fit والأجهزة", app.defaultOpen, integrationsContent())}
         ${accordion("about", "ℹ️", "حول التطبيق", "الإصدار، المطور، التحديثات والملاحظات", app.defaultOpen, aboutContent())}
-        ${accordion("maintenance", "🧹", "الصيانة", "إعادة احتساب، تنظيف كاش ومسح البيانات", app.defaultOpen, maintenanceContent(), true)}
+${accordion("developer", "🛠️", "مركز المطور", "تشخيص التخزين والبيانات والسجلات", app.defaultOpen, developerContent())}
+${accordion("maintenance", "🧹", "الصيانة", "إعادة احتساب، تنظيف كاش ومسح البيانات", app.defaultOpen, maintenanceContent(), true)}
       </div>
 
     </div>
@@ -412,6 +413,7 @@ diagnosticScore: ""
     privacy: "أمان",
     integrations: "قريباً",
     about: "Info",
+    developer: "Dev",
     maintenance: "خطر"
   };
   return map[id] || "جاهز";
@@ -700,6 +702,20 @@ diagnosticScore: ""
   `;
 }
 
+function developerContent() {
+  return `
+    <div class="settingsRows">
+      ${row("Developer Center", "فحص Local Storage، التغذية، الوزن، الخطوات والمزامنة.", "Dev")}
+      ${row("Storage Debug", "يعرض عدد السجلات وحجم البيانات وحالة الحفظ التاريخي.", "Info")}
+    </div>
+
+    <div class="settingsActions">
+      <button class="settingsBtn dark" onclick="openLiyaqtiDeveloperCenter()">فتح مركز المطور</button>
+      <button class="settingsBtn soft" onclick="runLiyaqtiDiagnostic()">تشخيص سريع</button>
+    </div>
+  `;
+}
+
   function maintenanceContent() {
   return `
     <div class="settingsRows">
@@ -925,6 +941,7 @@ diagnosticScore: ""
       privacy: ["خصوصية","أمان","pin","face","تشفير"],
       integrations: ["apple","watch","health","google","fit","تكامل"],
       about: ["حول","اصدار","version","مطور"],
+      developer: ["developer","dev","debug","storage","localstorage","مطور","تشخيص","تخزين"],
       maintenance: ["صيانة","مسح","كاش","تشخيص","diagnostic"]
     };
 
