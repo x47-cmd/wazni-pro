@@ -745,7 +745,18 @@ window.goalV90SaveToday=function(e){
   }
 
   addHistory("تم تسجيل اليوم في "+meta().name);
-  safeGoalRefresh();
+
+try{ window.dispatchEvent(new Event("liyaqtiWeightChanged")); }catch(e){}
+try{ window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{detail:{type:"weight"}})); }catch(e){}
+
+if(typeof renderHome === "function"){
+  setTimeout(renderHome,80);
+}
+if(typeof renderHomeDashboard === "function"){
+  setTimeout(renderHomeDashboard,80);
+}
+
+safeGoalRefresh();
 };
 
 window.goalV90SaveSport=function(e){
