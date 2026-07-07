@@ -1,6 +1,6 @@
 // =====================================================
-// Liyaqti Reports Intelligence Center V30 Ultimate
-// مركز التقارير والتحليل الذكي - نسخة Ultimate
+// Liyaqti Reports Intelligence Center V31
+// مركز التحليل الذكي - نسخة Compact Premium
 // =====================================================
 
 let liyaqtiReportRange = 30;
@@ -79,12 +79,16 @@ function rpGetData(){
     rpReadGlobal("D") || window.D ||
     rpSafeParse("D", null) ||
     rpSafeParse("wazniData", null) ||
+    rpSafeParse("wazni", null) ||
     rpSafeParse("wazni_data", null) ||
     rpSafeParse("liyaqti_data", null) || [];
 
   const SD =
     rpReadGlobal("SD") || window.SD ||
     rpSafeParse("SD", null) ||
+    rpSafeParse("wazniSteps", null) ||
+    rpSafeParse("wazniStepsData", null) ||
+    rpSafeParse("liyaqtiStepsData", null) ||
     rpSafeParse("stepsData", null) ||
     rpSafeParse("steps_data", null) ||
     rpSafeParse("liyaqti_steps", null) || [];
@@ -92,6 +96,7 @@ function rpGetData(){
   const AD =
     rpReadGlobal("AD") || window.AD ||
     rpSafeParse("AD", null) ||
+    rpSafeParse("wazniActivities", null) ||
     rpSafeParse("activityData", null) ||
     rpSafeParse("activity_data", null) ||
     rpSafeParse("liyaqti_activities", null) ||
@@ -100,14 +105,19 @@ function rpGetData(){
   const S =
     rpReadGlobal("S") || window.S ||
     rpSafeParse("S", null) ||
+    rpSafeParse("wazniS", null) ||
     rpSafeParse("settings", null) ||
     rpSafeParse("wazni_settings", null) ||
     rpSafeParse("liyaqti_settings", null) || {};
 
-  const nutrition =
+  let nutrition =
     rpSafeParse("liyaqtiNutritionData", []) ||
     rpSafeParse("nutritionData", []) ||
     rpSafeParse("liyaqti_food_logs", []) || [];
+
+  if(nutrition && !Array.isArray(nutrition) && Array.isArray(nutrition.meals)){
+    nutrition = nutrition.meals;
+  }
 
   const nutritionSettings =
     rpSafeParse("liyaqtiNutritionSettings", {}) || {};
@@ -127,9 +137,9 @@ function rpWeightsAll(){
   const L = rpGetData();
 
   return L.D
-    .filter(x => x && (x.d || x.date) && rpNum(x.w ?? x.weight) > 0)
+    .filter(x => x && (x.d || x.date || x.dt) && rpNum(x.w ?? x.weight) > 0)
     .map(x => ({
-      d: rpDate(x.d || x.date),
+      d: rpDate(x.d || x.date || x.dt),
       w: rpNum(x.w ?? x.weight),
       cal: rpNum(x.cal ?? x.calories ?? x.cals),
       st: rpNum(x.st ?? x.steps)
@@ -142,13 +152,13 @@ function rpStepsAll(){
   const map = {};
 
   L.D.forEach(x=>{
-    const d = rpDate(x?.d || x?.date);
+    const d = rpDate(x?.d || x?.date || x?.dt);
     const st = rpNum(x?.st ?? x?.steps);
     if(d && st > 0) map[d] = {d, steps:st};
   });
 
   L.SD.forEach(x=>{
-    const d = rpDate(x?.d || x?.date);
+    const d = rpDate(x?.d || x?.date || x?.dt);
     const st = rpNum(x?.steps ?? x?.st);
     if(d && st > 0) map[d] = {d, steps:st};
   });
@@ -177,10 +187,10 @@ function rpNutritionAll(){
   return L.nutrition.map(x=>({
     ...x,
     d: rpDate(x.d || x.date || x.day || x.createdAt),
-    calories: rpNum(x.calories ?? x.cal ?? x.cals),
-    protein: rpNum(x.protein),
-    carbs: rpNum(x.carbs),
-    fat: rpNum(x.fat),
+    calories: rpNum(x.calories ?? x.cal ?? x.kcal ?? x.cals),
+    protein: rpNum(x.protein ?? x.p),
+    carbs: rpNum(x.carbs ?? x.c),
+    fat: rpNum(x.fat ?? x.f),
     sugar: rpNum(x.sugar),
     sodium: rpNum(x.sodium),
     fiber: rpNum(x.fiber),
@@ -223,9 +233,20 @@ function rpStats(){
     (allWeights.length ? allWeights[0].w : current);
 
   const goal = rpNum(L.S.goal ?? L.S.goalWeight) || 75;
-  const stepGoal = rpNum(L.S.stepsGoal ?? L.S.dailyStepsGoal) || 8000;
-  const calGoal = rpNum(L.nutritionSettings.calorieGoal ?? L.S.calorieGoal) || 1800;
-  const proteinGoal = rpNum(L.nutritionSettings.proteinGoal ?? L.S.proteinGoal) || 120;
+  const stepGoal = rpNum(L.S.stepsGoal ?? L.S.dailyStepsGoal ?? L.S.stepGoal) || 8000;
+
+  const calGoal = rpNum(
+    L.nutritionSettings.calorieGoal ??
+    L.nutritionSettings.calories ??
+    L.nutritionSettings.targetCalories ??
+    L.S.calorieGoal
+  ) || 2200;
+
+  const proteinGoal = rpNum(
+    L.nutritionSettings.proteinGoal ??
+    L.nutritionSettings.protein ??
+    L.S.proteinGoal
+  ) || 120;
 
   const totalTarget = Math.max(0.1, start - goal);
   const lost = start && current ? Math.max(0, start - current) : 0;
@@ -322,11 +343,11 @@ function rpStats(){
 
 // ---------- CSS ----------
 function injectReportsCSS(){
-  const old = document.getElementById("liyaqtiReportsV30CSS");
+  const old = document.getElementById("liyaqtiReportsV31CSS");
   if(old) old.remove();
 
   const style = document.createElement("style");
-  style.id = "liyaqtiReportsV30CSS";
+  style.id = "liyaqtiReportsV31CSS";
 
   style.innerHTML = `
     #reports{
@@ -341,34 +362,23 @@ function injectReportsCSS(){
 
     .rp30-wrap{
       direction:rtl;
-      padding:20px 14px 95px;
+      padding:14px 12px 95px;
       max-width:980px;
       margin:0 auto;
     }
 
     .rp30-hero{
-      background:
-        radial-gradient(circle at 15% 10%,rgba(255,255,255,.22),transparent 28%),
-        linear-gradient(145deg,#0f766e,#0b5f59 55%,#064e49);
-      border-radius:30px;
-      padding:24px 18px;
+      background:linear-gradient(135deg,#0f766e,#14b8a6);
+      border-radius:22px;
+      padding:13px 14px;
       color:#fff;
-      box-shadow:0 18px 40px rgba(15,118,110,.22);
-      margin:18px 0 14px;
+      box-shadow:0 14px 30px rgba(15,118,110,.20);
+      margin:12px 0 12px;
       position:relative;
       overflow:hidden;
     }
 
-    .rp30-hero:after{
-      content:"";
-      position:absolute;
-      width:190px;
-      height:190px;
-      border-radius:50%;
-      left:-70px;
-      bottom:-90px;
-      background:rgba(255,255,255,.09);
-    }
+    .rp30-hero:after{display:none}
 
     .rp30-hero > *{
       position:relative;
@@ -376,61 +386,53 @@ function injectReportsCSS(){
     }
 
     .rp30-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      background:rgba(255,255,255,.16);
-      border:1px solid rgba(255,255,255,.25);
-      padding:8px 13px;
-      border-radius:999px;
-      font-size:13px;
-      font-weight:900;
-      margin-bottom:14px;
+      display:none;
     }
 
     .rp30-hero h1{
       margin:0;
-      font-size:30px;
+      font-size:18px;
       line-height:1.25;
-      font-weight:1000;
-      letter-spacing:-.5px;
+      font-weight:950;
+      letter-spacing:-.4px;
     }
 
     .rp30-hero p{
-      margin:10px 0 0;
-      color:#dffcf8;
-      line-height:1.8;
-      font-size:15px;
-      font-weight:700;
+      margin:6px 0 0;
+      color:#effffb;
+      line-height:1.55;
+      font-size:11.8px;
+      font-weight:750;
+      max-width:240px;
     }
 
     .rp30-hero-grid{
       display:grid;
       grid-template-columns:repeat(3,1fr);
-      gap:9px;
-      margin-top:17px;
+      gap:7px;
+      margin-top:10px;
     }
 
     .rp30-hero-mini{
       background:rgba(255,255,255,.14);
-      border:1px solid rgba(255,255,255,.18);
-      border-radius:18px;
-      padding:12px 8px;
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:16px;
+      padding:8px 6px;
       text-align:center;
-      min-height:74px;
+      min-height:58px;
     }
 
     .rp30-hero-mini b{
       display:block;
-      font-size:22px;
-      font-weight:1000;
+      font-size:17px;
+      font-weight:950;
       line-height:1.1;
     }
 
     .rp30-hero-mini span{
       display:block;
-      margin-top:6px;
-      font-size:11px;
+      margin-top:4px;
+      font-size:9.5px;
       font-weight:900;
       color:#d7fffb;
     }
@@ -876,11 +878,7 @@ function injectReportsCSS(){
     .rp30-day i{color:#a16207}
 
     @media(max-width:430px){
-      .rp30-wrap{padding:18px 12px 90px}
-      .rp30-hero{border-radius:28px;padding:23px 16px}
-      .rp30-hero h1{font-size:28px}
-      .rp30-hero p{font-size:14px}
-      .rp30-hero-mini b{font-size:20px}
+      .rp30-wrap{padding:12px 12px 90px}
       .rp30-card{border-radius:24px;padding:16px}
       .rp30-title h2{font-size:21px}
       .rp30-kpi-grid{gap:10px}
@@ -1358,12 +1356,8 @@ function renderAdvancedReports(){
     <div class="rp30-wrap">
 
       <div class="rp30-hero">
-        <div class="rp30-badge">🟢 Liyaqti Reports V30 Ultimate</div>
-        <h1>📊 مركز التقارير الذكي</h1>
-        <p>
-          لوحة تحليل تنفيذية تجمع الوزن، الهدف، الخطوات، التغذية، النشاط،
-          التقويم، والذكاء التحليلي في صفحة واحدة متناسقة مع لياقتي.
-        </p>
+        <h1>📊 مركز التحليل الذكي</h1>
+        <p>ملخص شامل للوزن، الخطوات، التغذية، النشاط، والهدف.</p>
 
         <div class="rp30-hero-grid">
           <div class="rp30-hero-mini">
@@ -1474,6 +1468,27 @@ function renderAdvancedReports(){
   },80);
 }
 
+// ---------- Events ----------
+window.addEventListener("liyaqti:dataUpdated",function(){
+  try{renderAdvancedReports()}catch(e){}
+});
+
+window.addEventListener("liyaqtiWeightChanged",function(){
+  try{renderAdvancedReports()}catch(e){}
+});
+
+window.addEventListener("liyaqtiStepsChanged",function(){
+  try{renderAdvancedReports()}catch(e){}
+});
+
+window.addEventListener("liyaqtiNutritionChanged",function(){
+  try{renderAdvancedReports()}catch(e){}
+});
+
+window.addEventListener("storage",function(){
+  try{renderAdvancedReports()}catch(e){}
+});
+
 // ---------- Boot ----------
 function bootReports(){
   let tries = 0;
@@ -1495,5 +1510,6 @@ function bootReports(){
 bootReports();
 
 window.renderAdvancedReports = renderAdvancedReports;
+window.renderReports = renderAdvancedReports;
 window.setLiyaqtiReportRange = setLiyaqtiReportRange;
 window.setLiyaqtiReportTab = setLiyaqtiReportTab;
