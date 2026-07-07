@@ -1,5 +1,5 @@
 /* =========================================================
-   Liyaqti Home Intelligence Center V16 Ultimate
+   Liyaqti Home Intelligence Center V17 Stable
    Unified Quick Entry + Smart Nutrition Add + Cross Linking
 ========================================================= */
 
@@ -339,11 +339,13 @@ function saveMealFromHome(food,grams,mealType){
   setNutritionArray(arr);
 
   try{if(window.LiyaqtiStore&&typeof LiyaqtiStore.emit==="function")LiyaqtiStore.emit("nutrition",item)}catch(e){}
-  refreshEverywhere("nutrition");
-  closeHomeMealModal();
 
-  let msg=q("homeQuickMsgV16");
-  if(msg)msg.innerHTML="✅ تم حفظ الوجبة وتحديث الرئيسية والتغذية";
+closeHomeMealModal();
+
+let msg=q("homeQuickMsgV16");
+if(msg)msg.innerHTML="✅ تم حفظ الوجبة";
+
+safeHomeRefresh("nutrition");
 }
 
 /* =========================
@@ -521,7 +523,7 @@ function safeHomeRefresh(type){
   if(homeRefreshing) return;
   homeRefreshing = true;
 
-  const y = window.scrollY || 0;
+  const y = window.scrollY || document.documentElement.scrollTop || 0;
 
   setTimeout(()=>{
     try{ renderHome(); }catch(e){}
@@ -532,31 +534,28 @@ function safeHomeRefresh(type){
 
     if(type === "weight"){
       try{ if(typeof renderGoalV90 === "function") renderGoalV90(); }catch(e){}
+      try{ if(typeof renderGoal === "function") renderGoal(); }catch(e){}
+    }
+
+    if(type === "nutrition"){
+      try{ if(typeof renderNutrition === "function") renderNutrition(); }catch(e){}
     }
 
     try{ if(typeof renderAdvancedReports === "function") renderAdvancedReports(); }catch(e){}
 
-    setTimeout(()=>{
-      window.scrollTo(0, y);
-      homeRefreshing = false;
-    }, 50);
-  }, 50);
+    requestAnimationFrame(()=>{
+      window.scrollTo({top:y,left:0,behavior:"instant"});
+      setTimeout(()=>{
+        window.scrollTo(0,y);
+        homeRefreshing = false;
+      },80);
+    });
+  },80);
 }
 
 
 function refreshEverywhere(type){
-  ["liyaqtiWeightChanged","liyaqtiGoalChanged","liyaqtiStepsChanged","liyaqtiNutritionChanged"].forEach(ev=>{
-    try{window.dispatchEvent(new Event(ev))}catch(e){}
-  });
-  try{window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{detail:{type:type||"update"}}))}catch(e){}
-
-  setTimeout(()=>{
-    try{if(typeof renderHome==="function")renderHome()}catch(e){}
-    try{if(typeof renderNutrition==="function")renderNutrition()}catch(e){}
-    try{if(typeof renderSteps==="function")renderSteps()}catch(e){}
-    try{if(typeof renderGoal==="function")renderGoal()}catch(e){}
-    try{if(typeof renderAdvancedReports==="function")renderAdvancedReports()}catch(e){}
-  },80);
+  safeHomeRefresh(type || "update");
 }
 
 function pageGo(id,i){
@@ -767,7 +766,9 @@ if(typeof oldRender==="function"){
   window.render=function(){
     try{window.S=Object.assign(window.S||{},read("wazniS",{}))}catch(e){}
     oldRender();
-    renderHome();
+    if(!homeRefreshing){
+      setTimeout(()=>safeHomeRefresh("render"),120);
+    }
   };
 }
 
