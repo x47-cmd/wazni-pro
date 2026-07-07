@@ -206,6 +206,248 @@
   pantryBrands.forEach(b=>pantryItems.forEach(x=>
     add(`${b} ${x[0]}`,"منتجات غذائية","snack","حصة",x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],"medium",`${b},جمعية,سوبرماركت`)
   ));
+  
+  /* =========================================================
+   Liyaqti Food Library V41 Massive Expansion
+   يولد 5000+ منتج غذائي تقديري بأسماء شركات وتفاصيل
+========================================================= */
+
+(function massiveFoodExpansionV41(){
+  const before = out.length;
+
+  function addV41(name,cat,meal,unit,grams,cal,p,c,f,fiber,sugar,sodium,quality,aliases){
+    out.push([
+      name,cat,meal,unit,grams,cal,p,c,f,fiber,sugar,sodium,
+      quality||"medium","V41 تقديري","medium",aliases||""
+    ]);
+  }
+
+  const groups = [
+    {
+      cat:"ألبان", meal:"snack", aliases:"حليب,لبن,روب,زبادي,ألبان",
+      brands:["Almarai","Nadec","Nada","Al Ain","Marmum","Al Rawabi","Lacnor","Saudia","Balade","Activia","Danone","Yoplait","Puck","Kiri","Philadelphia","President","Lurpak","Elle & Vire","Rainbow","Anchor"],
+      items:[
+        ["Full Fat Milk 250ml",250,155,8,12,8,0,12,120],
+        ["Low Fat Milk 250ml",250,105,8,12,3,0,12,120],
+        ["Skimmed Milk 250ml",250,85,8,12,0,0,12,125],
+        ["Fresh Milk 1 Cup",250,145,8,12,7,0,12,120],
+        ["Chocolate Milk 250ml",250,190,8,30,4,0,26,150],
+        ["Strawberry Milk 250ml",250,180,7,29,3,0,25,145],
+        ["Laban 250ml",250,110,8,12,3,0,10,420],
+        ["Ayran 250ml",250,90,6,8,3,0,7,550],
+        ["Plain Yogurt 170g",170,95,8,10,2,0,8,90],
+        ["Greek Yogurt Plain 170g",170,130,15,7,5,0,5,80],
+        ["Greek Yogurt Strawberry 170g",170,155,13,18,4,0,15,85],
+        ["Labneh 50g",50,110,5,4,8,0,2,250],
+        ["Cream Cheese 30g",30,95,2,2,9,0,1,150],
+        ["Cheese Slice 20g",20,60,4,1,4,0,0,180],
+        ["Butter Salted 10g",10,72,0,0,8,0,0,65]
+      ]
+    },
+    {
+      cat:"شيبسات", meal:"snack", aliases:"شيبس,بطاط,سناك,chips",
+      brands:["Lay's","Doritos","Cheetos","Pringles","Oman Chips","Bugles","Takis","Ruffles","Tiffany","Carrefour","Lulu","Hunter's Gourmet","Mr Krisps","Pofak","Kettle Chips","Tostitos","Sunbites","Quavers","Walkers","Popchips"],
+      items:[
+        ["Classic Salted 40g",40,215,3,22,13,2,1,300],
+        ["Salt & Vinegar 40g",40,215,3,22,13,2,1,360],
+        ["Ketchup 40g",40,220,3,23,13,2,2,340],
+        ["Chili 40g",40,220,3,22,14,2,1,350],
+        ["Cheese 40g",40,225,3,23,14,1,2,380],
+        ["BBQ 40g",40,220,3,23,13,2,2,340],
+        ["Sour Cream 40g",40,215,3,22,13,2,1,330],
+        ["Family Bag 100g",100,535,7,55,33,5,3,800],
+        ["Small Bag 25g",25,135,2,14,8,1,1,200],
+        ["Mini Pack 15g",15,80,1,9,5,0,1,130],
+        ["Baked Chips 40g",40,160,3,28,4,3,2,290],
+        ["Hot Flamin 40g",40,225,3,23,14,1,2,390]
+      ]
+    },
+    {
+      cat:"حلويات", meal:"snack", aliases:"شوكولاتة,كاكاو,حلا,سويت,sweets,chocolate",
+      brands:["Nestlé KitKat","Galaxy","Mars","Snickers","Twix","Bounty","Kinder","Ferrero Rocher","M&M's","Maltesers","Cadbury","Toblerone","Hershey's","Lindt","Ritter Sport","Reese's","Milka","Patchi","Godiva","Lotus"],
+      items:[
+        ["Standard Bar 40g",40,210,3,25,11,1,22,45],
+        ["Large Bar 80g",80,430,6,50,23,2,44,90],
+        ["Mini 20g",20,105,1,13,6,1,11,25],
+        ["Caramel 45g",45,230,3,32,10,1,28,80],
+        ["Hazelnut 45g",45,240,4,26,14,2,22,60],
+        ["Dark Chocolate 40g",40,220,3,20,15,3,14,15],
+        ["White Chocolate 40g",40,225,3,24,13,0,23,55],
+        ["Wafer 38g",38,200,3,24,10,1,20,45],
+        ["Cookies 50g",50,240,3,34,11,1,20,160],
+        ["Spread 1 tbsp",20,108,1,12,6,1,11,8],
+        ["Ice Cream Cup 100ml",100,220,4,28,10,0,24,90],
+        ["Cake Slice 100g",100,380,5,55,16,2,35,250]
+      ]
+    },
+    {
+      cat:"مشروبات", meal:"snack", aliases:"مشروب,عصير,بيبسي,كولا,juice,drink",
+      brands:["Pepsi","Coca-Cola","7UP","Mountain Dew","Fanta","Mirinda","Sprite","Red Bull","Monster","Lipton Ice Tea","Rani","Barbican","Vimto","Lacnor","Al Rawabi","Mai Dubai","Masafi","Arwa","Aquafina","Voss"],
+      items:[
+        ["Regular 330ml",330,140,0,35,0,0,35,25],
+        ["Diet 330ml",330,1,0,0,0,0,0,35],
+        ["Zero 330ml",330,1,0,0,0,0,0,35],
+        ["Bottle 500ml",500,210,0,52,0,0,52,40],
+        ["Orange Juice 250ml",250,115,2,26,0,0,22,5],
+        ["Apple Juice 250ml",250,120,0,29,0,0,27,10],
+        ["Mango Juice 250ml",250,150,1,36,0,0,32,15],
+        ["Energy Drink 250ml",250,110,0,28,0,0,27,100],
+        ["Iced Tea 320ml",320,120,0,30,0,0,29,20],
+        ["Sparkling Water 330ml",330,0,0,0,0,0,0,15]
+      ]
+    },
+    {
+      cat:"مفرزنات", meal:"dinner", aliases:"مفرزنات,مجمد,frozen,ناجتس,بطاط",
+      brands:["Sadia","Americana","Al Kabeer","Khazan","Carrefour Frozen","Lulu Frozen","McCain","Sunbulah","Al Islami","Farm Fresh","Iglo","Birds Eye","Al Areesh","Al Watania","Freshly"],
+      items:[
+        ["Chicken Nuggets 100g",100,270,14,18,16,1,1,600],
+        ["Chicken Strips 100g",100,260,17,16,14,1,1,650],
+        ["Chicken Burger Patty 100g",100,240,14,14,14,1,1,520],
+        ["Beef Burger Patty 100g",100,290,17,7,22,0,1,450],
+        ["French Fries 100g",100,170,3,27,6,3,1,250],
+        ["Potato Wedges 100g",100,190,3,30,7,3,1,300],
+        ["Cheese Sambosa 1pc",35,110,3,12,6,1,1,180],
+        ["Meat Sambosa 1pc",35,120,5,11,7,1,1,190],
+        ["Frozen Pizza Half",200,520,20,60,22,3,8,950],
+        ["Mixed Vegetables 100g",100,60,3,10,0,4,4,40],
+        ["Chicken Sausage 100g",100,230,12,6,17,1,2,850],
+        ["Fish Fingers 100g",100,240,12,20,12,1,1,600]
+      ]
+    },
+    {
+      cat:"بروتين", meal:"snack", aliases:"بروتين,مكمل,واي,protein,whey",
+      brands:["Quest","Grenade","Barebells","Fulfil","Optimum Nutrition","MuscleTech","MyProtein","Premier Protein","Protein World","Labrada","BSN","Dymatize","Isopure","Rule 1","Applied Nutrition","Ghost","Gatorade Protein","PowerBar","Mars Protein","Snickers Protein"],
+      items:[
+        ["Protein Bar Chocolate 60g",60,220,20,22,7,5,3,180],
+        ["Protein Bar Cookies 60g",60,225,20,23,7,5,3,190],
+        ["Protein Bar Peanut 60g",60,230,20,21,8,5,3,200],
+        ["Protein Shake Chocolate 330ml",330,180,25,10,4,1,5,220],
+        ["Protein Shake Vanilla 330ml",330,175,25,9,4,1,5,220],
+        ["Whey Scoop 30g",30,120,24,3,2,1,1,80],
+        ["Mass Gainer Scoop 100g",100,380,25,58,6,3,12,220],
+        ["Protein Cookie 75g",75,320,20,35,12,4,12,280],
+        ["Clear Whey 25g",25,90,20,2,0,0,1,70],
+        ["Casein Scoop 30g",30,115,24,3,1,1,1,110]
+      ]
+    },
+    {
+      cat:"صوصات", meal:"snack", aliases:"صوص,كاتشب,مايونيز,sauce",
+      brands:["Heinz","Hellmann's","American Garden","Tabasco","Sriracha","Kikkoman","Puck","Al Alali","Nutella","Lotus","Nando's","HP Sauce","Lea & Perrins","French's","Primal Kitchen"],
+      items:[
+        ["Ketchup 1 tbsp",17,20,0,5,0,0,4,160],
+        ["Mayonnaise 1 tbsp",15,100,0,0,11,0,0,90],
+        ["Light Mayo 1 tbsp",15,45,0,2,4,0,1,120],
+        ["BBQ Sauce 1 tbsp",18,35,0,8,0,0,7,180],
+        ["Ranch 1 tbsp",15,75,0,1,8,0,1,130],
+        ["Hot Sauce 1 tbsp",15,5,0,1,0,0,0,180],
+        ["Soy Sauce 1 tbsp",15,10,1,1,0,0,0,900],
+        ["Cooking Cream 50ml",50,150,2,3,14,0,2,60],
+        ["Chocolate Spread 1 tbsp",20,108,1,12,6,1,11,8],
+        ["Biscoff Spread 1 tbsp",20,115,1,12,7,0,8,45]
+      ]
+    },
+    {
+      cat:"فطور", meal:"breakfast", aliases:"حبوب,شوفان,فطور,cereal,oats",
+      brands:["Kellogg's","Nestlé","Quaker","Weetabix","Alpen","Carrefour","Lulu","Waitrose","Spinneys","Nature Valley","Jordan's","Fitness","Cheerios","Coco Pops","Special K"],
+      items:[
+        ["Corn Flakes 30g",30,115,2,26,0,1,3,250],
+        ["Chocolate Cereal 30g",30,125,2,27,1,1,11,200],
+        ["Honey Cereal 30g",30,120,2,26,1,1,9,190],
+        ["Granola 50g",50,230,5,35,8,4,12,80],
+        ["Oats 50g",50,190,7,32,3,5,1,2],
+        ["Muesli 50g",50,200,6,35,5,5,10,40],
+        ["Protein Cereal 40g",40,160,12,20,4,4,3,180],
+        ["Cereal With Milk Bowl",250,300,12,55,5,4,18,300],
+        ["Breakfast Biscuit 50g",50,220,4,35,8,3,12,250],
+        ["Pancake Mix 100g",100,360,8,72,4,3,12,800]
+      ]
+    },
+    {
+      cat:"منتجات غذائية", meal:"snack", aliases:"جمعية,سوبرماركت,pantry,food",
+      brands:["Carrefour","Lulu","Waitrose","Spinneys","Al Baker","Betty Crocker","Al Alali","Goody","California Garden","Heinz","American Garden","Libby's","Del Monte","Green Giant","Al Islami","Al Ain","Sunwhite","India Gate","Tilda","Daawat"],
+      items:[
+        ["Basmati Rice Cooked 100g",100,130,3,28,0,1,0,5],
+        ["Pasta Cooked 100g",100,158,6,31,1,2,1,5],
+        ["Tuna In Water Can",120,130,28,0,1,0,0,350],
+        ["Tuna In Oil Can",120,220,26,0,12,0,0,360],
+        ["Baked Beans 100g",100,120,7,20,1,6,3,350],
+        ["Sweet Corn 100g",100,95,3,20,1,2,6,250],
+        ["Peanut Butter 1 tbsp",16,95,4,3,8,1,1,70],
+        ["Honey 1 tbsp",21,64,0,17,0,0,17,1],
+        ["Jam 1 tbsp",20,55,0,14,0,0,12,5],
+        ["Tomato Paste 1 tbsp",20,20,1,4,0,1,3,120],
+        ["Canned Chickpeas 100g",100,164,9,27,3,8,5,250],
+        ["Canned Lentils 100g",100,116,9,20,0,8,2,200]
+      ]
+    },
+    {
+      cat:"مطاعم", meal:"dinner", aliases:"مطعم,وجبة,برجر,restaurant",
+      brands:["McDonald's","KFC","Burger King","Hardee's","Subway","Pizza Hut","Domino's","Papa Johns","Starbucks","Costa","Tim Hortons","Dunkin","Shake Shack","Five Guys","Texas Roadhouse","Jollibee","AlBaik","Wendy's","Chili's","Nando's"],
+      items:[
+        ["Classic Burger",220,520,25,45,28,3,7,950],
+        ["Chicken Burger",220,480,25,44,22,3,6,980],
+        ["Spicy Chicken",240,560,28,48,29,3,6,1200],
+        ["Double Burger",320,780,42,48,48,3,9,1350],
+        ["Fries Medium",120,350,4,45,17,4,1,420],
+        ["Nuggets 6 pcs",100,270,15,16,16,1,0,550],
+        ["Caesar Salad",250,380,25,18,24,4,4,850],
+        ["Chocolate Dessert",100,390,5,55,16,2,35,250],
+        ["Iced Latte",350,150,8,18,5,0,15,120],
+        ["Caramel Drink",350,280,7,45,8,0,38,160],
+        ["Cookie",45,210,2,30,10,1,18,150],
+        ["Chicken Wrap",250,430,30,40,15,4,5,950],
+        ["Steak Meal",300,650,60,10,40,2,3,1100],
+        ["Pizza Slice",120,300,13,35,13,2,3,700],
+        ["Rice Bowl",350,520,25,65,17,3,4,1050]
+      ]
+    }
+  ];
+
+  groups.forEach(g=>{
+    g.brands.forEach(brand=>{
+      g.items.forEach(item=>{
+        const [itemName,grams,cal,p,c,f,fiber,sugar,sodium] = item;
+        const q = sodium > 900 ? "high_sodium" : sugar > 20 ? "high_sugar" : f > 15 ? "high_fat" : p >= 20 ? "clean" : "medium";
+        addV41(
+          `${brand} ${itemName}`,
+          g.cat,
+          g.meal,
+          itemName.includes("100g") ? "100g" : "حصة",
+          grams,cal,p,c,f,fiber,sugar,sodium,
+          q,
+          `${brand},${g.aliases}`
+        );
+      });
+    });
+  });
+
+  const baseNames = [
+    "Chicken Biryani","Beef Biryani","Chicken Mandi","Beef Mandi","Chicken Kabsa","Lamb Kabsa",
+    "Chicken Machboos","Lamb Machboos","Harees","Thareed","Balaleet","Ruqaq Cheese",
+    "Chicken Shawarma","Beef Shawarma","Arabic Shawarma","Falafel Sandwich","Hummus Plate",
+    "Tabbouleh","Fattoush","Grilled Chicken","Grilled Fish","Mixed Grill","Chicken Pasta",
+    "Alfredo Pasta","Arrabbiata Pasta","Lasagna","Chicken Caesar Salad","Tuna Sandwich",
+    "Egg Sandwich","Cheese Sandwich","Turkey Sandwich","Beef Burger","Chicken Burger"
+  ];
+
+  const styleNames = ["Regular","Large","Small","Light","Spicy","Grilled","Fried","With Rice","With Fries","Meal"];
+  const localBrands = ["Generic UAE","Lulu Kitchen","Carrefour Kitchen","Spinneys Deli","Waitrose Deli","Kafeteria UAE","Arabic Restaurant","Emirati Kitchen","Gulf Kitchen","Home Style"];
+
+  localBrands.forEach(b=>{
+    baseNames.forEach(food=>{
+      styleNames.forEach(style=>{
+        const grams = style==="Large" ? 500 : style==="Small" ? 220 : 350;
+        const cal = style==="Light" ? 380 : style==="Fried" || style==="With Fries" ? 760 : style==="Large" ? 850 : 580;
+        const p = food.includes("Chicken") || food.includes("Beef") || food.includes("Fish") || food.includes("Tuna") ? 35 : 12;
+        const c = food.includes("Rice") || food.includes("Biryani") || food.includes("Mandi") || food.includes("Kabsa") || food.includes("Machboos") || style==="With Rice" ? 85 : 45;
+        const fat = style==="Fried" || style==="With Fries" ? 32 : style==="Light" ? 10 : 20;
+        addV41(`${b} ${food} ${style}`,"وجبات جاهزة","lunch","طبق",grams,cal,p,c,fat,4,6,900,cal>700?"high_sodium":"medium",`${b},${food},وجبة,اكل`);
+      });
+    });
+  });
+
+  console.log("Liyaqti V41 added:", out.length - before, "Total:", out.length);
+})();
 
   window.LIYAQTI_FOOD_LIBRARY_V40 = out;
   console.log("Liyaqti Food Library V40 loaded:", out.length);
