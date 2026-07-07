@@ -412,22 +412,29 @@ lastDataReload: ""
       <div class="settingsRows">
         ${row(
           "حالة الحساب",
-          isCloud ? "مسجل دخول بحساب سحابي." : "سجّل دخولك لحفظ بياناتك بالسحابة.",
+          isCloud ? "مسجل دخول بحساب سحابي وجاهز للمزامنة." : "سجّل دخولك لحفظ بياناتك بالسحابة.",
           isCloud ? "نشط" : "محلي"
         )}
         ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
+        ${row("Firebase", window.LiyaqtiSync ? "ملف sync.js مربوط وجاهز." : "ملف sync.js غير مربوط.", window.LiyaqtiSync ? "جاهز" : "قريباً")}
       </div>
 
-      <div class="settingsForm" style="margin-top:12px">
-        ${input("cloudEmail", "البريد الإلكتروني", email, "example@email.com")}
-        ${input("cloudPassword", "كلمة المرور", "", "6 أحرف أو أكثر", "password")}
-      </div>
+      ${isCloud ? `
+        <div class="settingsActions">
+          <button class="settingsBtn gray" onclick="liyaqtiCloudLogout()">تسجيل خروج</button>
+          <button class="settingsBtn soft" onclick="openSettingsSection('sync')">فتح المزامنة</button>
+        </div>
+      ` : `
+        <div class="settingsForm" style="margin-top:12px">
+          ${input("cloudEmail", "البريد الإلكتروني", email, "example@email.com")}
+          ${input("cloudPassword", "كلمة المرور", "", "6 أحرف أو أكثر", "password")}
+        </div>
 
-      <div class="settingsActions">
-        <button class="settingsBtn primary" onclick="liyaqtiCloudLogin()">تسجيل دخول</button>
-        <button class="settingsBtn soft" onclick="liyaqtiCloudRegister()">إنشاء حساب</button>
-        <button class="settingsBtn gray" onclick="liyaqtiCloudLogout()">تسجيل خروج</button>
-      </div>
+        <div class="settingsActions">
+          <button class="settingsBtn primary" onclick="liyaqtiCloudLogin()">تسجيل دخول</button>
+          <button class="settingsBtn soft" onclick="liyaqtiCloudRegister()">إنشاء حساب</button>
+        </div>
+      `}
     </section>
   `;
 }
