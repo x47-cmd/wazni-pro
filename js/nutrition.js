@@ -362,6 +362,11 @@ seedFoods.push(...[
 ["Costa Chocolate Muffin","Costa","snack","حبة",120,430,6,58,19,3,34,330,"high_sugar","مطعم/تقديري","medium","كوستا مافن"]
 ]);
 
+if(window.LIYAQTI_FOOD_LIBRARY_V40 && Array.isArray(window.LIYAQTI_FOOD_LIBRARY_V40)){
+  seedFoods.push(...window.LIYAQTI_FOOD_LIBRARY_V40);
+}
+
+
 const defaultFoodLibrary=seedFoods.map((x,i)=>({
   id:"f"+i,
   name:x[0],
