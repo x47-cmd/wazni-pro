@@ -1,15 +1,20 @@
 /* =========================================================
-   Liyaqti App Events Center V1
-   Unified refresh system for all pages
+   Liyaqti App Events Center V2
+   Auto LocalStorage Watch + Unified Refresh
 ========================================================= */
 (function(){
-  if(window.__LIYAQTI_APP_EVENTS_V1__) return;
-  window.__LIYAQTI_APP_EVENTS_V1__ = true;
+  if(window.__LIYAQTI_APP_EVENTS_V2__) return;
+  window.__LIYAQTI_APP_EVENTS_V2__ = true;
+
+  let busy = false;
 
   window.liyaqtiAppUpdated = function(type="all"){
+    if(busy) return;
+    busy = true;
+
     try{
       window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{
-        detail:{ type:type, time:Date.now() }
+        detail:{type,time:Date.now()}
       }));
     }catch(e){}
 
@@ -20,27 +25,32 @@
       try{ if(typeof renderSteps==="function") renderSteps(); }catch(e){}
       try{ if(typeof renderSettings==="function") renderSettings(); }catch(e){}
 
-      try{
-        const dash=document.getElementById("dash");
-        if(type!=="nutrition" && dash && dash.classList.contains("on") && typeof renderNutrition==="function"){
-          renderNutrition();
-        }
-      }catch(e){}
-    },80);
+      busy = false;
+    },120);
   };
 
-  window.addEventListener("storage",function(e){
-    const keys=[
+  const oldSetItem = localStorage.setItem;
+
+  localStorage.setItem = function(key,value){
+    oldSetItem.apply(this,arguments);
+
+    const watched = [
       "wazni",
       "wazniS",
       "wazniSteps",
       "wazniActivities",
       "liyaqtiNutritionData",
-      "liyaqtiNutritionSettings"
+      "liyaqtiNutritionSettings",
+      "liyaqtiBodyGoalV90",
+      "liyaqtiGoalProfilesV90",
+      "liyaqtiGoalTasksV90"
     ];
 
-    if(keys.includes(e.key)){
-      window.liyaqtiAppUpdated("storage");
+    if(watched.includes(key)){
+      setTimeout(()=>{
+        window.liyaqtiAppUpdated(key);
+      },80);
     }
-  });
+  };
+
 })();
