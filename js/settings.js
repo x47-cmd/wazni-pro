@@ -436,14 +436,7 @@ diagnosticScore: ""
           isCloud ? "نشط" : "محلي"
         )}
         ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
-        <div class="settingsRows">
-  ${row(
-    "حالة الحساب",
-    isCloud ? "مسجل دخول بحساب سحابي وجاهز للمزامنة." : "سجّل دخولك لحفظ بياناتك بالسحابة.",
-    isCloud ? "نشط" : "محلي"
-  )}
-  ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
-</div>
+      </div>
 
       ${isCloud ? `
         <div class="settingsActions">
@@ -597,13 +590,18 @@ diagnosticScore: ""
   }
   
   function accountLiteContent(app, S) {
+  const cloud = window.LiyaqtiSync?.status?.() || {};
+  const isCloud = cloud.loggedIn;
+  const email = safe(cloud.email || S.email || app.mockUserEmail, "غير محدد");
+
   return `
-<div class="settingsRows">
-${row("نوع الحساب","حساب Liyaqti Cloud","Cloud")}
-${row("البريد الإلكتروني",email,"Cloud")}
-${row("آخر تسجيل دخول","هذا الجهاز","Info")}
-</div>
-`;
+    <div class="settingsRows">
+      ${row("نوع الحساب", isCloud ? "حساب Liyaqti Cloud" : "حساب محلي", isCloud ? "Cloud" : "Local")}
+      ${row("البريد الإلكتروني", email, isCloud ? "Cloud" : "Local")}
+      ${row("آخر تسجيل دخول", isCloud ? "هذا الجهاز" : "غير مسجل دخول", "Info")}
+    </div>
+  `;
+}
 
   function syncContent(app) {
   const cloud = window.LiyaqtiSync?.status?.() || {};
