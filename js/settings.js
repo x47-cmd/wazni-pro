@@ -81,7 +81,7 @@ diagnosticScore: ""
     const style = document.createElement("style");
     style.id = "liyaqtiSettingsHubStyle";
     style.innerHTML = `
-      #settings{padding-bottom:180px}
+      #settings{padding-bottom:260px}
       .settingsHub{display:flex;flex-direction:column;gap:16px}
 
       .settingsHero{
