@@ -68,7 +68,10 @@
 lastCloudBackup: "",
 lastCloudRestore: "",
 lastSmartSync: "",
-lastDataReload: ""
+lastDataReload: "",
+syncLog: [],
+diagnosticLastRun: "",
+diagnosticScore: ""
     });
   }
 
@@ -200,7 +203,20 @@ lastDataReload: ""
       .settingsModal h3{margin:0 0 8px;font-size:22px;font-weight:950}
       .settingsModal p{margin:0;color:var(--muted,#667085);line-height:1.8}
       .modalActions{display:flex;gap:10px;margin-top:16px}.modalActions button{flex:1}
-
+      .settingsSearchBox{
+        background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);
+        border-radius:26px;padding:14px;box-shadow:0 14px 35px rgba(15,23,42,.05)
+      }
+      .settingsSearchBox input{
+        width:100%;border:1px solid var(--line,#e5e7eb);background:var(--bg,#f8fafc);
+        color:var(--txt,#111827);border-radius:18px;padding:15px 16px;font-size:16px;
+        outline:none;font-weight:800
+      }
+      .syncLogBox{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+      .syncLogItem{
+        border:1px solid var(--line,#e5e7eb);border-radius:18px;padding:12px;
+        background:rgba(15,118,110,.04);color:var(--txt,#111827);font-size:13px;line-height:1.7
+      }
       @media(max-width:720px){
         .settingsHeroStats,.settingsQuickGrid{grid-template-columns:repeat(2,1fr)}
         .settingsForm,.settingsHealthGrid{grid-template-columns:1fr}
@@ -282,6 +298,10 @@ lastDataReload: ""
     <div class="settingsHub">
 
       ${topLoginCard(app, S)}
+
+<section class="settingsSearchBox">
+  <input id="settingsSearchInput" type="search" placeholder="🔍 ابحث في الإعدادات: بروتين، ثيم، مزامنة، وزن..." oninput="searchSettingsSections(this.value)">
+</section>
 
       <section class="settingsProfileCard">
         <div class="profileFlex">
@@ -586,6 +606,7 @@ lastDataReload: ""
   function syncContent(app) {
   const cloud = window.LiyaqtiSync?.status?.() || {};
   const isCloud = cloud.loggedIn;
+  const logs = Array.isArray(app.syncLog) ? app.syncLog.slice(-5).reverse() : [];
 
   return `
     <div class="settingsRows">
@@ -602,6 +623,10 @@ lastDataReload: ""
       <button class="settingsBtn primary" onclick="liyaqtiCloudBackup()">رفع للسحابة</button>
       <button class="settingsBtn soft" onclick="liyaqtiCloudRestore()">استرجاع من السحابة</button>
       <button class="settingsBtn dark" onclick="liyaqtiSmartSync()">مزامنة ذكية</button>
+    </div>
+
+    <div class="syncLogBox">
+      ${logs.length ? logs.map(x => `<div class="syncLogItem">🕘 ${x}</div>`).join("") : `<div class="syncLogItem">لا يوجد سجل مزامنة بعد.</div>`}
     </div>
   `;
 }
@@ -653,21 +678,28 @@ lastDataReload: ""
   }
 
   function aboutContent() {
-    return `
-      <div class="settingsRows">
-        ${row("اسم التطبيق", "Liyaqti | لياقتي", "Premium")}
-        ${row("الإصدار", "Settings Hub Accordion V11", "جاهز")}
-        ${row("المطور", "Yousif Alhosani", "Owner")}
-        ${row("الوصف", "رفيقك الذكي للصحة، الوزن، التغذية واللياقة.", "Liyaqti")}
-        ${row("آخر تحديث", new Date().toLocaleDateString("ar-AE"), "اليوم")}
-        ${row("What's New", "إضافة تسجيل دخول واضح في بداية الإعدادات وربط Firebase Sync.", "New")}
-      </div>
-      <div class="settingsActions">
-        <button class="settingsBtn soft" onclick="showToast('شكراً لاقتراحاتك، بنضيف نموذج تواصل لاحقاً')">إرسال اقتراح</button>
-        <button class="settingsBtn gray" onclick="showToast('ميزة التقييم بتتفعل لاحقاً')">تقييم التطبيق</button>
-      </div>
-    `;
-  }
+  const app = getAppSettings();
+
+  return `
+    <div class="settingsRows">
+      ${row("اسم التطبيق", "Liyaqti | لياقتي", "Premium")}
+      ${row("الإصدار", "Settings Hub V12 Elite", "جاهز")}
+      ${row("Cloud Sync", "Cloud Sync V2", window.LiyaqtiSync ? "جاهز" : "قريباً")}
+      ${row("Nutrition", "Nutrition Intelligence Pro V30", "جاهز")}
+      ${row("Reports", "Liyaqti Intelligence Center V30", "جاهز")}
+      ${row("Home", "Home Intelligence Center V13", "جاهز")}
+      ${row("آخر تشخيص", safe(app.diagnosticLastRun, "لم يتم تشغيل التشخيص بعد."), "Info")}
+      ${row("درجة التشخيص", app.diagnosticScore ? `${app.diagnosticScore}/100` : "غير متوفرة", "Info")}
+      ${row("المطور", "Yousif Alhosani", "Owner")}
+      ${row("آخر تحديث", new Date().toLocaleDateString("ar-AE"), "اليوم")}
+      ${row("What's New", "بحث داخل الإعدادات، سجل مزامنة، تقرير تشخيص، وتفاصيل إصدارات.", "New")}
+    </div>
+    <div class="settingsActions">
+      <button class="settingsBtn soft" onclick="showToast('شكراً لاقتراحاتك، بنضيف نموذج تواصل لاحقاً')">إرسال اقتراح</button>
+      <button class="settingsBtn gray" onclick="showToast('ميزة التقييم بتتفعل لاحقاً')">تقييم التطبيق</button>
+    </div>
+  `;
+}
 
   function maintenanceContent() {
   return `
@@ -681,6 +713,7 @@ lastDataReload: ""
 
     <div class="settingsActions">
       <button class="settingsBtn soft" onclick="reloadLiyaqtiLocalData()">إعادة تحميل البيانات</button>
+      <button class="settingsBtn dark" onclick="runLiyaqtiDiagnostic()">تقرير تشخيص</button>
       <button class="settingsBtn primary" onclick="recalculateLiyaqti()">إعادة احتساب</button>
       <button class="settingsBtn gray" onclick="clearSettingsCache()">تنظيف الكاش</button>
       <button class="settingsBtn danger" onclick="confirmClearWeightSteps()">مسح الوزن والخطوات</button>
@@ -871,6 +904,39 @@ lastDataReload: ""
     return Math.round(total / 1024);
   }
 
+  window.searchSettingsSections = function (value) {
+    const q = String(value || "").trim().toLowerCase();
+    if (!q) {
+      document.querySelectorAll("#settings .settingsAccordion").forEach(x => x.style.display = "");
+      return;
+    }
+
+    const map = {
+      profile: ["اسم","بريد","هاتف","عمر","جنس","profile","email","phone"],
+      health: ["طول","وزن","دهون","خصر","صحة","health","bmi"],
+      goals: ["هدف","خطوات","سعرات","بروتين","ماء","نوم","goal","protein","water"],
+      nutrition: ["تغذية","وجبات","صيام","أكل","دايت","nutrition","meal","food"],
+      activity: ["نشاط","رياضة","مشي","bmr","tdee","sport"],
+      notifications: ["اشعار","تنبيه","تذكير","notification"],
+      ai: ["ذكاء","ai","coach","تحليل"],
+      appearance: ["مظهر","ثيم","لون","لغة","خط","theme","language"],
+      account: ["حساب","دخول","login","email"],
+      sync: ["مزامنة","سحابة","رفع","استرجاع","sync","cloud"],
+      backup: ["نسخ","تصدير","استيراد","json","backup"],
+      privacy: ["خصوصية","أمان","pin","face","تشفير"],
+      integrations: ["apple","watch","health","google","fit","تكامل"],
+      about: ["حول","اصدار","version","مطور"],
+      maintenance: ["صيانة","مسح","كاش","تشخيص","diagnostic"]
+    };
+
+    document.querySelectorAll("#settings .settingsAccordion").forEach(el => {
+      const id = el.dataset.acc;
+      const text = (el.innerText || "").toLowerCase();
+      const keys = (map[id] || []).join(" ").toLowerCase();
+      el.style.display = text.includes(q) || keys.includes(q) ? "" : "none";
+    });
+  };
+  
   window.toggleSettingsAccordion = function (id) {
     const current = document.querySelector(`#settings [data-acc="${id}"]`);
     if (!current) return;
@@ -1042,6 +1108,27 @@ lastDataReload: ""
   }
 };
 
+window.runLiyaqtiDiagnostic = function () {
+  const data = calcDashboard();
+  let score = 0;
+
+  if (data.S) score += 15;
+  if (data.D.length) score += 20;
+  if (data.SD.length) score += 10;
+  if (data.height) score += 15;
+  if (data.goalWeight) score += 15;
+  if (window.LiyaqtiSync) score += 15;
+  if (localStorage) score += 10;
+
+  const app = getAppSettings();
+  app.diagnosticLastRun = new Date().toLocaleString("ar-AE");
+  app.diagnosticScore = Math.min(100, score);
+  saveJSON(LS_APP, app);
+
+  showToast(`✅ تقرير التشخيص: ${app.diagnosticScore}/100`);
+  renderSettings();
+};
+
   window.recalculateLiyaqti = function () {
     refreshMainApp();
     try { if (typeof draw === "function") draw(); } catch (e) {}
@@ -1121,6 +1208,14 @@ lastDataReload: ""
     };
   }
 
+  function addSyncLog(text) {
+    const app = getAppSettings();
+    const logs = Array.isArray(app.syncLog) ? app.syncLog : [];
+    logs.push(`${new Date().toLocaleString("ar-AE")} - ${text}`);
+    app.syncLog = logs.slice(-20);
+    saveJSON(LS_APP, app);
+  }
+  
   window.liyaqtiCloudLogin = async function () {
     try {
       const email = fieldValue("cloudEmail");
@@ -1165,6 +1260,7 @@ lastDataReload: ""
       const app = getAppSettings();
 app.lastCloudBackup = new Date().toLocaleString("ar-AE");
 app.lastSync = app.lastCloudBackup;
+addSyncLog("رفع البيانات للسحابة");
 saveJSON(LS_APP, app);
       showToast("✅ تم رفع البيانات للسحابة");
       renderSettings();
@@ -1182,6 +1278,7 @@ saveJSON(LS_APP, app);
         const app = getAppSettings();
 app.lastCloudRestore = new Date().toLocaleString("ar-AE");
 app.lastSync = app.lastCloudRestore;
+addSyncLog("استرجاع البيانات من السحابة");
 saveJSON(LS_APP, app);
 showToast("✅ تم الاسترجاع من السحابة");
 renderSettings();
@@ -1199,6 +1296,7 @@ renderSettings();
       const app = getAppSettings();
 app.lastSmartSync = new Date().toLocaleString("ar-AE");
 app.lastSync = app.lastSmartSync;
+addSyncLog("مزامنة ذكية");
 saveJSON(LS_APP, app);
       showToast("✅ تمت المزامنة الذكية");
       renderSettings();
