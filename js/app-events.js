@@ -1,12 +1,12 @@
 /* =========================================================
-   Liyaqti App Events Center V3
-   Unified Refresh + Auto LocalStorage Watch
+   Liyaqti App Events Center V4 Final
+   Unified Event Bus + Auto LocalStorage Watch + Safe Refresh
    File: js/app-events.js
 ========================================================= */
 
 (function(){
-  if(window.__LIYAQTI_APP_EVENTS_V3__) return;
-  window.__LIYAQTI_APP_EVENTS_V3__ = true;
+  if(window.__LIYAQTI_APP_EVENTS_V4__) return;
+  window.__LIYAQTI_APP_EVENTS_V4__ = true;
 
   const WATCHED_KEYS = [
     "wazni",
@@ -16,6 +16,9 @@
     "wazniAchievements",
 
     "liyaqtiAppSettings",
+    "liyaqtiUser",
+    "liyaqtiCloudSync",
+    "liyaqtiLastSync",
 
     "liyaqtiNutritionData",
     "liyaqtiNutritionSettings",
@@ -32,9 +35,9 @@
     "liyaqtiGoalTasksV90",
     "liyaqtiGoalNotesV90",
 
-    "liyaqtiCloudSync",
-    "liyaqtiUser",
-    "liyaqtiLastSync"
+    "liyaqtiStore",
+    "liyaqtiReports",
+    "liyaqtiSettings"
   ];
 
   let refreshTimer = null;
@@ -42,8 +45,8 @@
 
   function currentPageId(){
     try{
-      const p = document.querySelector(".page.on");
-      return p ? p.id : "";
+      const page = document.querySelector(".page.on");
+      return page ? page.id : "";
     }catch(e){
       return "";
     }
@@ -59,54 +62,88 @@
     }
   }
 
-  window.liyaqtiAppUpdated = function(type="all"){
+  function dispatchUpdate(type="all", data=null){
+    try{
+      window.dispatchEvent(new CustomEvent("liyaqti:update",{
+        detail:{
+          type:type,
+          data:data,
+          page:currentPageId(),
+          time:Date.now()
+        }
+      }));
+    }catch(e){}
+
+    try{
+      window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{
+        detail:{
+          type:type,
+          data:data,
+          page:currentPageId(),
+          time:Date.now()
+        }
+      }));
+    }catch(e){}
+
+    try{
+      window.dispatchEvent(new CustomEvent("liyaqti:"+type,{
+        detail:data
+      }));
+    }catch(e){}
+
+    window.liyaqtiLastUpdate = {
+      type:type,
+      data:data,
+      page:currentPageId(),
+      time:Date.now()
+    };
+  }
+
+  function refreshVisiblePages(type="all"){
+    const active = currentPageId();
+
+    safeCall("renderHome");
+
+    if(active === "goalPage" || active === "goal"){
+      safeCall("renderGoal");
+    }
+
+    if(active === "steps"){
+      safeCall("renderSteps");
+    }
+
+    if(active === "reports"){
+      safeCall("renderAdvancedReports");
+    }
+
+    if(active === "achievements"){
+      safeCall("renderAchievements");
+    }
+
+    if(active === "settings"){
+      safeCall("renderSettings");
+    }
+
+    if(active === "dash" && type !== "nutrition"){
+      safeCall("renderNutrition");
+    }
+  }
+
+  window.liyaqtiAppUpdated = function(type="all", data=null){
+    dispatchUpdate(type,data);
+
     clearTimeout(refreshTimer);
 
     refreshTimer = setTimeout(function(){
       if(isRefreshing) return;
+
       isRefreshing = true;
 
-      try{
-        window.dispatchEvent(new CustomEvent("liyaqti:dataUpdated",{
-          detail:{
-            type:type,
-            page:currentPageId(),
-            time:Date.now()
-          }
-        }));
-      }catch(e){}
-
-      const active = currentPageId();
-
-      safeCall("renderHome");
-
-      if(active === "goalPage" || active === "goal"){
-        safeCall("renderGoal");
-      }
-
-      if(active === "steps"){
-        safeCall("renderSteps");
-      }
-
-      if(active === "reports"){
-        safeCall("renderAdvancedReports");
-      }
-
-      if(active === "settings"){
-        safeCall("renderSettings");
-      }
-
-      if(active === "achievements"){
-        safeCall("renderAchievements");
-      }
-
-      if(active === "dash" && type !== "nutrition"){
-        safeCall("renderNutrition");
-      }
+      refreshVisiblePages(type);
 
       setTimeout(function(){
         isRefreshing = false;
-      },150);
+      },180);
 
     },120);
   };
@@ -121,7 +158,7 @@
     originalSetItem.apply(this,arguments);
 
     if(WATCHED_KEYS.includes(key) && oldValue !== value){
-      window.liyaqtiAppUpdated(key);
+      window.liyaqtiAppUpdated(key,{key:key,value:value});
     }
   };
 
@@ -129,26 +166,30 @@
     originalRemoveItem.apply(this,arguments);
 
     if(WATCHED_KEYS.includes(key)){
-      window.liyaqtiAppUpdated(key);
+      window.liyaqtiAppUpdated(key,{key:key,removed:true});
     }
   };
 
   localStorage.clear = function(){
     originalClear.apply(this,arguments);
-    window.liyaqtiAppUpdated("clear");
+    window.liyaqtiAppUpdated("clear",{clear:true});
   };
 
   window.addEventListener("storage",function(e){
     if(WATCHED_KEYS.includes(e.key)){
-      window.liyaqtiAppUpdated(e.key);
+      window.liyaqtiAppUpdated(e.key,{
+        key:e.key,
+        oldValue:e.oldValue,
+        newValue:e.newValue
+      });
     }
   });
 
-  window.addEventListener("liyaqti:dataUpdated",function(e){
+  window.addEventListener("liyaqti:update",function(e){
     try{
-      console.log("Liyaqti data updated:", e.detail || {});
+      console.log("Liyaqti Update:", e.detail || {});
     }catch(err){}
   });
 
-  console.log("Liyaqti App Events Center V3 loaded");
+  console.log("Liyaqti App Events Center V4 Final loaded");
 })();
