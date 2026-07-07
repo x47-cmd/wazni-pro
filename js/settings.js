@@ -436,8 +436,14 @@ diagnosticScore: ""
           isCloud ? "نشط" : "محلي"
         )}
         ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
-        ${row("Firebase", window.LiyaqtiSync ? "ملف sync.js مربوط وجاهز." : "ملف sync.js غير مربوط.", window.LiyaqtiSync ? "جاهز" : "قريباً")}
-      </div>
+        <div class="settingsRows">
+  ${row(
+    "حالة الحساب",
+    isCloud ? "مسجل دخول بحساب سحابي وجاهز للمزامنة." : "سجّل دخولك لحفظ بياناتك بالسحابة.",
+    isCloud ? "نشط" : "محلي"
+  )}
+  ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
+</div>
 
       ${isCloud ? `
         <div class="settingsActions">
@@ -612,7 +618,6 @@ diagnosticScore: ""
     <div class="settingsRows">
       ${row("حالة المزامنة", isCloud ? "متصل بالسحابة وجاهز للمزامنة." : "سجّل دخول أولاً لتفعيل المزامنة.", isCloud ? "جاهز" : "محلي")}
       ${row("الحساب", safe(cloud.email, "غير مسجل"), isCloud ? "Cloud" : "Local")}
-      ${row("Firebase", window.LiyaqtiSync ? "Cloud Sync V2 يعمل داخل التطبيق." : "ملف sync.js غير مربوط.", window.LiyaqtiSync ? "جاهز" : "قريباً")}
       ${row("آخر رفع", safe(app.lastCloudBackup, "لم يتم الرفع بعد."), "Info")}
       ${row("آخر استرجاع", safe(app.lastCloudRestore, "لم يتم الاسترجاع بعد."), "Info")}
       ${row("آخر مزامنة ذكية", safe(app.lastSmartSync || app.lastSync, "لم تتم مزامنة بعد."), "Info")}
