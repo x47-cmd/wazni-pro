@@ -260,99 +260,84 @@
   }
 
   function renderSettings() {
-    injectSettingsStyle();
-    initDefaults();
+  injectSettingsStyle();
+  initDefaults();
 
-    const app = getAppSettings();
-    const data = calcDashboard();
-    const S = data.S;
-    const cloud = window.LiyaqtiSync?.status?.() || {};
-    const userName = safe(S.name, "مستخدم Liyaqti");
-    const email = safe(cloud.email || S.email || app.mockUserEmail, "لا يوجد بريد");
-    const syncStatus = cloud.loggedIn ? "Cloud" : "محلي";
-    const completion = profileCompletion(S);
-    const dataHealth = dataHealthScore(data);
-    const previewText = buildPreviewText(data);
+  const app = getAppSettings();
+  const data = calcDashboard();
+  const S = data.S;
+  const cloud = window.LiyaqtiSync?.status?.() || {};
+  const userName = safe(S.name, "مستخدم Liyaqti");
+  const email = safe(cloud.email || S.email || app.mockUserEmail, "لا يوجد بريد");
+  const syncStatus = cloud.loggedIn ? "Cloud" : "محلي";
+  const completion = profileCompletion(S);
+  const dataHealth = dataHealthScore(data);
+  const previewText = buildPreviewText(data);
 
-    page.innerHTML = `
-      <div class="settingsHub">
+  page.innerHTML = `
+    <div class="settingsHub">
 
-        <section class="settingsHero">
-          <div class="settingsHeroTop">
-            <div>
-              <h2>⚙️ مركز الإعدادات الذكي</h2>
-              <p>Settings Hub احترافي يجمع حسابك، صحتك، أهدافك، التغذية، النشاط، AI، الخصوصية، النسخ الاحتياطي والتكاملات المستقبلية.</p>
-            </div>
-            <div class="settingsLogo">L</div>
+      ${topLoginCard(app, S)}
+
+      <section class="settingsProfileCard">
+        <div class="profileFlex">
+          <div class="settingsAvatar">${avatarLetter(userName)}</div>
+          <div class="settingsProfileInfo">
+            <h3>${userName}</h3>
+            <p>${email} • ${syncStatus} • اكتمال الملف ${completion}%</p>
           </div>
-          <div class="settingsHeroStats">
-            ${heroStat(`${safe(data.currentWeight, "--")}`, "الوزن الحالي")}
-            ${heroStat(`${safe(data.goalWeight, "--")}`, "الهدف")}
-            ${heroStat(`${data.progress.toFixed(0)}%`, "الإنجاز")}
-            ${heroStat(`${dataHealth}%`, "صحة البيانات")}
-          </div>
-        </section>
-
-        ${topLoginCard(app, S)}
-
-        <section class="settingsProfileCard">
-          <div class="profileFlex">
-            <div class="settingsAvatar">${avatarLetter(userName)}</div>
-            <div class="settingsProfileInfo">
-              <h3>${userName}</h3>
-              <p>${email} • ${syncStatus} • اكتمال الملف ${completion}%</p>
-            </div>
-            <button class="syncBadge" onclick="openSettingsSection('sync')">${syncStatus}</button>
-          </div>
-
-          <div class="settingsQuickGrid">
-            ${quickItem(`${data.D.length}`, "وزن")}
-            ${quickItem(`${data.SD.length}`, "خطوات")}
-            ${quickItem(`${data.nutritionCount}`, "تغذية")}
-            ${quickItem(data.bmi ? data.bmi.toFixed(1) : "--", "BMI")}
-          </div>
-        </section>
-
-        <section class="settingsPanel">
-          <div class="settingsPanelTitle">
-            <h3>🧪 فحص صحة البيانات</h3>
-            <span>تحليل سريع</span>
-          </div>
-          <div class="settingsHealthGrid">
-            ${healthCheck("بيانات الوزن", data.D.length ? "ممتاز، توجد تسجيلات وزن." : "لا توجد تسجيلات وزن بعد.", data.D.length ? "ok" : "warn")}
-            ${healthCheck("إعدادات الهدف", data.startWeight && data.goalWeight ? "البداية والهدف موجودين." : "اكمل وزن البداية والهدف.", data.startWeight && data.goalWeight ? "ok" : "warn")}
-            ${healthCheck("الطول و BMI", data.height ? "الطول موجود ويمكن حساب BMI." : "أضف الطول لتحسين التحليل.", data.height ? "ok" : "warn")}
-            ${healthCheck("النسخ الاحتياطي", cloud.loggedIn ? "المزامنة السحابية جاهزة." : "سجّل دخولك لتفعيل النسخ السحابي.", cloud.loggedIn ? "ok" : "warn")}
-          </div>
-          <div class="livePreview">
-            <h4>👁️ معاينة مباشرة</h4>
-            <p id="settingsLivePreview">${previewText}</p>
-          </div>
-        </section>
-
-        <div class="accordionList">
-          ${accordion("profile", "👤", "الملف الشخصي", "الاسم، البريد، الهاتف، العمر والجنس", app.defaultOpen, profileContent(S))}
-          ${accordion("health", "❤️", "الإعدادات الصحية", "الطول، الوزن، الحساسية، الأمراض والوحدات", app.defaultOpen, healthContent(S))}
-          ${accordion("goals", "🎯", "الأهداف", "الوزن، الخطوات، السعرات، البروتين، الماء والنوم", app.defaultOpen, goalsContent(S))}
-          ${accordion("nutrition", "🍎", "التغذية", "النظام الغذائي، الوجبات، الصيام والتفضيلات", app.defaultOpen, nutritionContent(S))}
-          ${accordion("activity", "🏃", "النشاط والرياضة", "مستوى النشاط، الرياضة، BMR وTDEE", app.defaultOpen, activityContent(S))}
-          ${accordion("notifications", "🔔", "الإشعارات", "تذكير الوزن، الماء، الوجبات، النشاط والنوم", app.defaultOpen, notificationsContent(S))}
-          ${accordion("ai", "🤖", "الذكاء الاصطناعي", "AI Coach، التحليل التلقائي والتوصيات", app.defaultOpen, aiContent(S))}
-          ${accordion("appearance", "🎨", "المظهر والتجربة", "اللغة، الثيم، حجم الخط، الرئيسية والشارتات", app.defaultOpen, appearanceContent(app))}
-          ${accordion("account", "🔐", "تسجيل الدخول والحساب", "حساب سحابي حقيقي وتجهيز للمنصة", app.defaultOpen, accountContent(app, S))}
-          ${accordion("sync", "☁️", "المزامنة والحساب السحابي", "آخر مزامنة، الأجهزة، Cloud Sync", app.defaultOpen, syncContent(app))}
-          ${accordion("backup", "💾", "النسخ الاحتياطي والبيانات", "تصدير واستيراد JSON وإحصائيات البيانات", app.defaultOpen, backupContent(data))}
-          ${accordion("privacy", "🔒", "الخصوصية والأمان", "Face ID، PIN، التشفير والصلاحيات", app.defaultOpen, privacyContent(app))}
-          ${accordion("integrations", "🔗", "التكاملات", "Apple Health، Apple Watch، Google Fit والأجهزة", app.defaultOpen, integrationsContent())}
-          ${accordion("about", "ℹ️", "حول التطبيق", "الإصدار، المطور، التحديثات والملاحظات", app.defaultOpen, aboutContent())}
-          ${accordion("maintenance", "🧹", "الصيانة", "إعادة احتساب، تنظيف كاش ومسح البيانات", app.defaultOpen, maintenanceContent(), true)}
         </div>
 
-      </div>
-    `;
+        <div class="settingsQuickGrid">
+          ${quickItem(`${safe(data.currentWeight, "--")}`, "الوزن")}
+          ${quickItem(`${safe(data.goalWeight, "--")}`, "الهدف")}
+          ${quickItem(`${data.progress.toFixed(0)}%`, "الإنجاز")}
+          ${quickItem(`${dataHealth}%`, "صحة البيانات")}
+        </div>
+      </section>
 
-    bindSettingsEvents();
-  }
+      <section class="settingsPanel">
+        <div class="settingsPanelTitle">
+          <h3>🧪 فحص صحة البيانات</h3>
+          <span>تحليل سريع</span>
+        </div>
+
+        <div class="settingsHealthGrid">
+          ${healthCheck("بيانات الوزن", data.D.length ? "ممتاز، توجد تسجيلات وزن." : "لا توجد تسجيلات وزن بعد.", data.D.length ? "ok" : "warn")}
+          ${healthCheck("إعدادات الهدف", data.startWeight && data.goalWeight ? "البداية والهدف موجودين." : "اكمل وزن البداية والهدف.", data.startWeight && data.goalWeight ? "ok" : "warn")}
+          ${healthCheck("الطول و BMI", data.height ? "الطول موجود ويمكن حساب BMI." : "أضف الطول لتحسين التحليل.", data.height ? "ok" : "warn")}
+          ${healthCheck("الحساب السحابي", cloud.loggedIn ? "مسجل دخول وجاهز للمزامنة." : "غير مسجل دخول حالياً.", cloud.loggedIn ? "ok" : "warn")}
+        </div>
+
+        <div class="livePreview">
+          <h4>👁️ معاينة مباشرة</h4>
+          <p id="settingsLivePreview">${previewText}</p>
+        </div>
+      </section>
+
+      <div class="accordionList">
+        ${accordion("profile", "👤", "الملف الشخصي", "الاسم، البريد، الهاتف، العمر والجنس", app.defaultOpen, profileContent(S))}
+        ${accordion("health", "❤️", "الإعدادات الصحية", "الطول، الوزن، الحساسية، الأمراض والوحدات", app.defaultOpen, healthContent(S))}
+        ${accordion("goals", "🎯", "الأهداف", "الوزن، الخطوات، السعرات، البروتين، الماء والنوم", app.defaultOpen, goalsContent(S))}
+        ${accordion("nutrition", "🍎", "التغذية", "النظام الغذائي، الوجبات، الصيام والتفضيلات", app.defaultOpen, nutritionContent(S))}
+        ${accordion("activity", "🏃", "النشاط والرياضة", "مستوى النشاط، الرياضة، BMR وTDEE", app.defaultOpen, activityContent(S))}
+        ${accordion("notifications", "🔔", "الإشعارات", "تذكير الوزن، الماء، الوجبات، النشاط والنوم", app.defaultOpen, notificationsContent(S))}
+        ${accordion("ai", "🤖", "الذكاء الاصطناعي", "AI Coach، التحليل التلقائي والتوصيات", app.defaultOpen, aiContent(S))}
+        ${accordion("appearance", "🎨", "المظهر والتجربة", "اللغة، الثيم، حجم الخط، الرئيسية والشارتات", app.defaultOpen, appearanceContent(app))}
+        ${accordion("account", "🔐", "تسجيل الدخول والحساب", "بيانات الحساب وحالة الدخول", app.defaultOpen, accountLiteContent(app, S))}
+        ${accordion("sync", "☁️", "المزامنة المتقدمة", "رفع، استرجاع، ومزامنة ذكية", app.defaultOpen, syncContent(app))}
+        ${accordion("backup", "💾", "النسخ الاحتياطي والبيانات", "تصدير واستيراد JSON وإحصائيات البيانات", app.defaultOpen, backupContent(data))}
+        ${accordion("privacy", "🔒", "الخصوصية والأمان", "Face ID، PIN، التشفير والصلاحيات", app.defaultOpen, privacyContent(app))}
+        ${accordion("integrations", "🔗", "التكاملات", "Apple Health، Apple Watch، Google Fit والأجهزة", app.defaultOpen, integrationsContent())}
+        ${accordion("about", "ℹ️", "حول التطبيق", "الإصدار، المطور، التحديثات والملاحظات", app.defaultOpen, aboutContent())}
+        ${accordion("maintenance", "🧹", "الصيانة", "إعادة احتساب، تنظيف كاش ومسح البيانات", app.defaultOpen, maintenanceContent(), true)}
+      </div>
+
+    </div>
+  `;
+
+  bindSettingsEvents();
+}
 
   function heroStat(value, label) {
     return `<div class="settingsStat"><b>${value}</b><span>${label}</span></div>`;
@@ -398,44 +383,39 @@
   }
 
   function topLoginCard(app, S) {
-    const cloud = window.LiyaqtiSync?.status?.() || {};
-    const isCloud = cloud.loggedIn;
-    const email = safe(cloud.email || S.email || app.mockUserEmail, "");
+  const cloud = window.LiyaqtiSync?.status?.() || {};
+  const isCloud = cloud.loggedIn;
+  const email = safe(cloud.email || S.email || app.mockUserEmail, "");
 
-    return `
-      <section class="settingsPanel topLoginCard">
-        <div class="settingsPanelTitle">
-          <h3>🔐 الحساب والمزامنة</h3>
-          <span>${isCloud ? "متصل بالسحابة" : "سجّل دخولك أولاً"}</span>
-        </div>
+  return `
+    <section class="settingsPanel topLoginCard">
+      <div class="settingsPanelTitle">
+        <h3>🔐 الحساب والمزامنة</h3>
+        <span>${isCloud ? "متصل بالسحابة" : "سجّل دخولك أولاً"}</span>
+      </div>
 
-        <div class="settingsRows">
-          ${row("حالة الحساب", isCloud ? "مسجل دخول بحساب سحابي حقيقي." : "سجّل دخولك حتى تحفظ بياناتك بالسحابة وتستخدمها من أي جهاز.", isCloud ? "نشط" : "محلي")}
-          ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
-          ${row("Multi Device", isCloud ? "أي جهاز يسجل بنفس الحساب يقدر يسترجع نفس البيانات." : "يتفعل بعد تسجيل الدخول.", isCloud ? "جاهز" : "قريباً")}
-        </div>
+      <div class="settingsRows">
+        ${row(
+          "حالة الحساب",
+          isCloud ? "مسجل دخول بحساب سحابي." : "سجّل دخولك لحفظ بياناتك بالسحابة.",
+          isCloud ? "نشط" : "محلي"
+        )}
+        ${row("البريد", email || "غير محدد", isCloud ? "Cloud" : "Local")}
+      </div>
 
-        <div class="settingsForm" style="margin-top:12px">
-          ${input("cloudEmail", "البريد الإلكتروني", email, "example@email.com")}
-          ${input("cloudPassword", "كلمة المرور", "", "6 أحرف أو أكثر", "password")}
-        </div>
+      <div class="settingsForm" style="margin-top:12px">
+        ${input("cloudEmail", "البريد الإلكتروني", email, "example@email.com")}
+        ${input("cloudPassword", "كلمة المرور", "", "6 أحرف أو أكثر", "password")}
+      </div>
 
-        <div class="settingsActions">
-          <button class="settingsBtn primary" onclick="liyaqtiCloudLogin()">تسجيل دخول</button>
-          <button class="settingsBtn soft" onclick="liyaqtiCloudRegister()">إنشاء حساب</button>
-          <button class="settingsBtn gray" onclick="liyaqtiCloudLogout()">تسجيل خروج</button>
-        </div>
-
-        ${isCloud ? `
-          <div class="settingsActions">
-            <button class="settingsBtn primary" onclick="liyaqtiCloudBackup()">رفع للسحابة</button>
-            <button class="settingsBtn soft" onclick="liyaqtiCloudRestore()">استرجاع من السحابة</button>
-            <button class="settingsBtn dark" onclick="liyaqtiSmartSync()">مزامنة ذكية</button>
-          </div>
-        ` : ""}
-      </section>
-    `;
-  }
+      <div class="settingsActions">
+        <button class="settingsBtn primary" onclick="liyaqtiCloudLogin()">تسجيل دخول</button>
+        <button class="settingsBtn soft" onclick="liyaqtiCloudRegister()">إنشاء حساب</button>
+        <button class="settingsBtn gray" onclick="liyaqtiCloudLogout()">تسجيل خروج</button>
+      </div>
+    </section>
+  `;
+}
 
   function profileContent(S) {
     return `
@@ -567,6 +547,19 @@
   function accountContent(app, S) {
     return topLoginCard(app, S);
   }
+  
+  function accountLiteContent(app, S) {
+  const cloud = window.LiyaqtiSync?.status?.() || {};
+  const isCloud = cloud.loggedIn;
+  const email = safe(cloud.email || S.email || app.mockUserEmail, "غير محدد");
+
+  return `
+    <div class="settingsRows">
+      ${row("حالة الحساب", isCloud ? "مسجل دخول بحساب سحابي." : "غير مسجل دخول.", isCloud ? "نشط" : "محلي")}
+      ${row("البريد", email, isCloud ? "Cloud" : "Local")}
+    </div>
+  `;
+}
 
   function syncContent(app) {
     const cloud = window.LiyaqtiSync?.status?.() || {};
