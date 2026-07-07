@@ -1029,7 +1029,7 @@ function renderGoalV90(){
             <input id="g90Protein" class="g90Input" type="number" value="${b.protein||""}" placeholder="هدف البروتين">
             <input id="g90Sleep" class="g90Input" type="number" value="${b.sleep||""}" placeholder="النوم">
           </div>
-          <button class="g90Btn" onclick="goalV90SaveBody()">حفظ القياسات</button>
+          <button type="button" class="g90Btn" onclick="goalV90SaveBody(event)">حفظ القياسات</button>
           <div class="g90Item">BMI: ${bmi?fmt(bmi,1):"--"}</div>
         </div>
       </details>`:""}
@@ -1062,7 +1062,7 @@ function renderGoalV90(){
         <summary>📝 ملاحظات ${mt.name}</summary>
         <div class="g90List">
           <input id="g90Note" class="g90Input" placeholder="اكتب ملاحظة لهذا الهدف">
-          <button type="button" class="g90Btn" onclick="goalV90SaveBody(event)">حفظ القياسات</button>
+          <button type="button" class="g90Btn" onclick="goalV90AddNote(event)">حفظ الملاحظة</button>
           ${noteList.length?noteList.map(x=>`<div class="g90Item">📅 ${x.d}<br>${x.text}</div>`).join(""):`<div class="g90Item">لا توجد ملاحظات لهذا الهدف.</div>`}
         </div>
       </details>
