@@ -597,17 +597,13 @@ diagnosticScore: ""
   }
   
   function accountLiteContent(app, S) {
-  const cloud = window.LiyaqtiSync?.status?.() || {};
-  const isCloud = cloud.loggedIn;
-  const email = safe(cloud.email || S.email || app.mockUserEmail, "غير محدد");
-
   return `
-    <div class="settingsRows">
-      ${row("حالة الحساب", isCloud ? "مسجل دخول بحساب سحابي." : "غير مسجل دخول.", isCloud ? "نشط" : "محلي")}
-      ${row("البريد", email, isCloud ? "Cloud" : "Local")}
-    </div>
-  `;
-}
+<div class="settingsRows">
+${row("نوع الحساب","حساب Liyaqti Cloud","Cloud")}
+${row("البريد الإلكتروني",email,"Cloud")}
+${row("آخر تسجيل دخول","هذا الجهاز","Info")}
+</div>
+`;
 
   function syncContent(app) {
   const cloud = window.LiyaqtiSync?.status?.() || {};
