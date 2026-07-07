@@ -361,6 +361,7 @@ seedFoods.push(...[
 ["Costa Flat White","Costa","snack","كوب",250,120,8,10,5,0,9,120,"medium","مطعم/تقديري","medium","فلات وايت"],
 ["Costa Chocolate Muffin","Costa","snack","حبة",120,430,6,58,19,3,34,330,"high_sugar","مطعم/تقديري","medium","كوستا مافن"]
 ]);
+
 const defaultFoodLibrary=seedFoods.map((x,i)=>({
   id:"f"+i,
   name:x[0],
