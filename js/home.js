@@ -237,13 +237,7 @@ const msg=document.getElementById("homeQuickMsgV16");
   input.value="";
   if(msg)msg.innerHTML="✅ تم حفظ الوزن";
 
-  try{renderHome()}catch(e){}
-  try{renderGoalV90()}catch(e){}
-  try{render()}catch(e){}
-
-  window.dispatchEvent(new Event("liyaqtiWeightChanged"));
-  window.dispatchEvent(new Event("liyaqtiGoalChanged"));
-  window.dispatchEvent(new Event("liyaqti:dataUpdated"));
+  safeHomeRefresh("weight");
 }
 
 window.homeSaveWeight=homeSaveWeight;
@@ -309,16 +303,7 @@ function homeSaveSteps(e){
   input.value="";
   if(msg)msg.innerHTML="✅ تم حفظ الخطوات وتحديث كل الصفحات";
 
-  try{renderHome()}catch(e){}
-  try{renderSteps()}catch(e){}
-  try{drawStepsChart&&drawStepsChart()}catch(e){}
-  try{renderGoalV90()}catch(e){}
-  try{renderAdvancedReports()}catch(e){}
-  try{render()}catch(e){}
-
-  window.dispatchEvent(new Event("liyaqtiStepsChanged"));
-  window.dispatchEvent(new Event("liyaqtiGoalChanged"));
-  window.dispatchEvent(new Event("liyaqti:dataUpdated"));
+  safeHomeRefresh("steps");
 }
 
 function saveMealFromHome(food,grams,mealType){
@@ -529,6 +514,35 @@ body.dark .hm16Head button{background:#10201d;color:#fff}
 /* =========================
    Refresh
 ========================= */
+
+let homeRefreshing = false;
+
+function safeHomeRefresh(type){
+  if(homeRefreshing) return;
+  homeRefreshing = true;
+
+  const y = window.scrollY || 0;
+
+  setTimeout(()=>{
+    try{ renderHome(); }catch(e){}
+
+    if(type === "steps"){
+      try{ if(typeof renderSteps === "function") renderSteps(); }catch(e){}
+    }
+
+    if(type === "weight"){
+      try{ if(typeof renderGoalV90 === "function") renderGoalV90(); }catch(e){}
+    }
+
+    try{ if(typeof renderAdvancedReports === "function") renderAdvancedReports(); }catch(e){}
+
+    setTimeout(()=>{
+      window.scrollTo(0, y);
+      homeRefreshing = false;
+    }, 50);
+  }, 50);
+}
+
 
 function refreshEverywhere(type){
   ["liyaqtiWeightChanged","liyaqtiGoalChanged","liyaqtiStepsChanged","liyaqtiNutritionChanged"].forEach(ev=>{
@@ -743,8 +757,8 @@ function drawChart(ok){
 window.renderHome=renderHome;
 window.renderHomeDashboard=renderHome;
 
-["liyaqtiGoalChanged","liyaqtiWeightChanged","liyaqtiStepsChanged","liyaqtiNutritionChanged","liyaqti:dataUpdated","storage"].forEach(ev=>{
-  window.addEventListener(ev,renderHome);
+["storage"].forEach(ev=>{
+  window.addEventListener(ev,()=>safeHomeRefresh("storage"));
 });
 
 let oldRender=null;
