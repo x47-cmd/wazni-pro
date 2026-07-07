@@ -1311,3 +1311,453 @@ saveJSON(LS_APP, app);
   applyAppearanceSettings();
   renderSettings();
 })();
+
+/* =========================================================
+   Liyaqti Hidden Debug Center V1
+   تشخيص التخزين بدون Console
+   File: js/settings.js
+========================================================= */
+(function(){
+  if(window.__liyaqtiDebugCenterV1) return;
+  window.__liyaqtiDebugCenterV1 = true;
+
+  const DEBUG_KEYS = [
+    "wazni",
+    "wazniS",
+    "wazniSteps",
+    "wazniActivities",
+    "liyaqtiNutritionData",
+    "liyaqtiNutritionSettings",
+    "liyaqtiNutritionFoodLibrary",
+    "liyaqtiNutritionTemplates",
+    "liyaqtiNutritionFavorites",
+    "liyaqtiNutritionMealBuilders",
+    "liyaqtiNutritionRules",
+    "liyaqtiAppSettings"
+  ];
+
+  function readJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){
+      return fallback;
+    }
+  }
+
+  function today(){
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function sizeOf(key){
+    const raw = localStorage.getItem(key) || "";
+    return Math.round((raw.length / 1024) * 10) / 10;
+  }
+
+  function arr(v){
+    return Array.isArray(v) ? v : [];
+  }
+
+  function sumNutrition(list){
+    list = arr(list);
+    return {
+      cal: Math.round(list.reduce((a,x)=>a+(+x.cal||0),0)),
+      p: Math.round(list.reduce((a,x)=>a+(+x.p||0),0)),
+      c: Math.round(list.reduce((a,x)=>a+(+x.c||0),0)),
+      f: Math.round(list.reduce((a,x)=>a+(+x.f||0),0)),
+      water: Math.round(list.reduce((a,x)=>a+(+x.water||0),0))
+    };
+  }
+
+  function nutritionByDate(){
+    const data = arr(readJSON("liyaqtiNutritionData", []));
+    const map = {};
+
+    data.forEach(x=>{
+      const d = String(x.date || "بدون تاريخ").slice(0,10);
+      if(!map[d]) map[d] = [];
+      map[d].push(x);
+    });
+
+    return Object.entries(map)
+      .sort((a,b)=>String(b[0]).localeCompare(String(a[0])))
+      .map(([date,items])=>{
+        const s = sumNutrition(items);
+        return {date, count:items.length, ...s};
+      });
+  }
+
+  function weightInfo(){
+    const w = arr(readJSON("wazni", []));
+    return {
+      count: w.length,
+      last: w.length ? w[w.length-1] : null
+    };
+  }
+
+  function stepsInfo(){
+    const s = arr(readJSON("wazniSteps", []));
+    return {
+      count: s.length,
+      last: s.length ? s[s.length-1] : null
+    };
+  }
+
+  function openDebugCenter(){
+    let old = document.getElementById("liyaqtiDebugModal");
+    if(old) old.remove();
+
+    const nutrition = arr(readJSON("liyaqtiNutritionData", []));
+    const settings = readJSON("liyaqtiNutritionSettings", {});
+    const foods = arr(readJSON("liyaqtiNutritionFoodLibrary", []));
+    const days = nutritionByDate();
+    const w = weightInfo();
+    const st = stepsInfo();
+
+    const modal = document.createElement("div");
+    modal.id = "liyaqtiDebugModal";
+    modal.innerHTML = `
+      <div class="ldBg">
+        <div class="ldBox">
+          <div class="ldHead">
+            <div>
+              <small>Hidden Developer Tool</small>
+              <h2>🧪 مركز تشخيص Liyaqti</h2>
+              <p>يفحص التخزين المحلي، التغذية، الوزن، الخطوات، وحالة السجل التاريخي.</p>
+            </div>
+            <button onclick="document.getElementById('liyaqtiDebugModal').remove()">×</button>
+          </div>
+
+          <div class="ldGrid">
+            <div>
+              <span>وجبات محفوظة</span>
+              <b>${nutrition.length}</b>
+            </div>
+            <div>
+              <span>أيام تغذية</span>
+              <b>${days.length}</b>
+            </div>
+            <div>
+              <span>مكتبة الطعام</span>
+              <b>${foods.length}</b>
+            </div>
+            <div>
+              <span>هدف السعرات</span>
+              <b>${settings.calories || "--"}</b>
+            </div>
+            <div>
+              <span>سجلات الوزن</span>
+              <b>${w.count}</b>
+            </div>
+            <div>
+              <span>سجلات الخطوات</span>
+              <b>${st.count}</b>
+            </div>
+          </div>
+
+          <div class="ldCard">
+            <h3>📅 السجل الغذائي حسب التاريخ</h3>
+            ${
+              days.length
+              ? days.slice(0,30).map(d=>`
+                <div class="ldDay">
+                  <b>${d.date}</b>
+                  <span>${d.count} وجبة • ${d.cal} سعرة • P ${d.p}g • C ${d.c}g • F ${d.f}g • 💧 ${d.water}</span>
+                </div>
+              `).join("")
+              : `<div class="ldEmpty">لا توجد بيانات تغذية محفوظة.</div>`
+            }
+          </div>
+
+          <div class="ldCard">
+            <h3>💾 مفاتيح التخزين</h3>
+            ${DEBUG_KEYS.map(k=>{
+              const raw = localStorage.getItem(k);
+              const val = readJSON(k, null);
+              const count = Array.isArray(val) ? val.length : (val && typeof val === "object" ? Object.keys(val).length : 0);
+              return `
+                <div class="ldKey">
+                  <b>${k}</b>
+                  <span>${raw ? "موجود" : "غير موجود"} • ${sizeOf(k)} KB • عناصر: ${count}</span>
+                </div>
+              `;
+            }).join("")}
+          </div>
+
+          <div class="ldCard">
+            <h3>✅ نتيجة الفحص</h3>
+            <div class="ldResult">
+              ${nutrition.length && days.length ? "✅ التغذية محفوظة تاريخياً حسب التاريخ." : "⚠️ التغذية غير كافية للفحص."}<br>
+              ${days.length >= 2 ? "✅ يوجد أكثر من يوم، التقارير السنوية والشهرية ممكنة." : "ℹ️ حالياً يوجد يوم واحد فقط. أضف بيانات في يوم ثاني للتأكد النهائي."}<br>
+              ${nutrition.some(x=>x.cal || x.p || x.c || x.f) ? "✅ السعرات والماكروز محفوظة داخل الوجبات." : "⚠️ بعض الوجبات قد تكون محفوظة بدون سعرات/ماكروز."}
+            </div>
+          </div>
+
+          <div class="ldActions">
+            <button onclick="window.liyaqtiDebugCopy()">نسخ تقرير التشخيص</button>
+            <button class="danger" onclick="window.liyaqtiDebugClose()">إغلاق</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  window.liyaqtiDebugClose = function(){
+    const m = document.getElementById("liyaqtiDebugModal");
+    if(m) m.remove();
+  };
+
+  window.liyaqtiDebugCopy = function(){
+    const nutrition = arr(readJSON("liyaqtiNutritionData", []));
+    const days = nutritionByDate();
+
+    const text = [
+      "Liyaqti Debug Report",
+      "--------------------",
+      "Nutrition Records: " + nutrition.length,
+      "Nutrition Days: " + days.length,
+      "",
+      ...days.slice(0,30).map(d=>`${d.date}: ${d.count} meals, ${d.cal} kcal, P ${d.p}g, C ${d.c}g, F ${d.f}g, Water ${d.water}`),
+      "",
+      "Storage:",
+      ...DEBUG_KEYS.map(k=>`${k}: ${localStorage.getItem(k) ? "exists" : "missing"} - ${sizeOf(k)} KB`)
+    ].join("\n");
+
+    navigator.clipboard?.writeText(text);
+    alert("تم نسخ تقرير التشخيص ✅");
+  };
+
+  window.openLiyaqtiDebugCenter = openDebugCenter;
+
+  function injectDebugStyle(){
+    if(document.getElementById("liyaqtiDebugStyle")) return;
+
+    const st = document.createElement("style");
+    st.id = "liyaqtiDebugStyle";
+    st.innerHTML = `
+      .ldBg{
+        position:fixed;
+        inset:0;
+        background:rgba(15,23,42,.55);
+        z-index:99999;
+        display:flex;
+        align-items:flex-end;
+      }
+
+      .ldBox{
+        width:100%;
+        max-height:92vh;
+        overflow:auto;
+        background:#fff;
+        border-radius:28px 28px 0 0;
+        padding:18px;
+        direction:rtl;
+        color:#0f172a;
+        box-shadow:0 -20px 60px rgba(0,0,0,.22);
+      }
+
+      .ldHead{
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        align-items:flex-start;
+        margin-bottom:14px;
+      }
+
+      .ldHead small{
+        color:#0f766e;
+        font-weight:900;
+        font-size:12px;
+      }
+
+      .ldHead h2{
+        margin:4px 0;
+        font-size:22px;
+        font-weight:950;
+      }
+
+      .ldHead p{
+        margin:0;
+        color:#64748b;
+        line-height:1.6;
+        font-weight:700;
+        font-size:13px;
+      }
+
+      .ldHead button{
+        border:0;
+        width:42px;
+        height:42px;
+        border-radius:14px;
+        background:#f1f5f9;
+        font-size:26px;
+        font-weight:900;
+      }
+
+      .ldGrid{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:10px;
+      }
+
+      .ldGrid div,
+      .ldCard{
+        border:1px solid #e5e7eb;
+        background:#f8fafc;
+        border-radius:20px;
+        padding:13px;
+      }
+
+      .ldGrid span{
+        display:block;
+        color:#64748b;
+        font-size:12px;
+        font-weight:900;
+      }
+
+      .ldGrid b{
+        display:block;
+        color:#0f766e;
+        font-size:24px;
+        margin-top:4px;
+      }
+
+      .ldCard{
+        margin-top:12px;
+        background:#fff;
+      }
+
+      .ldCard h3{
+        margin:0 0 10px;
+        font-size:17px;
+        font-weight:950;
+      }
+
+      .ldDay,
+      .ldKey{
+        border:1px solid #e5e7eb;
+        border-radius:16px;
+        padding:11px;
+        margin-top:8px;
+        background:#f8fafc;
+      }
+
+      .ldDay b,
+      .ldKey b{
+        display:block;
+        font-size:14px;
+        font-weight:950;
+      }
+
+      .ldDay span,
+      .ldKey span{
+        display:block;
+        margin-top:4px;
+        color:#64748b;
+        font-size:12px;
+        font-weight:800;
+        line-height:1.5;
+      }
+
+      .ldResult{
+        background:#ecfdf5;
+        border:1px solid #bbf7d0;
+        color:#065f46;
+        border-radius:16px;
+        padding:12px;
+        line-height:1.8;
+        font-weight:850;
+        font-size:13px;
+      }
+
+      .ldEmpty{
+        color:#64748b;
+        padding:18px;
+        text-align:center;
+        border:1px dashed #cbd5e1;
+        border-radius:16px;
+        font-weight:900;
+      }
+
+      .ldActions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        margin:14px 0 10px;
+      }
+
+      .ldActions button{
+        border:0;
+        border-radius:16px;
+        background:linear-gradient(135deg,#0f766e,#14b8a6);
+        color:white;
+        padding:13px;
+        font-weight:950;
+        font-size:14px;
+      }
+
+      .ldActions button.danger{
+        background:#f1f5f9;
+        color:#0f172a;
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function addHiddenButton(){
+    const page = document.getElementById("settings");
+    if(!page) return;
+    if(document.getElementById("liyaqtiDebugOpenBtn")) return;
+
+    const box = document.createElement("div");
+    box.id = "liyaqtiDebugOpenBtn";
+    box.innerHTML = `
+      <div style="
+        margin:14px 0 120px;
+        padding:14px;
+        border:1px dashed #cbd5e1;
+        border-radius:20px;
+        background:#f8fafc;
+        text-align:center;
+        direction:rtl;
+      ">
+        <button onclick="openLiyaqtiDebugCenter()" style="
+          width:100%;
+          border:0;
+          border-radius:16px;
+          padding:14px;
+          background:#0f172a;
+          color:white;
+          font-weight:950;
+          font-size:14px;
+        ">🧪 تشخيص النظام</button>
+      </div>
+    `;
+
+    page.appendChild(box);
+  }
+
+  const oldPg = window.pg;
+  window.pg = function(id,b){
+    if(typeof oldPg === "function") oldPg(id,b);
+
+    if(id === "settings"){
+      setTimeout(()=>{
+        injectDebugStyle();
+        addHiddenButton();
+      },300);
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    injectDebugStyle();
+
+    setTimeout(()=>{
+      const page = document.getElementById("settings");
+      if(page && page.classList.contains("on")) addHiddenButton();
+    },600);
+  });
+})();
+
