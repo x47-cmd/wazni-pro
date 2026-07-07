@@ -64,7 +64,11 @@
       mockLogin: false,
       mockUserEmail: "",
       cloudLogin: false,
-      lastSync: ""
+      lastSync: "",
+lastCloudBackup: "",
+lastCloudRestore: "",
+lastSmartSync: "",
+lastDataReload: ""
     });
   }
 
@@ -373,14 +377,25 @@
   }
 
   function idLabel(id) {
-    const map = {
-      profile: "V2", health: "V2", goals: "V2", nutrition: "V2",
-      activity: "V3", notifications: "V3", ai: "V3", appearance: "V3",
-      account: "V4", sync: "V4/V5", backup: "V4", privacy: "V4",
-      integrations: "V5", about: "Info", maintenance: "خطر"
-    };
-    return map[id] || "Settings";
-  }
+  const map = {
+    profile: "جاهز",
+    health: "جاهز",
+    goals: "جاهز",
+    nutrition: "جاهز",
+    activity: "جاهز",
+    notifications: "جاهز",
+    ai: "جاهز",
+    appearance: "جاهز",
+    account: "حساب",
+    sync: "سحابي",
+    backup: "نسخ",
+    privacy: "أمان",
+    integrations: "قريباً",
+    about: "Info",
+    maintenance: "خطر"
+  };
+  return map[id] || "جاهز";
+}
 
   function topLoginCard(app, S) {
   const cloud = window.LiyaqtiSync?.status?.() || {};
