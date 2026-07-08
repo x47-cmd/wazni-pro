@@ -824,8 +824,12 @@ function drawChart(valid){
           pointRadius:4,
           borderWidth:3
         },
-        {
-          { label:"الهدف", data:data.map(()=>core().goal), borderDash:[6,6], pointRadius:0, borderWidth:2 }
+                {
+          label:"الهدف",
+          data:data.map(()=>core().goal),
+          borderDash:[6,6],
+          pointRadius:0,
+          borderWidth:2
         }
       ]
     },
@@ -941,7 +945,7 @@ window.stopActivity=function(){
 ========================= */
 
 window.addEventListener("liyaqti:dataUpdated",function(e){
-  if(!e.detail || !e.detail.type || e.detail.type==="steps" || e.detail.type==="weight"){
+  if(!e.detail || !e.detail.type || e.detail.type==="steps" || e.detail.type==="weight" || e.detail.type==="settings"){
     try{renderSteps()}catch(err){}
   }
 });
