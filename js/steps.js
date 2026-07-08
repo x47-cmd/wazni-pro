@@ -263,7 +263,8 @@ function calcRecovery(f,avg7,steps){
 }
 
 function core(){
-  let goal=8000;
+  let s = getS();
+  let goal = num(s.stepsGoal || s.stepGoal || s.dailyStepsGoal, 8000);
   let t=currentSteps();
   let steps=num(t.steps||t.st);
   let valid=getAllStepsData();
@@ -654,7 +655,7 @@ window.renderSteps = function(){
     decision = "سجل خطواتك اليوم حتى يبدأ التحليل.";
   }
 
-  if(goalType()==="loss") decision += " هدفك خسارة وزن، فالثبات على 8000 خطوة يخدم نزول الوزن.";
+if(goalType()==="loss") decision += ` هدفك خسارة وزن، فالثبات على ${fmt(c.goal)} خطوة يخدم نزول الوزن.`;
 
   text("v50Score",c.score+"%");
   text("v50State",state);
@@ -824,11 +825,7 @@ function drawChart(valid){
           borderWidth:3
         },
         {
-          label:"الهدف",
-          data:data.map(()=>8000),
-          borderDash:[6,6],
-          pointRadius:0,
-          borderWidth:2
+          { label:"الهدف", data:data.map(()=>core().goal), borderDash:[6,6], pointRadius:0, borderWidth:2 }
         }
       ]
     },
