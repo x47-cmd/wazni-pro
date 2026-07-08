@@ -148,8 +148,17 @@ function core(){
 }
 
 function stepsCore(){
-  let st=stepsToday(), goal=8000;
-  return {steps:st,goal,km:st*.00075,burn:Math.round(st*.04),pct:Math.min(100,st/goal*100)};
+  let st = stepsToday();
+  let s = getS();
+  let goal = num(s.stepsGoal, 8000);
+  return {
+    steps: st,
+    goal,
+    km: st * .00075,
+    burn: Math.round(st * .04),
+    pct: goal ? Math.min(100, st / goal * 100) : 0
+  };
+}
 }
 
 function streak(){
@@ -182,7 +191,7 @@ function aiCoach(c,st,nut,score){
   if(score>=85)return"أداؤك ممتاز اليوم. حافظ على نفس النظام.";
   if(c.diff>0)return"وزنك ارتفع قليلاً. غالباً سوائل أو ملح. ركز على الماء والمشي.";
   if(st.steps<3000)return"أهم قرار اليوم: ابدأ بمشي 20 دقيقة وارفع خطواتك تدريجياً.";
-  if(st.steps<8000)return"أنت قريب من تحسين يومك. حاول تكمل هدف 8000 خطوة.";
+  if(st.steps < st.goal)return `أنت قريب من تحسين يومك. حاول تكمل هدف ${fmt(st.goal)} خطوة.`;
   if(nut.eaten>nut.target)return"السعرات تعدت الهدف. خفف الوجبة القادمة وخليها بروتين وخضار.";
   if(nut.protein<70)return"البروتين منخفض. أضف بروتين واضح في الوجبة القادمة.";
   if(c.diff<0)return"وزنك نازل. استمر بنفس الهدوء ولا تغيّر الخطة بسرعة.";
