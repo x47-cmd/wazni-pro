@@ -147,19 +147,7 @@ function core(){
   return {start,goal,cur,lost,total,remain,pct,diff,weekly,eta,records:d.length};
 }
 
-function stepsCore(){
-  let st = stepsToday();
-  let s = getS();
-  let goal = num(s.stepsGoal, 8000);
-  return {
-    steps: st,
-    goal,
-    km: st * .00075,
-    burn: Math.round(st * .04),
-    pct: goal ? Math.min(100, st / goal * 100) : 0
-  };
-}
-}
+function stepsCore(){ let st=stepsToday(); let s=getS(); let goal=num(s.stepsGoal||s.stepGoal||s.dailyStepsGoal,8000); return {steps:st,goal,km:st*.00075,burn:Math.round(st*.04),pct:goal?Math.min(100,st/goal*100):0}; }
 
 function streak(){
   let dates=getD().map(x=>String(x.d||x.date||x.dt||"").slice(0,10)).filter(Boolean).sort();
